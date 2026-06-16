@@ -131,9 +131,6 @@ backend = MultiBackend([span_backend, log_backend])
 - [Architecture](docs/architecture.md) — system design overview
 - [Compatibility](docs/COMPATIBILITY.md) — supported versions
 
-## Related
-
-- [aba-sensor](https://github.com/ExabeamLabs/aba-sensor) — Rust-based log forwarder for CLI agents (Claude Code, Codex, Gemini CLI)
 
 ## License
 
