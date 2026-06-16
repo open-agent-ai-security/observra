@@ -1,6 +1,6 @@
 """Unit tests for hot_cold module."""
 
-from aba_telemetry.core.hot_cold import is_hot_path, is_cold_path, HOT_PATH_EVENT_TYPES, COLD_PATH_EVENT_TYPES
+from observra.core.hot_cold import is_hot_path, is_cold_path, HOT_PATH_EVENT_TYPES, COLD_PATH_EVENT_TYPES
 
 
 def test_hot_path_types():

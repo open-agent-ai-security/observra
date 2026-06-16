@@ -2,7 +2,7 @@
 
 ## Overview
 
-aba-telemetry is a Python SDK that instruments AI agent frameworks to capture structured telemetry events. Events are normalized to a Common Information Model (CIM) schema and routed to configurable backends.
+observra is a Python SDK that instruments AI agent frameworks to capture structured telemetry events. Events are normalized to a Common Information Model (CIM) schema and routed to configurable backends.
 
 ## Components
 

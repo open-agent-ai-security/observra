@@ -6,7 +6,7 @@ import time
 
 import pytest
 
-from aba_telemetry.core.events import TelemetryEvent
+from observra.core.events import TelemetryEvent
 
 
 def _make_bench_event(i: int) -> TelemetryEvent:

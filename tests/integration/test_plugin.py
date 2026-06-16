@@ -3,7 +3,7 @@
 import pytest
 from types import SimpleNamespace
 
-from aba_telemetry.adapters.adk.plugin import TelemetryPlugin
+from observra.adapters.adk.plugin import TelemetryPlugin
 
 
 # Mock ADK objects using SimpleNamespace (no google-adk dependency for mocks)
@@ -287,7 +287,7 @@ async def test_tool_type_mcp_for_mcp_tools():
     """Test that MCP tools get tool_type='mcp'."""
     # Create a mock that passes isinstance(tool, McpTool)
     # by patching the cached _McpTool sentinel in plugin module
-    import aba_telemetry.adapters.adk.plugin as plugin_mod
+    import observra.adapters.adk.plugin as plugin_mod
 
     class FakeMcpTool:
         name = "mcp__server__search"
@@ -467,7 +467,7 @@ async def test_on_event_skips_partial_streaming_chunks():
 @pytest.mark.asyncio
 async def test_after_run_resets_delegation_depth():
     """Test after_run_callback resets delegation depth as safety net."""
-    from aba_telemetry.core.detection import get_delegation_depth, increment_delegation_depth
+    from observra.core.detection import get_delegation_depth, increment_delegation_depth
 
     plugin = TelemetryPlugin(queue=None)
     invocation_context = create_mock_invocation_context()
@@ -489,7 +489,7 @@ async def test_after_run_resets_delegation_depth():
 async def test_concurrent_request_model_name_isolation():
     """Test that model name doesn't bleed between concurrent requests."""
     import asyncio
-    from aba_telemetry.adapters.adk.plugin import _last_model_name_var
+    from observra.adapters.adk.plugin import _last_model_name_var
 
     plugin = TelemetryPlugin(queue=None)
 

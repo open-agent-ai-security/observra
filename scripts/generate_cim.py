@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate aba_telemetry/core/cim.py from cim_schema.toml."""
+"""Generate observra/core/cim.py from cim_schema.toml."""
 
 from __future__ import annotations
 
@@ -15,7 +15,7 @@ except ImportError:
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 SCHEMA_PATH = REPO_ROOT / "schema" / "cim_schema.toml"
-OUTPUT_PATH = REPO_ROOT / "src" / "aba_telemetry" / "core" / "cim.py"
+OUTPUT_PATH = REPO_ROOT / "src" / "observra" / "core" / "cim.py"
 
 
 def load_schema() -> dict:

@@ -1,4 +1,4 @@
-# aba-telemetry
+# observra
 
 Framework-agnostic agent behavior analytics — capture every meaningful agent action (token usage, tool calls, cost, errors) with structured context based on the Common Information Model (CIM).
 
@@ -7,38 +7,38 @@ Zero custom instrumentation per-agent. Answer "what happened, how much did it co
 ## Install
 
 ```bash
-pip install aba-telemetry
+pip install observra
 ```
 
 With framework extras:
 
 ```bash
-pip install aba-telemetry[adk]           # Google ADK
-pip install aba-telemetry[claude]        # Claude Agent SDK
-pip install aba-telemetry[openai-agents] # OpenAI Agents SDK
-pip install aba-telemetry[langchain]     # LangChain / LangGraph
-pip install aba-telemetry[pydantic-ai]   # Pydantic AI
+pip install observra[adk]           # Google ADK
+pip install observra[claude]        # Claude Agent SDK
+pip install observra[openai-agents] # OpenAI Agents SDK
+pip install observra[langchain]     # LangChain / LangGraph
+pip install observra[pydantic-ai]   # Pydantic AI
 ```
 
 With backend extras:
 
 ```bash
-pip install aba-telemetry[otel]          # OTel span + log export
+pip install observra[otel]          # OTel span + log export
 ```
 
 Install everything:
 
 ```bash
-pip install aba-telemetry[all]
+pip install observra[all]
 ```
 
 ## Quick Start
 
 ```python
-import aba_telemetry
-from aba_telemetry import log
+import observra
+from observra import log
 
-aba_telemetry.initialize(backend="jsonl", path="telemetry.jsonl")
+observra.initialize(backend="jsonl", path="telemetry.jsonl")
 log.session_start(agent_name="my-agent")
 log.model_response("gpt-4o", input_tokens=500, output_tokens=200)
 log.session_end(agent_name="my-agent")
@@ -73,9 +73,9 @@ Sample output (one line per event in `telemetry.jsonl`):
 ### OTel Export (Dynatrace, Grafana, etc.)
 
 ```python
-from aba_telemetry.backends.otel import OTelExportBackend
-from aba_telemetry.backends.otel_log import OTelLogBackend
-from aba_telemetry.backends.multi import MultiBackend
+from observra.backends.otel import OTelExportBackend
+from observra.backends.otel_log import OTelLogBackend
+from observra.backends.multi import MultiBackend
 
 # Spans only
 span_backend = OTelExportBackend(

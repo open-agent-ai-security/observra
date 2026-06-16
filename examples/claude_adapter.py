@@ -1,7 +1,7 @@
 """How to add telemetry to a Claude Agent SDK agent.
 
 Install:
-    pip install aba-telemetry[claude]
+    pip install observra[claude]
 
 BEFORE (your existing agent):
     from claude_agent_sdk import ClaudeSDKClient, ClaudeAgentOptions
@@ -10,8 +10,8 @@ BEFORE (your existing agent):
         print(msg)
 
 AFTER (3 lines added):
-    from aba_telemetry import initialize                    # 1. import
-    from aba_telemetry.adapters.claude import ClaudeAdapter
+    from observra import initialize                    # 1. import
+    from observra.adapters.claude import ClaudeAdapter
     initialize(backend="jsonl", path="telemetry.jsonl")        # 2. init storage
     adapter = ClaudeAdapter()                                 # 3. create adapter
 
@@ -32,8 +32,8 @@ That's it. Every tool call, user prompt, and model response is captured.
 
 # ── Step 1: Add telemetry ────────────────────────────────────────
 
-from aba_telemetry import initialize
-from aba_telemetry.adapters.claude import ClaudeAdapter
+from observra import initialize
+from observra.adapters.claude import ClaudeAdapter
 
 initialize(
     backend="jsonl",
@@ -84,5 +84,5 @@ adapter = ClaudeAdapter()
 # ── View your telemetry ─────────────────────────────────────────
 #
 # CLI dashboard:
-#   aba-telemetry dashboard
+#   observra dashboard
 #

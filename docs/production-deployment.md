@@ -1,6 +1,6 @@
 # Production Deployment Guide
 
-How to configure `aba-telemetry` for production agent workloads running on
+How to configure `observra` for production agent workloads running on
 cloud infrastructure (Cloud Run, Kubernetes, VMs).
 
 ---
@@ -12,16 +12,16 @@ It pushes telemetry via OTLP HTTP to any compatible observability platform
 (Dynatrace, Datadog, Grafana, Honeycomb, New Relic, etc.).
 
 ```python
-import aba_telemetry
+import observra
 
-aba_telemetry.initialize(
+observra.initialize(
     backend="otel_log",
     endpoint="https://your-platform.example.com/api/v2/otlp/v1/logs",
     headers={"Authorization": "Api-Token YOUR_TOKEN"},
     service_name="my-agent-svc",
 )
 
-plugin = aba_telemetry.create_plugin()
+plugin = observra.create_plugin()
 # Pass plugin to your framework runner
 ```
 
@@ -40,9 +40,9 @@ plugin = aba_telemetry.create_plugin()
 Best for: teams with one observability platform (DT, Datadog, Grafana).
 
 ```python
-import aba_telemetry
+import observra
 
-aba_telemetry.initialize(
+observra.initialize(
     backend="otel_log",
     endpoint="https://your-instance.live.dynatrace.com/api/v2/otlp/v1/logs",
     headers={"Authorization": "Api-Token dt0c01.XXXX"},
@@ -60,8 +60,8 @@ export OTEL_SERVICE_NAME=my-agent-svc
 ```
 
 ```python
-import aba_telemetry
-aba_telemetry.initialize()  # reads from env vars
+import observra
+observra.initialize()  # reads from env vars
 ```
 
 ### 2. OTel Spans — Distributed Tracing
@@ -69,9 +69,9 @@ aba_telemetry.initialize()  # reads from env vars
 Best for: multi-service architectures where you need trace correlation.
 
 ```python
-import aba_telemetry
+import observra
 
-aba_telemetry.initialize(
+observra.initialize(
     backend="otel",
     endpoint="https://your-instance.live.dynatrace.com/api/v2/otlp/v1/traces",
     headers={"Authorization": "Api-Token dt0c01.XXXX"},
@@ -84,11 +84,11 @@ aba_telemetry.initialize(
 Best for: teams that need both real-time observability AND a local audit trail.
 
 ```python
-from aba_telemetry.backends.otel_log import OTelLogBackend
-from aba_telemetry.backends.jsonl import JSONLBackend
-from aba_telemetry.backends.multi import MultiBackend
+from observra.backends.otel_log import OTelLogBackend
+from observra.backends.jsonl import JSONLBackend
+from observra.backends.multi import MultiBackend
 
-import aba_telemetry
+import observra
 
 # OTel leg: real-time dashboards and alerting
 otel = OTelLogBackend(
@@ -102,7 +102,7 @@ local = JSONLBackend(path="/data/telemetry.jsonl")
 
 multi = MultiBackend([otel, local])
 
-aba_telemetry.initialize(backend=multi)
+observra.initialize(backend=multi)
 ```
 
 ### 4. MultiBackend — OTel + Webhook (SIEM forwarding)
@@ -110,11 +110,11 @@ aba_telemetry.initialize(backend=multi)
 Best for: teams that need both observability push AND SIEM ingestion via webhook.
 
 ```python
-from aba_telemetry.backends.otel_log import OTelLogBackend
-from aba_telemetry.backends.webhook import WebhookBackend
-from aba_telemetry.backends.multi import MultiBackend
+from observra.backends.otel_log import OTelLogBackend
+from observra.backends.webhook import WebhookBackend
+from observra.backends.multi import MultiBackend
 
-import aba_telemetry
+import observra
 
 otel = OTelLogBackend(
     endpoint="https://your-instance.live.dynatrace.com/api/v2/otlp/v1/logs",
@@ -127,7 +127,7 @@ siem = WebhookBackend(url="https://your-siem/api/v1/events")
 
 multi = MultiBackend([otel, siem])
 
-aba_telemetry.initialize(backend=multi)
+observra.initialize(backend=multi)
 ```
 
 ### 5. stdout/Cloud Logging (GCP-native path)
@@ -136,9 +136,9 @@ Best for: GCP deployments where Cloud Logging is already integrated with
 your observability platform (e.g., DT GCP integration auto-ingests).
 
 ```python
-import aba_telemetry
+import observra
 
-aba_telemetry.initialize(
+observra.initialize(
     backend="jsonl",
     path="/dev/stdout",
 )
@@ -181,16 +181,16 @@ output differs:
 ```
 Native → OTel
 ──────────────────────────────────────────────────
-event_type          → aba_telemetry.event_type
+event_type          → observra.event_type
 model_name          → gen_ai.request.model
 tool_name           → gen_ai.tool.name
 agent_name          → gen_ai.agent.name
-session_id          → aba_telemetry.session_id
+session_id          → observra.session_id
 data.input_tokens   → gen_ai.usage.input_tokens (string)
 data.output_tokens  → gen_ai.usage.output_tokens (string)
-data.cost_usd       → aba_telemetry.cost_usd (string)
+data.cost_usd       → observra.cost_usd (string)
 data.error_type     → error.type
-framework           → aba_telemetry.framework
+framework           → observra.framework
 ```
 
 **OTel backends are lossy:** only explicitly mapped fields from `data{}` are
@@ -205,7 +205,7 @@ the complete event payload downstream, use `multi` with a native backend leg.
 
 ```python
 # OTel Logs (recommended)
-aba_telemetry.initialize(
+observra.initialize(
     backend="otel_log",
     endpoint="https://{env-id}.live.dynatrace.com/api/v2/otlp/v1/logs",
     headers={"Authorization": "Api-Token dt0c01.XXXXX"},
@@ -213,7 +213,7 @@ aba_telemetry.initialize(
 )
 
 # OTel Spans (if you need trace waterfall view)
-aba_telemetry.initialize(
+observra.initialize(
     backend="otel",
     endpoint="https://{env-id}.live.dynatrace.com/api/v2/otlp/v1/traces",
     headers={"Authorization": "Api-Token dt0c01.XXXXX"},
@@ -224,7 +224,7 @@ aba_telemetry.initialize(
 ### Datadog
 
 ```python
-aba_telemetry.initialize(
+observra.initialize(
     backend="otel_log",
     endpoint="https://http-intake.logs.datadoghq.com/api/v2/otlp/v1/logs",
     headers={"DD-API-KEY": "your-api-key"},
@@ -235,7 +235,7 @@ aba_telemetry.initialize(
 ### Grafana Cloud (Loki via OTLP)
 
 ```python
-aba_telemetry.initialize(
+observra.initialize(
     backend="otel_log",
     endpoint="https://otlp-gateway-prod-us-east-0.grafana.net/otlp/v1/logs",
     headers={"Authorization": "Basic BASE64_ENCODED_USER:TOKEN"},
@@ -246,7 +246,7 @@ aba_telemetry.initialize(
 ### Honeycomb
 
 ```python
-aba_telemetry.initialize(
+observra.initialize(
     backend="otel",
     endpoint="https://api.honeycomb.io/v1/traces",
     headers={"x-honeycomb-team": "your-api-key"},
@@ -257,7 +257,7 @@ aba_telemetry.initialize(
 ### Self-hosted OpenTelemetry Collector
 
 ```python
-aba_telemetry.initialize(
+observra.initialize(
     backend="otel_log",
     endpoint="http://otel-collector.monitoring:4318/v1/logs",
     service_name="my-agent-svc",
@@ -273,7 +273,7 @@ aba_telemetry.initialize(
 - [ ] **Configure cost thresholds** — get alerted on runaway LLM spend
 - [ ] **Test with `backend="jsonl"` first** — verify events are captured before adding OTel
 - [ ] **Use MultiBackend for dual-consumer** — don't force one schema on both observability and SIEM
-- [ ] **Handle graceful shutdown** — call `aba_telemetry.shutdown()` or use atexit hooks to flush buffered events
+- [ ] **Handle graceful shutdown** — call `observra.shutdown()` or use atexit hooks to flush buffered events
 - [ ] **Set appropriate batch sizes** — larger batches reduce network calls but increase data-loss window on crash
 
 ---
@@ -285,12 +285,12 @@ events. Ensure they flush on container shutdown:
 
 ```python
 import atexit
-import aba_telemetry
+import observra
 
-aba_telemetry.initialize(backend="otel_log", ...)
+observra.initialize(backend="otel_log", ...)
 
 # Flush on shutdown (Cloud Run SIGTERM, K8s preStop)
-atexit.register(aba_telemetry.shutdown)
+atexit.register(observra.shutdown)
 ```
 
 For frameworks with lifecycle hooks (FastAPI, Flask):
@@ -302,7 +302,7 @@ from fastapi import FastAPI
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     yield
-    aba_telemetry.shutdown()
+    observra.shutdown()
 
 app = FastAPI(lifespan=lifespan)
 ```
@@ -315,7 +315,7 @@ app = FastAPI(lifespan=lifespan)
   are scrubbed from event payloads before they reach any backend
 - **Add custom redaction patterns** for org-specific secrets:
   ```python
-  aba_telemetry.initialize(
+  observra.initialize(
       backend="otel_log",
       custom_patterns=[
           (r"sk-[a-zA-Z0-9]{48}", "OPENAI_KEY"),
@@ -325,7 +325,7 @@ app = FastAPI(lifespan=lifespan)
   ```
 - **Encryption at rest** — JSONL backend supports optional AES encryption:
   ```python
-  aba_telemetry.initialize(
+  observra.initialize(
       backend="jsonl",
       path="telemetry.jsonl",
       encryption_key=os.environ["TELEMETRY_ENCRYPTION_KEY"].encode(),
@@ -343,7 +343,7 @@ Use the self-observability API to monitor the health of the telemetry pipeline
 itself:
 
 ```python
-from aba_telemetry import observability
+from observra import observability
 
 metrics = observability.get_metrics()
 # {

@@ -7,10 +7,10 @@ Demonstrates the anomaly detection capabilities built into the telemetry plugin.
 These signals run automatically during agent execution.
 """
 
-from aba_telemetry.core.detection import classify_error, initialize_delegation_depth, increment_delegation_depth
-from aba_telemetry.core.injection import detect_injection_patterns
-from aba_telemetry.core.velocity import initialize_velocity_tracker, record_token_usage
-from aba_telemetry.core.sequences import initialize_tool_sequence, record_tool_call
+from observra.core.detection import classify_error, initialize_delegation_depth, increment_delegation_depth
+from observra.core.injection import detect_injection_patterns
+from observra.core.velocity import initialize_velocity_tracker, record_token_usage
+from observra.core.sequences import initialize_tool_sequence, record_tool_call
 
 # ── Error Classification ─────────────────────────────────────────────
 

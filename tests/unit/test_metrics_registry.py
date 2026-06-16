@@ -1,8 +1,8 @@
-"""Unit tests for aba_telemetry.core.metrics -- MetricsRegistry and RingBuffer."""
+"""Unit tests for observra.core.metrics -- MetricsRegistry and RingBuffer."""
 
 import threading
 
-from aba_telemetry.core.metrics import MetricsRegistry, RingBuffer, _registry
+from observra.core.metrics import MetricsRegistry, RingBuffer, _registry
 
 
 class TestRingBuffer:
@@ -58,44 +58,44 @@ class TestMetricsRegistry:
 
     def test_inc_counter_default_delta(self):
         reg = MetricsRegistry()
-        reg.inc_counter("aba_telemetry_test_total")
-        reg.inc_counter("aba_telemetry_test_total")
-        assert reg.get_counter("aba_telemetry_test_total") == 2
+        reg.inc_counter("observra_test_total")
+        reg.inc_counter("observra_test_total")
+        assert reg.get_counter("observra_test_total") == 2
 
     def test_inc_counter_custom_delta(self):
         reg = MetricsRegistry()
-        reg.inc_counter("aba_telemetry_test_total", delta=5)
-        assert reg.get_counter("aba_telemetry_test_total") == 5
+        reg.inc_counter("observra_test_total", delta=5)
+        assert reg.get_counter("observra_test_total") == 5
 
     def test_get_counter_missing_returns_zero(self):
         reg = MetricsRegistry()
-        assert reg.get_counter("aba_telemetry_nonexistent_total") == 0
+        assert reg.get_counter("observra_nonexistent_total") == 0
 
     def test_set_gauge(self):
         reg = MetricsRegistry()
-        reg.set_gauge("aba_telemetry_queue_depth", 42.0)
-        assert reg.get_gauge("aba_telemetry_queue_depth") == 42.0
+        reg.set_gauge("observra_queue_depth", 42.0)
+        assert reg.get_gauge("observra_queue_depth") == 42.0
 
     def test_get_gauge_missing_returns_zero(self):
         reg = MetricsRegistry()
-        assert reg.get_gauge("aba_telemetry_nonexistent") == 0.0
+        assert reg.get_gauge("observra_nonexistent") == 0.0
 
     def test_get_histogram_creates_ring_buffer(self):
         reg = MetricsRegistry()
-        h = reg.get_histogram("aba_telemetry_write_latency_seconds")
+        h = reg.get_histogram("observra_write_latency_seconds")
         assert isinstance(h, RingBuffer)
         # Same instance on second call
-        h2 = reg.get_histogram("aba_telemetry_write_latency_seconds")
+        h2 = reg.get_histogram("observra_write_latency_seconds")
         assert h is h2
 
     def test_reset_clears_all(self):
         reg = MetricsRegistry()
-        reg.inc_counter("aba_telemetry_x_total")
-        reg.set_gauge("aba_telemetry_y", 1.0)
-        reg.get_histogram("aba_telemetry_z_seconds").push(0.1)
+        reg.inc_counter("observra_x_total")
+        reg.set_gauge("observra_y", 1.0)
+        reg.get_histogram("observra_z_seconds").push(0.1)
         reg.reset()
-        assert reg.get_counter("aba_telemetry_x_total") == 0
-        assert reg.get_gauge("aba_telemetry_y") == 0.0
+        assert reg.get_counter("observra_x_total") == 0
+        assert reg.get_gauge("observra_y") == 0.0
 
     def test_labels_set_and_get(self):
         reg = MetricsRegistry()
@@ -125,11 +125,11 @@ class TestMetricsRegistry:
         def worker():
             barrier.wait()
             for _ in range(1000):
-                reg.inc_counter("aba_telemetry_concurrent_total")
+                reg.inc_counter("observra_concurrent_total")
 
         threads = [threading.Thread(target=worker) for _ in range(10)]
         for t in threads:
             t.start()
         for t in threads:
             t.join()
-        assert reg.get_counter("aba_telemetry_concurrent_total") == 10000
+        assert reg.get_counter("observra_concurrent_total") == 10000

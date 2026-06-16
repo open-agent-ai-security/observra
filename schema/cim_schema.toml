@@ -1,7 +1,7 @@
 [meta]
 version = "1.0"
 description = "CIM single source of truth for agent-telemetry v5.0"
-product_id = "aba-telemetry"
+product_id = "observra"
 
 # event_type → action + terminal + default_result
 [actions]

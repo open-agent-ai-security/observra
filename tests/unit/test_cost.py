@@ -2,7 +2,7 @@
 
 from decimal import Decimal
 
-from aba_telemetry.core.cost import CostCalculator
+from observra.core.cost import CostCalculator
 
 
 def test_cost_calculator_default_pricing():

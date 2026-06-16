@@ -2,8 +2,8 @@
 
 import re
 
-from aba_telemetry.core.redaction import Redactor
-from aba_telemetry.core.patterns import redact_string
+from observra.core.redaction import Redactor
+from observra.core.patterns import redact_string
 
 
 def test_redact_api_key():

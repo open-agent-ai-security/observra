@@ -2,8 +2,8 @@
 
 import pytest
 
-import aba_telemetry as telemetry
-from aba_telemetry.core.events import create_event
+import observra as telemetry
+from observra.core.events import create_event
 
 
 @pytest.fixture(autouse=True)
@@ -21,7 +21,7 @@ def _cleanup_pipeline():
 def test_import_star_does_not_raise_for_missing_optional_adapters():
     """Wildcard import must not fail when optional adapter extras are absent."""
     namespace = {}
-    exec("from aba_telemetry import *", namespace, namespace)
+    exec("from observra import *", namespace, namespace)
     assert "initialize" in namespace
     assert set(telemetry.__all__).issubset(set(namespace.keys()))
 
@@ -110,7 +110,7 @@ _PUBLIC_API_STABLE_SURFACE = frozenset({
 
 def test_public_api_snapshot():
     """public.py __all__ matches the frozen v1.0 surface manifest (D-04)."""
-    import aba_telemetry.public as pub
+    import observra.public as pub
     assert set(pub.__all__) == _PUBLIC_API_STABLE_SURFACE, (
         "Public API surface has drifted. Update _PUBLIC_API_STABLE_SURFACE "
         "deliberately if this change is intentional."
@@ -118,10 +118,10 @@ def test_public_api_snapshot():
 
 
 def test_public_api_import_does_not_leak_framework_sdks():
-    """Importing aba_telemetry.public must not trigger framework SDK imports."""
+    """Importing observra.public must not trigger framework SDK imports."""
     import sys
     before = set(sys.modules.keys())
-    import aba_telemetry.public  # noqa: F401
+    import observra.public  # noqa: F401
     after = set(sys.modules.keys())
     new_mods = after - before
     framework_modules = [

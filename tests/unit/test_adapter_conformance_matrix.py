@@ -11,8 +11,8 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from aba_telemetry.core.adapter import FrameworkAdapter
-from aba_telemetry.core.events import EventType, create_event
+from observra.core.adapter import FrameworkAdapter
+from observra.core.events import EventType, create_event
 
 
 def _install_openai_stubs() -> None:
@@ -150,11 +150,11 @@ _install_langchain_stubs()
 _install_pydantic_ai_stubs()
 _install_adk_stubs()
 
-TelemetryPlugin = importlib.import_module("aba_telemetry.adapters.adk.plugin").TelemetryPlugin
-ClaudeAdapter = importlib.import_module("aba_telemetry.adapters.claude.adapter").ClaudeAdapter
-OpenAIAdapter = importlib.import_module("aba_telemetry.adapters.openai.adapter").OpenAIAdapter
-LangChainAdapter = importlib.import_module("aba_telemetry.adapters.langchain.adapter").LangChainAdapter
-PydanticAIAdapter = importlib.import_module("aba_telemetry.adapters.pydantic_ai.adapter").PydanticAIAdapter
+TelemetryPlugin = importlib.import_module("observra.adapters.adk.plugin").TelemetryPlugin
+ClaudeAdapter = importlib.import_module("observra.adapters.claude.adapter").ClaudeAdapter
+OpenAIAdapter = importlib.import_module("observra.adapters.openai.adapter").OpenAIAdapter
+LangChainAdapter = importlib.import_module("observra.adapters.langchain.adapter").LangChainAdapter
+PydanticAIAdapter = importlib.import_module("observra.adapters.pydantic_ai.adapter").PydanticAIAdapter
 AgentSpanData = importlib.import_module("agents.tracing.span_data").AgentSpanData
 
 

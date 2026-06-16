@@ -2,7 +2,7 @@
 
 from decimal import Decimal
 
-from aba_telemetry.core.context import (
+from observra.core.context import (
     initialize_session,
     initialize_trace,
     get_session_id,

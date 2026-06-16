@@ -12,7 +12,7 @@ REPO_ROOT = pathlib.Path(__file__).parent.parent.parent
 
 PYPROJECT = REPO_ROOT / "pyproject.toml"
 CARGO_TOML = REPO_ROOT / "rust" / "Cargo.toml"
-NPM_INSTALLER = REPO_ROOT / "npm" / "aba-telemetry-installer" / "package.json"
+NPM_INSTALLER = REPO_ROOT / "npm" / "observra-installer" / "package.json"
 
 PLATFORM_PACKAGES = [
     "fwd-darwin-arm64",

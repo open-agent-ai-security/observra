@@ -3,15 +3,15 @@ import importlib
 import inspect
 import pkgutil
 
-import aba_telemetry
+import observra
 
 
 def test_all_deprecated_symbols_have_removal_metadata():
     """Every symbol with __deprecated__=True must have removal_version and alternative."""
     missing = []
     for importer, modname, ispkg in pkgutil.walk_packages(
-        path=aba_telemetry.__path__,
-        prefix="aba_telemetry.",
+        path=observra.__path__,
+        prefix="observra.",
         onerror=lambda x: None,
     ):
         try:

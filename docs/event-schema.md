@@ -1,6 +1,6 @@
 # Event Schema
 
-The Common Information Model (CIM) defines the canonical event structure for all telemetry events emitted by aba-telemetry.
+The Common Information Model (CIM) defines the canonical event structure for all telemetry events emitted by observra.
 
 ## Schema Source
 

@@ -1,13 +1,13 @@
-"""Unit tests for the explicit logging API (aba_telemetry.log)."""
+"""Unit tests for the explicit logging API (observra.log)."""
 
 import pytest
 from decimal import Decimal
 from unittest.mock import MagicMock, patch
 
-from aba_telemetry.core.context import get_span_id, new_span
-from aba_telemetry.core.dedup import register_emission, reset_dedup
-from aba_telemetry.core.events import EventType
-from aba_telemetry import log
+from observra.core.context import get_span_id, new_span
+from observra.core.dedup import register_emission, reset_dedup
+from observra.core.events import EventType
+from observra import log
 
 
 # ---------------------------------------------------------------------------
@@ -44,7 +44,7 @@ def fake_queue():
     proxy = MagicMock()
     proxy.put_nowait = q.put_nowait
     proxy.get_stats = q.get_stats
-    with patch("aba_telemetry.log._get_queue", return_value=proxy):
+    with patch("observra.log._get_queue", return_value=proxy):
         yield q
 
 
@@ -142,8 +142,8 @@ class TestModelLifecycle:
         calc.calculate_cost.return_value = Decimal("0.001500")
 
         log.session_start()
-        with patch("aba_telemetry.log._get_cost_calculator", return_value=calc):
-            with patch("aba_telemetry.log._get_cost_threshold", return_value=None):
+        with patch("observra.log._get_cost_calculator", return_value=calc):
+            with patch("observra.log._get_cost_threshold", return_value=None):
                 log.model_response("gpt-4o", input_tokens=500, output_tokens=200)
 
         resps = [e for e in fake_queue.events if e.event_type == EventType.MODEL_RESPONSE]
@@ -160,8 +160,8 @@ class TestModelLifecycle:
         calc.calculate_cost.return_value = Decimal("5.00")
 
         log.session_start()
-        with patch("aba_telemetry.log._get_cost_calculator", return_value=calc):
-            with patch("aba_telemetry.log._get_cost_threshold", return_value=Decimal("1.00")):
+        with patch("observra.log._get_cost_calculator", return_value=calc):
+            with patch("observra.log._get_cost_threshold", return_value=Decimal("1.00")):
                 log.model_response("gpt-4o", input_tokens=10000, output_tokens=5000)
 
         threshold_events = [e for e in fake_queue.events if e.event_type == EventType.COST_THRESHOLD_EXCEEDED]
@@ -173,8 +173,8 @@ class TestModelLifecycle:
         calc.calculate_cost.return_value = Decimal("2.00")
 
         log.session_start()
-        with patch("aba_telemetry.log._get_cost_calculator", return_value=calc):
-            with patch("aba_telemetry.log._get_cost_threshold", return_value=Decimal("1.00")):
+        with patch("observra.log._get_cost_calculator", return_value=calc):
+            with patch("observra.log._get_cost_threshold", return_value=Decimal("1.00")):
                 # Each call gets a new span so dedup doesn't block model_response itself
                 log.model_response("gpt-4o", input_tokens=1000, output_tokens=500)
                 new_span()
@@ -340,8 +340,8 @@ class TestDedup:
         # model_response is a different event type — should not be blocked
         calc = MagicMock()
         calc.calculate_cost.return_value = Decimal("0.001")
-        with patch("aba_telemetry.log._get_cost_calculator", return_value=calc):
-            with patch("aba_telemetry.log._get_cost_threshold", return_value=None):
+        with patch("observra.log._get_cost_calculator", return_value=calc):
+            with patch("observra.log._get_cost_threshold", return_value=None):
                 log.model_response("gpt-4o", input_tokens=100, output_tokens=50)
         resps = [e for e in fake_queue.events if e.event_type == EventType.MODEL_RESPONSE]
         assert len(resps) == 1
@@ -365,7 +365,7 @@ class TestGracefulDegradation:
         """log.* should catch exceptions from a broken queue."""
         broken_proxy = MagicMock()
         broken_proxy.put_nowait.side_effect = RuntimeError("queue exploded")
-        with patch("aba_telemetry.log._get_queue", return_value=broken_proxy):
+        with patch("observra.log._get_queue", return_value=broken_proxy):
             # Should not raise
             log.session_start()
             log.model_request("gpt-4o")

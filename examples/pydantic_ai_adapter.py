@@ -1,7 +1,7 @@
 """How to add telemetry to a Pydantic AI agent.
 
 Install:
-    pip install aba-telemetry[pydantic-ai]
+    pip install observra[pydantic-ai]
 
 BEFORE (your existing agent):
     from pydantic_ai import Agent
@@ -12,8 +12,8 @@ AFTER (5 lines added):
     from opentelemetry.sdk.trace import TracerProvider          # 1. OTel setup
     from opentelemetry.trace import set_tracer_provider
     from pydantic_ai import Agent
-    from aba_telemetry import initialize                      # 2. import
-    from aba_telemetry.adapters.pydantic_ai import PydanticAIAdapter
+    from observra import initialize                      # 2. import
+    from observra.adapters.pydantic_ai import PydanticAIAdapter
 
     initialize(backend="jsonl", path="telemetry.jsonl")          # 3. init storage
     adapter = PydanticAIAdapter()                               # 4. create adapter
@@ -40,8 +40,8 @@ from pydantic_ai import Agent
 
 # ── Step 1: Add telemetry ────────────────────────────────────────
 
-from aba_telemetry import initialize
-from aba_telemetry.adapters.pydantic_ai import PydanticAIAdapter
+from observra import initialize
+from observra.adapters.pydantic_ai import PydanticAIAdapter
 
 initialize(
     backend="jsonl",
@@ -104,5 +104,5 @@ Agent.instrument_all()                  # must call BEFORE any agent runs
 # ── View your telemetry ─────────────────────────────────────────
 #
 # CLI dashboard:
-#   aba-telemetry dashboard
+#   observra dashboard
 #

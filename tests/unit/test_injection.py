@@ -1,6 +1,6 @@
 """Unit tests for injection module."""
 
-from aba_telemetry.core.injection import detect_injection_patterns
+from observra.core.injection import detect_injection_patterns
 
 
 def test_detect_jailbreak_dan():

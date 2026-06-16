@@ -3,7 +3,7 @@
 import pytest
 from dataclasses import FrozenInstanceError
 
-from aba_telemetry.core.events import create_event, TelemetryEvent
+from observra.core.events import create_event, TelemetryEvent
 
 
 def test_create_event_has_required_fields():

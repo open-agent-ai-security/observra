@@ -10,7 +10,7 @@ BEFORE (your existing agent):
     runner.run(...)
 
 AFTER (3 lines added):
-    from aba_telemetry import initialize, create_plugin      # 1. import
+    from observra import initialize, create_plugin      # 1. import
     initialize(backend="jsonl", path="telemetry.jsonl")       # 2. init
     plugin = create_plugin()                                  # 3. create plugin
     runner = Runner(agent=agent, plugins=[plugin], ...)       # pass to Runner
@@ -34,7 +34,7 @@ root_agent = Agent(
 
 # ── Step 1: Add telemetry (3 lines) ───────────────────────────────
 
-from aba_telemetry import initialize, create_plugin
+from observra import initialize, create_plugin
 
 initialize(
     backend="jsonl",

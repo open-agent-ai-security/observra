@@ -1,6 +1,6 @@
 """Unit tests for detection module."""
 
-from aba_telemetry.core.detection import (
+from observra.core.detection import (
     classify_error,
     initialize_delegation_depth,
     increment_delegation_depth,

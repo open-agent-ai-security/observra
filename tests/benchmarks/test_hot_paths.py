@@ -19,7 +19,7 @@ def test_bench_submit_batch(benchmark, tmp_path, realistic_batch):
     submit_batch is synchronous (returns None, submits to ProcessPoolExecutor).
     This measures the submission path: semaphore acquire + future submit.
     """
-    from aba_telemetry.core.pool_writer import PooledWriter
+    from observra.core.pool_writer import PooledWriter
 
     pw = PooledWriter(
         backend_type="jsonl",
@@ -44,7 +44,7 @@ def test_bench_redaction_pipeline(benchmark):
     Tests the regex-based PII redaction pipeline on a dict containing
     a JWT, email, and session ID -- representative of production payloads.
     """
-    from aba_telemetry.core.redaction import Redactor
+    from observra.core.redaction import Redactor
 
     redactor = Redactor()
     payload = {
@@ -67,7 +67,7 @@ def test_bench_cost_calculation(benchmark):
 
     CostCalculator is synchronous. Tests the pricing lookup + Decimal math path.
     """
-    from aba_telemetry.core.cost import CostCalculator
+    from observra.core.cost import CostCalculator
 
     calc = CostCalculator()
     result = benchmark(
@@ -85,7 +85,7 @@ def test_bench_contextvar_propagation(benchmark):
     Measures the overhead of the ContextVar-based trace/session propagation
     that runs on every event capture path.
     """
-    from aba_telemetry.core.context import trace_id_var, session_id_var
+    from observra.core.context import trace_id_var, session_id_var
 
     def run_propagation():
         token1 = trace_id_var.set("trace-abc-123")

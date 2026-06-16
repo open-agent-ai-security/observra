@@ -17,19 +17,19 @@ class TestCompatShim:
     def test_shim_exports_telemetry_plugin(self):
         """TelemetryPlugin is accessible from adk_telemetry."""
         from adk_telemetry import TelemetryPlugin  # noqa: F811
-        from aba_telemetry.adapters.adk.plugin import TelemetryPlugin as RealPlugin
+        from observra.adapters.adk.plugin import TelemetryPlugin as RealPlugin
         assert TelemetryPlugin is RealPlugin
 
     def test_shim_exports_telemetry_event(self):
         """TelemetryEvent is accessible from adk_telemetry."""
         from adk_telemetry import TelemetryEvent  # noqa: F811
-        from aba_telemetry.core.events import TelemetryEvent as RealEvent
+        from observra.core.events import TelemetryEvent as RealEvent
         assert TelemetryEvent is RealEvent
 
     def test_shim_exports_initialize(self):
         """initialize() is accessible from adk_telemetry."""
         from adk_telemetry import initialize  # noqa: F811
-        from aba_telemetry import initialize as real_init
+        from observra import initialize as real_init
         assert initialize is real_init
 
     def test_shim_deprecation_message_targets_v2(self):

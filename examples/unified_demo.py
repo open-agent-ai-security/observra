@@ -32,8 +32,8 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 logging.basicConfig(level=logging.WARNING)
 
-from aba_telemetry.core.events import create_event, EventType, TelemetryEvent
-from aba_telemetry.core.context import (
+from observra.core.events import create_event, EventType, TelemetryEvent
+from observra.core.context import (
     initialize_trace, initialize_session, new_span,
 )
 
@@ -54,7 +54,7 @@ FRAMEWORK_LABELS = {
 def run_adk_session(verbose: bool = False) -> list[TelemetryEvent]:
     """Run ADK session through the real TelemetryPlugin."""
     print("\n── ADK (Gemini 2.5 Flash) ──")
-    from aba_telemetry.adapters.adk.plugin import TelemetryPlugin
+    from observra.adapters.adk.plugin import TelemetryPlugin
 
     plugin = TelemetryPlugin(queue=None)
 
@@ -143,8 +143,8 @@ def run_openai_session(verbose: bool = False) -> list[TelemetryEvent]:
     print("\n── OpenAI (GPT-4o) ──")
     _ensure_openai_stubs()
 
-    from aba_telemetry.adapters.openai.adapter import OpenAIAdapter
-    import aba_telemetry.adapters.openai.adapter as mod
+    from observra.adapters.openai.adapter import OpenAIAdapter
+    import observra.adapters.openai.adapter as mod
     mod.AgentSpanData = _MockAgentSpanData
     mod.GenerationSpanData = _MockGenerationSpanData
     mod.FunctionSpanData = _MockFunctionSpanData
@@ -195,11 +195,11 @@ def run_openai_session(verbose: bool = False) -> list[TelemetryEvent]:
 def run_claude_session(verbose: bool = False) -> list[TelemetryEvent]:
     """Run Claude session through the real ClaudeAdapter."""
     print("\n── Claude (Sonnet 4.6) ──")
-    import aba_telemetry.adapters.utils as utils_mod
+    import observra.adapters.utils as utils_mod
     utils_mod.TIKTOKEN_DISABLED = True
 
     initialize_trace(); initialize_session()
-    from aba_telemetry.adapters.claude.adapter import ClaudeAdapter
+    from observra.adapters.claude.adapter import ClaudeAdapter
     adapter = ClaudeAdapter(queue=None)
 
     async def _run():
@@ -278,7 +278,7 @@ def run_langgraph_session(verbose: bool = False) -> list[TelemetryEvent]:
     _ensure_langchain_stubs()
 
     initialize_trace(); initialize_session()
-    from aba_telemetry.adapters.langchain.adapter import LangChainAdapter
+    from observra.adapters.langchain.adapter import LangChainAdapter
     adapter = LangChainAdapter(queue=None, capture_tool_data=False)
 
     root_id = uuid.uuid4()
@@ -343,7 +343,7 @@ def run_pydantic_ai_session(verbose: bool = False) -> list[TelemetryEvent]:
     _ensure_otel_stubs()
 
     initialize_trace(); initialize_session()
-    from aba_telemetry.adapters.pydantic_ai.adapter import PydanticAIAdapter
+    from observra.adapters.pydantic_ai.adapter import PydanticAIAdapter
     adapter = PydanticAIAdapter(capture_tool_data=True)
 
     # Model span
@@ -371,7 +371,7 @@ def run_pydantic_ai_session(verbose: bool = False) -> list[TelemetryEvent]:
 def run_copilot_session(verbose: bool = False) -> list[TelemetryEvent]:
     """Run Copilot session through the real CopilotAdapter."""
     print("\n── Copilot (Azure GPT-4o) ──")
-    from aba_telemetry.adapters.copilot.adapter import CopilotAdapter
+    from observra.adapters.copilot.adapter import CopilotAdapter
 
     initialize_trace(); initialize_session()
     adapter = CopilotAdapter(queue=None)

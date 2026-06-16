@@ -4,13 +4,13 @@ generate-cim:
 	python3 scripts/generate_cim.py
 
 check-cim: generate-cim
-	git diff --exit-code src/aba_telemetry/core/cim.py
+	git diff --exit-code src/observra/core/cim.py
 
 test:
 	pytest tests/ -x
 
 test-all:
-	pytest tests/ src/aba_telemetry/adapters src/aba_telemetry/dashboard_tests -x
+	pytest tests/ src/observra/adapters -x
 
 lint:
 	ruff check src/ tests/

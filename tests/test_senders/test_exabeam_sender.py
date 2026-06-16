@@ -12,8 +12,8 @@ import os
 import pytest
 from unittest.mock import MagicMock, patch
 
-from aba_telemetry.core.events import create_event
-from aba_telemetry.core.context import initialize_trace, initialize_session
+from observra.core.events import create_event
+from observra.core.context import initialize_trace, initialize_session
 
 
 def _make_env(
@@ -62,13 +62,13 @@ class TestRawPayloadMode:
         """AC#2: EXABEAM_PAYLOAD_MODE unset → structured build_payload() path."""
         with patch.dict(os.environ, _make_env(), clear=False):
             os.environ.pop("EXABEAM_PAYLOAD_MODE", None)
-            from aba_telemetry.senders.exabeam import ExabeamSenderBackend
+            from observra.senders.exabeam import ExabeamSenderBackend
             backend = ExabeamSenderBackend()
 
         mock_resp = MagicMock()
         mock_resp.raise_for_status.return_value = None
 
-        with patch("aba_telemetry.senders.exabeam.requests.post", return_value=mock_resp):
+        with patch("observra.senders.exabeam.requests.post", return_value=mock_resp):
             with patch.object(backend, "build_payload", wraps=backend.build_payload) as spy_structured:
                 with patch.object(backend, "build_raw_payload", wraps=backend.build_raw_payload) as spy_raw:
                     backend.write(make_test_event())
@@ -79,13 +79,13 @@ class TestRawPayloadMode:
     def test_json_mode_uses_structured_payload(self):
         """AC#2: EXABEAM_PAYLOAD_MODE=json → structured build_payload() path."""
         with patch.dict(os.environ, _make_env(payload_mode="json")):
-            from aba_telemetry.senders.exabeam import ExabeamSenderBackend
+            from observra.senders.exabeam import ExabeamSenderBackend
             backend = ExabeamSenderBackend()
 
         mock_resp = MagicMock()
         mock_resp.raise_for_status.return_value = None
 
-        with patch("aba_telemetry.senders.exabeam.requests.post", return_value=mock_resp):
+        with patch("observra.senders.exabeam.requests.post", return_value=mock_resp):
             with patch.object(backend, "build_payload", wraps=backend.build_payload) as spy_structured:
                 with patch.object(backend, "build_raw_payload", wraps=backend.build_raw_payload) as spy_raw:
                     backend.write(make_test_event())
@@ -96,7 +96,7 @@ class TestRawPayloadMode:
     def test_raw_mode_calls_build_raw_payload(self):
         """AC#1: EXABEAM_PAYLOAD_MODE=raw → build_raw_payload() called, not build_payload()."""
         with patch.dict(os.environ, _make_env(payload_mode="raw")):
-            from aba_telemetry.senders.exabeam import ExabeamSenderBackend
+            from observra.senders.exabeam import ExabeamSenderBackend
             backend = ExabeamSenderBackend()
 
         mock_resp = MagicMock()
@@ -104,7 +104,7 @@ class TestRawPayloadMode:
 
         event = make_test_event(tool_inputs={"path": "/etc/passwd"}, tool_outputs="file content")
 
-        with patch("aba_telemetry.senders.exabeam.requests.post", return_value=mock_resp) as mock_post:
+        with patch("observra.senders.exabeam.requests.post", return_value=mock_resp) as mock_post:
             backend.write(event)
 
         call_kwargs = mock_post.call_args
@@ -118,7 +118,7 @@ class TestRawPayloadMode:
     def test_raw_payload_includes_tool_inputs(self):
         """AC#4: raw payload includes tool_inputs (excluded in structured mode)."""
         with patch.dict(os.environ, _make_env(payload_mode="raw")):
-            from aba_telemetry.senders.exabeam import ExabeamSenderBackend
+            from observra.senders.exabeam import ExabeamSenderBackend
             backend = ExabeamSenderBackend()
 
         event = make_test_event(tool_inputs={"path": "/secret"})
@@ -128,7 +128,7 @@ class TestRawPayloadMode:
     def test_raw_payload_includes_tool_outputs(self):
         """AC#4: raw payload includes tool_outputs (excluded in structured mode)."""
         with patch.dict(os.environ, _make_env(payload_mode="raw")):
-            from aba_telemetry.senders.exabeam import ExabeamSenderBackend
+            from observra.senders.exabeam import ExabeamSenderBackend
             backend = ExabeamSenderBackend()
 
         event = make_test_event(tool_outputs="sensitive content")
@@ -138,7 +138,7 @@ class TestRawPayloadMode:
     def test_raw_payload_inlines_data_at_top_level(self):
         """AC#4: event.data fields are inlined at top level — no nested 'data' key."""
         with patch.dict(os.environ, _make_env(payload_mode="raw")):
-            from aba_telemetry.senders.exabeam import ExabeamSenderBackend
+            from observra.senders.exabeam import ExabeamSenderBackend
             backend = ExabeamSenderBackend()
 
         event = make_test_event(
@@ -152,7 +152,7 @@ class TestRawPayloadMode:
     def test_raw_payload_has_injection_detected_as_top_level_bool(self):
         """AC#4: injection_detected always present as top-level boolean in raw mode."""
         with patch.dict(os.environ, _make_env(payload_mode="raw")):
-            from aba_telemetry.senders.exabeam import ExabeamSenderBackend
+            from observra.senders.exabeam import ExabeamSenderBackend
             backend = ExabeamSenderBackend()
 
         event = make_test_event(injection_patterns=["OVERRIDE"], has_injection_patterns=True)
@@ -164,7 +164,7 @@ class TestRawPayloadMode:
     def test_raw_payload_injection_detected_false_when_no_patterns(self):
         """AC#4: injection_detected is False when no injection_patterns."""
         with patch.dict(os.environ, _make_env(payload_mode="raw")):
-            from aba_telemetry.senders.exabeam import ExabeamSenderBackend
+            from observra.senders.exabeam import ExabeamSenderBackend
             backend = ExabeamSenderBackend()
 
         event = make_test_event(injection_patterns=[], has_injection_patterns=False)
@@ -174,7 +174,7 @@ class TestRawPayloadMode:
     def test_raw_payload_timestamp_is_iso8601(self):
         """AC#4: timestamp in raw payload is ISO 8601 string."""
         with patch.dict(os.environ, _make_env(payload_mode="raw")):
-            from aba_telemetry.senders.exabeam import ExabeamSenderBackend
+            from observra.senders.exabeam import ExabeamSenderBackend
             backend = ExabeamSenderBackend()
 
         event = make_test_event()
@@ -186,7 +186,7 @@ class TestRawPayloadMode:
     def test_raw_payload_handles_none_data(self):
         """AC#4: event.data being None is handled gracefully — no KeyError or TypeError."""
         with patch.dict(os.environ, _make_env(payload_mode="raw")):
-            from aba_telemetry.senders.exabeam import ExabeamSenderBackend
+            from observra.senders.exabeam import ExabeamSenderBackend
             backend = ExabeamSenderBackend()
 
         # Manually construct event with data=None to test the None path
@@ -202,13 +202,13 @@ class TestRawPayloadMode:
     def test_raw_mode_write_increments_count_on_success(self):
         """AC#2: _write_count incremented on HTTP 2xx success in raw mode."""
         with patch.dict(os.environ, _make_env(payload_mode="raw")):
-            from aba_telemetry.senders.exabeam import ExabeamSenderBackend
+            from observra.senders.exabeam import ExabeamSenderBackend
             backend = ExabeamSenderBackend()
 
         mock_resp = MagicMock()
         mock_resp.raise_for_status.return_value = None
 
-        with patch("aba_telemetry.senders.exabeam.requests.post", return_value=mock_resp):
+        with patch("observra.senders.exabeam.requests.post", return_value=mock_resp):
             backend.write(make_test_event())
             backend.write(make_test_event())
 
@@ -217,11 +217,11 @@ class TestRawPayloadMode:
     def test_raw_mode_failure_isolation(self):
         """AC#5: ConnectionError in raw mode is caught, logged, not re-raised."""
         with patch.dict(os.environ, _make_env(payload_mode="raw")):
-            from aba_telemetry.senders.exabeam import ExabeamSenderBackend
+            from observra.senders.exabeam import ExabeamSenderBackend
             backend = ExabeamSenderBackend()
 
         with patch(
-            "aba_telemetry.senders.exabeam.requests.post",
+            "observra.senders.exabeam.requests.post",
             side_effect=ConnectionError("refused"),
         ):
             backend.write(make_test_event())  # must NOT raise
@@ -230,14 +230,14 @@ class TestRawPayloadMode:
         """AC#5: failure in raw mode logs warning."""
         import logging
         with patch.dict(os.environ, _make_env(payload_mode="raw")):
-            from aba_telemetry.senders.exabeam import ExabeamSenderBackend
+            from observra.senders.exabeam import ExabeamSenderBackend
             backend = ExabeamSenderBackend()
 
         with patch(
-            "aba_telemetry.senders.exabeam.requests.post",
+            "observra.senders.exabeam.requests.post",
             side_effect=ConnectionError("refused"),
         ):
-            with caplog.at_level(logging.WARNING, logger="aba_telemetry.senders.exabeam"):
+            with caplog.at_level(logging.WARNING, logger="observra.senders.exabeam"):
                 backend.write(make_test_event())
 
         assert any("Exabeam webhook delivery failed" in r.message for r in caplog.records)
@@ -245,7 +245,7 @@ class TestRawPayloadMode:
     def test_repr_includes_payload_mode_raw(self):
         """__repr__() includes payload_mode=raw when in raw mode."""
         with patch.dict(os.environ, _make_env(payload_mode="raw")):
-            from aba_telemetry.senders.exabeam import ExabeamSenderBackend
+            from observra.senders.exabeam import ExabeamSenderBackend
             backend = ExabeamSenderBackend()
 
         r = repr(backend)
@@ -254,7 +254,7 @@ class TestRawPayloadMode:
     def test_repr_includes_payload_mode_json(self):
         """__repr__() includes payload_mode=json when in json mode."""
         with patch.dict(os.environ, _make_env(payload_mode="json")):
-            from aba_telemetry.senders.exabeam import ExabeamSenderBackend
+            from observra.senders.exabeam import ExabeamSenderBackend
             backend = ExabeamSenderBackend()
 
         r = repr(backend)
@@ -271,7 +271,7 @@ class TestFieldNameConfigurability:
         """AC#1: EXABEAM_FIELD_INJECTION_DETECTED=ai_injection_flag → key is remapped."""
         env = _make_env(field_overrides={"injection_detected": "ai_injection_flag"})
         with patch.dict(os.environ, env):
-            from aba_telemetry.senders.exabeam import ExabeamSenderBackend
+            from observra.senders.exabeam import ExabeamSenderBackend
             backend = ExabeamSenderBackend()
 
         event = make_test_event(
@@ -290,7 +290,7 @@ class TestFieldNameConfigurability:
             "agent_name": "actor",
         })
         with patch.dict(os.environ, env):
-            from aba_telemetry.senders.exabeam import ExabeamSenderBackend
+            from observra.senders.exabeam import ExabeamSenderBackend
             backend = ExabeamSenderBackend()
 
         event = make_test_event()
@@ -308,7 +308,7 @@ class TestFieldNameConfigurability:
             for k in list(os.environ.keys()):
                 if k.startswith("EXABEAM_FIELD_"):
                     del os.environ[k]
-            from aba_telemetry.senders.exabeam import ExabeamSenderBackend
+            from observra.senders.exabeam import ExabeamSenderBackend
             backend = ExabeamSenderBackend()
 
         assert backend._field_map == {}
@@ -323,8 +323,8 @@ class TestFieldNameConfigurability:
         import logging
         env = _make_env(field_overrides={"unknown_field": "foo"})
         with patch.dict(os.environ, env):
-            from aba_telemetry.senders.exabeam import ExabeamSenderBackend
-            with caplog.at_level(logging.WARNING, logger="aba_telemetry.senders.exabeam"):
+            from observra.senders.exabeam import ExabeamSenderBackend
+            with caplog.at_level(logging.WARNING, logger="observra.senders.exabeam"):
                 backend = ExabeamSenderBackend()
 
         assert any("UNKNOWN_FIELD" in r.message for r in caplog.records)
@@ -341,8 +341,8 @@ class TestFieldNameConfigurability:
             "unknown_field": "foo",
         })
         with patch.dict(os.environ, env):
-            from aba_telemetry.senders.exabeam import ExabeamSenderBackend
-            with caplog.at_level(logging.WARNING, logger="aba_telemetry.senders.exabeam"):
+            from observra.senders.exabeam import ExabeamSenderBackend
+            with caplog.at_level(logging.WARNING, logger="observra.senders.exabeam"):
                 backend = ExabeamSenderBackend()
 
         assert any("UNKNOWN_FIELD" in r.message for r in caplog.records)
@@ -359,7 +359,7 @@ class TestFieldNameConfigurability:
             field_overrides={"injection_detected": "ai_injection_flag"},
         )
         with patch.dict(os.environ, env):
-            from aba_telemetry.senders.exabeam import ExabeamSenderBackend
+            from observra.senders.exabeam import ExabeamSenderBackend
             backend = ExabeamSenderBackend()
 
         event = make_test_event(injection_patterns=["X"], has_injection_patterns=True)
@@ -371,7 +371,7 @@ class TestFieldNameConfigurability:
         """AC#1/#2: __repr__() includes field_overrides=1 when one override is active."""
         env = _make_env(field_overrides={"injection_detected": "ai_injection_flag"})
         with patch.dict(os.environ, env):
-            from aba_telemetry.senders.exabeam import ExabeamSenderBackend
+            from observra.senders.exabeam import ExabeamSenderBackend
             backend = ExabeamSenderBackend()
 
         r = repr(backend)
@@ -384,7 +384,7 @@ class TestFieldNameConfigurability:
             for k in list(os.environ.keys()):
                 if k.startswith("EXABEAM_FIELD_"):
                     del os.environ[k]
-            from aba_telemetry.senders.exabeam import ExabeamSenderBackend
+            from observra.senders.exabeam import ExabeamSenderBackend
             backend = ExabeamSenderBackend()
 
         r = repr(backend)
@@ -402,14 +402,14 @@ class TestInitValidation:
         with patch.dict(os.environ, env, clear=True):
             # Remove EXABEAM_ENDPOINT if present
             os.environ.pop("EXABEAM_ENDPOINT", None)
-            from aba_telemetry.senders.exabeam import ExabeamSenderBackend
+            from observra.senders.exabeam import ExabeamSenderBackend
             with pytest.raises(ValueError, match="EXABEAM_ENDPOINT environment variable not set"):
                 ExabeamSenderBackend()
 
     def test_http_endpoint_raises_at_init(self):
         env = _make_env(endpoint="http://collector.exabeam.example.com/api/v1/events")
         with patch.dict(os.environ, env):
-            from aba_telemetry.senders.exabeam import ExabeamSenderBackend
+            from observra.senders.exabeam import ExabeamSenderBackend
             with pytest.raises(ValueError, match="EXABEAM_ENDPOINT must use HTTPS"):
                 ExabeamSenderBackend()
 
@@ -417,13 +417,13 @@ class TestInitValidation:
         env = {"EXABEAM_ENDPOINT": "https://collector.exabeam.example.com/api/v1/events"}
         with patch.dict(os.environ, env, clear=True):
             os.environ.pop("EXABEAM_API_KEY", None)
-            from aba_telemetry.senders.exabeam import ExabeamSenderBackend
+            from observra.senders.exabeam import ExabeamSenderBackend
             with pytest.raises(ValueError, match="EXABEAM_API_KEY environment variable not set"):
                 ExabeamSenderBackend()
 
     def test_api_key_not_in_repr(self):
         with patch.dict(os.environ, _make_env()):
-            from aba_telemetry.senders.exabeam import ExabeamSenderBackend
+            from observra.senders.exabeam import ExabeamSenderBackend
             backend = ExabeamSenderBackend()
         r = repr(backend)
         assert "test-api-key-secret" not in r
@@ -431,7 +431,7 @@ class TestInitValidation:
 
     def test_valid_init_succeeds(self):
         with patch.dict(os.environ, _make_env()):
-            from aba_telemetry.senders.exabeam import ExabeamSenderBackend
+            from observra.senders.exabeam import ExabeamSenderBackend
             backend = ExabeamSenderBackend()
         assert backend is not None
 
@@ -439,14 +439,14 @@ class TestInitValidation:
         """AC#3: invalid EXABEAM_PAYLOAD_MODE raises ValueError at init, not at delivery."""
         env = _make_env(payload_mode="xml")
         with patch.dict(os.environ, env):
-            from aba_telemetry.senders.exabeam import ExabeamSenderBackend
+            from observra.senders.exabeam import ExabeamSenderBackend
             with pytest.raises(ValueError, match="EXABEAM_PAYLOAD_MODE must be 'json' or 'raw'"):
                 ExabeamSenderBackend()
 
     def test_valid_raw_payload_mode_init_succeeds(self):
         """AC#1: EXABEAM_PAYLOAD_MODE=raw is a valid value at init."""
         with patch.dict(os.environ, _make_env(payload_mode="raw")):
-            from aba_telemetry.senders.exabeam import ExabeamSenderBackend
+            from observra.senders.exabeam import ExabeamSenderBackend
             backend = ExabeamSenderBackend()
         assert backend is not None
 
@@ -459,13 +459,13 @@ class TestWritePostSignature:
 
     def test_write_posts_to_endpoint(self):
         with patch.dict(os.environ, _make_env()):
-            from aba_telemetry.senders.exabeam import ExabeamSenderBackend
+            from observra.senders.exabeam import ExabeamSenderBackend
             backend = ExabeamSenderBackend()
 
         mock_resp = MagicMock()
         mock_resp.raise_for_status.return_value = None
 
-        with patch("aba_telemetry.senders.exabeam.requests.post", return_value=mock_resp) as mock_post:
+        with patch("observra.senders.exabeam.requests.post", return_value=mock_resp) as mock_post:
             backend.write(make_test_event())
 
         mock_post.assert_called_once()
@@ -479,26 +479,26 @@ class TestWritePostSignature:
     def test_write_posts_to_correct_url(self):
         endpoint = "https://collector.exabeam.example.com/api/v1/events"
         with patch.dict(os.environ, _make_env(endpoint=endpoint)):
-            from aba_telemetry.senders.exabeam import ExabeamSenderBackend
+            from observra.senders.exabeam import ExabeamSenderBackend
             backend = ExabeamSenderBackend()
 
         mock_resp = MagicMock()
         mock_resp.raise_for_status.return_value = None
 
-        with patch("aba_telemetry.senders.exabeam.requests.post", return_value=mock_resp) as mock_post:
+        with patch("observra.senders.exabeam.requests.post", return_value=mock_resp) as mock_post:
             backend.write(make_test_event())
 
         assert mock_post.call_args.args[0] == endpoint
 
     def test_write_increments_count_on_success(self):
         with patch.dict(os.environ, _make_env()):
-            from aba_telemetry.senders.exabeam import ExabeamSenderBackend
+            from observra.senders.exabeam import ExabeamSenderBackend
             backend = ExabeamSenderBackend()
 
         mock_resp = MagicMock()
         mock_resp.raise_for_status.return_value = None
 
-        with patch("aba_telemetry.senders.exabeam.requests.post", return_value=mock_resp):
+        with patch("observra.senders.exabeam.requests.post", return_value=mock_resp):
             backend.write(make_test_event())
             backend.write(make_test_event())
 
@@ -513,7 +513,7 @@ class TestBuildPayload:
 
     def test_injection_detected_true_when_patterns_present(self):
         with patch.dict(os.environ, _make_env()):
-            from aba_telemetry.senders.exabeam import ExabeamSenderBackend
+            from observra.senders.exabeam import ExabeamSenderBackend
             backend = ExabeamSenderBackend()
 
         event = make_test_event(
@@ -525,7 +525,7 @@ class TestBuildPayload:
 
     def test_injection_detected_false_when_no_patterns(self):
         with patch.dict(os.environ, _make_env()):
-            from aba_telemetry.senders.exabeam import ExabeamSenderBackend
+            from observra.senders.exabeam import ExabeamSenderBackend
             backend = ExabeamSenderBackend()
 
         event = make_test_event(injection_patterns=[], has_injection_patterns=False)
@@ -534,7 +534,7 @@ class TestBuildPayload:
 
     def test_injection_detected_false_when_patterns_absent(self):
         with patch.dict(os.environ, _make_env()):
-            from aba_telemetry.senders.exabeam import ExabeamSenderBackend
+            from observra.senders.exabeam import ExabeamSenderBackend
             backend = ExabeamSenderBackend()
 
         # event with None data
@@ -546,7 +546,7 @@ class TestBuildPayload:
 
     def test_tool_inputs_absent_from_payload(self):
         with patch.dict(os.environ, _make_env()):
-            from aba_telemetry.senders.exabeam import ExabeamSenderBackend
+            from observra.senders.exabeam import ExabeamSenderBackend
             backend = ExabeamSenderBackend()
 
         event = make_test_event(tool_inputs={"path": "/secret"})
@@ -555,7 +555,7 @@ class TestBuildPayload:
 
     def test_tool_outputs_absent_from_payload(self):
         with patch.dict(os.environ, _make_env()):
-            from aba_telemetry.senders.exabeam import ExabeamSenderBackend
+            from observra.senders.exabeam import ExabeamSenderBackend
             backend = ExabeamSenderBackend()
 
         event = make_test_event(tool_outputs="sensitive content")
@@ -564,7 +564,7 @@ class TestBuildPayload:
 
     def test_payload_contains_required_fields(self):
         with patch.dict(os.environ, _make_env()):
-            from aba_telemetry.senders.exabeam import ExabeamSenderBackend
+            from observra.senders.exabeam import ExabeamSenderBackend
             backend = ExabeamSenderBackend()
 
         event = make_test_event()
@@ -578,7 +578,7 @@ class TestBuildPayload:
     def test_error_type_and_retryable_fields_in_payload(self):
         """H2: error_type_name and is_retryable (canonical schema names) appear in payload."""
         with patch.dict(os.environ, _make_env()):
-            from aba_telemetry.senders.exabeam import ExabeamSenderBackend
+            from observra.senders.exabeam import ExabeamSenderBackend
             backend = ExabeamSenderBackend()
 
         event = make_test_event(error_type_name="ConnectionError", is_retryable=True)
@@ -593,7 +593,7 @@ class TestBuildPayload:
 
     def test_payload_time_is_iso8601(self):
         with patch.dict(os.environ, _make_env()):
-            from aba_telemetry.senders.exabeam import ExabeamSenderBackend
+            from observra.senders.exabeam import ExabeamSenderBackend
             backend = ExabeamSenderBackend()
 
         event = make_test_event()
@@ -612,59 +612,59 @@ class TestFailureIsolation:
 
     def test_connection_error_does_not_raise(self):
         with patch.dict(os.environ, _make_env()):
-            from aba_telemetry.senders.exabeam import ExabeamSenderBackend
+            from observra.senders.exabeam import ExabeamSenderBackend
             backend = ExabeamSenderBackend()
 
         with patch(
-            "aba_telemetry.senders.exabeam.requests.post",
+            "observra.senders.exabeam.requests.post",
             side_effect=ConnectionError("refused"),
         ):
             backend.write(make_test_event())  # must NOT raise
 
     def test_timeout_error_does_not_raise(self):
         with patch.dict(os.environ, _make_env()):
-            from aba_telemetry.senders.exabeam import ExabeamSenderBackend
+            from observra.senders.exabeam import ExabeamSenderBackend
             backend = ExabeamSenderBackend()
 
         with patch(
-            "aba_telemetry.senders.exabeam.requests.post",
+            "observra.senders.exabeam.requests.post",
             side_effect=TimeoutError("timed out"),
         ):
             backend.write(make_test_event())  # must NOT raise
 
     def test_non_2xx_does_not_raise(self):
         with patch.dict(os.environ, _make_env()):
-            from aba_telemetry.senders.exabeam import ExabeamSenderBackend
+            from observra.senders.exabeam import ExabeamSenderBackend
             backend = ExabeamSenderBackend()
 
         mock_resp = MagicMock()
         mock_resp.raise_for_status.side_effect = Exception("404 not found")
 
-        with patch("aba_telemetry.senders.exabeam.requests.post", return_value=mock_resp):
+        with patch("observra.senders.exabeam.requests.post", return_value=mock_resp):
             backend.write(make_test_event())  # must NOT raise
 
     def test_failure_logs_warning(self, caplog):
         import logging
         with patch.dict(os.environ, _make_env()):
-            from aba_telemetry.senders.exabeam import ExabeamSenderBackend
+            from observra.senders.exabeam import ExabeamSenderBackend
             backend = ExabeamSenderBackend()
 
         with patch(
-            "aba_telemetry.senders.exabeam.requests.post",
+            "observra.senders.exabeam.requests.post",
             side_effect=ConnectionError("refused"),
         ):
-            with caplog.at_level(logging.WARNING, logger="aba_telemetry.senders.exabeam"):
+            with caplog.at_level(logging.WARNING, logger="observra.senders.exabeam"):
                 backend.write(make_test_event())
 
         assert any("Exabeam webhook delivery failed" in r.message for r in caplog.records)
 
     def test_failure_does_not_increment_write_count(self):
         with patch.dict(os.environ, _make_env()):
-            from aba_telemetry.senders.exabeam import ExabeamSenderBackend
+            from observra.senders.exabeam import ExabeamSenderBackend
             backend = ExabeamSenderBackend()
 
         with patch(
-            "aba_telemetry.senders.exabeam.requests.post",
+            "observra.senders.exabeam.requests.post",
             side_effect=ConnectionError("refused"),
         ):
             backend.write(make_test_event())
@@ -679,15 +679,15 @@ class TestFailureIsolation:
 class TestStorageBackendProtocol:
 
     def test_satisfies_storage_backend_protocol(self):
-        from aba_telemetry.core.storage import StorageBackend
+        from observra.core.storage import StorageBackend
         with patch.dict(os.environ, _make_env()):
-            from aba_telemetry.senders.exabeam import ExabeamSenderBackend
+            from observra.senders.exabeam import ExabeamSenderBackend
             backend = ExabeamSenderBackend()
         assert isinstance(backend, StorageBackend)
 
     def test_get_stats_returns_backend_stats(self):
         with patch.dict(os.environ, _make_env()):
-            from aba_telemetry.senders.exabeam import ExabeamSenderBackend
+            from observra.senders.exabeam import ExabeamSenderBackend
             backend = ExabeamSenderBackend()
 
         stats = backend.get_stats()
@@ -699,19 +699,19 @@ class TestStorageBackendProtocol:
 
     def test_flush_is_noop(self):
         with patch.dict(os.environ, _make_env()):
-            from aba_telemetry.senders.exabeam import ExabeamSenderBackend
+            from observra.senders.exabeam import ExabeamSenderBackend
             backend = ExabeamSenderBackend()
         backend.flush()  # must not raise
 
     def test_close_is_noop(self):
         with patch.dict(os.environ, _make_env()):
-            from aba_telemetry.senders.exabeam import ExabeamSenderBackend
+            from observra.senders.exabeam import ExabeamSenderBackend
             backend = ExabeamSenderBackend()
         backend.close()  # must not raise
 
     def test_query_raises_not_implemented(self):
         with patch.dict(os.environ, _make_env()):
-            from aba_telemetry.senders.exabeam import ExabeamSenderBackend
+            from observra.senders.exabeam import ExabeamSenderBackend
             backend = ExabeamSenderBackend()
 
         with pytest.raises(NotImplementedError, match="ExabeamSenderBackend does not support query"):
@@ -719,15 +719,15 @@ class TestStorageBackendProtocol:
 
     def test_multibackend_exabeam_failure_does_not_block_jsonl(self, tmp_path):
         """Exabeam failure in MultiBackend must not prevent JSONLBackend from writing."""
-        from aba_telemetry.backends.multi import MultiBackend
-        from aba_telemetry.backends.jsonl import JSONLBackend
+        from observra.backends.multi import MultiBackend
+        from observra.backends.jsonl import JSONLBackend
         import json
 
         jsonl_path = tmp_path / "telemetry.jsonl"
         jsonl_backend = JSONLBackend(path=str(jsonl_path))
 
         with patch.dict(os.environ, _make_env()):
-            from aba_telemetry.senders.exabeam import ExabeamSenderBackend
+            from observra.senders.exabeam import ExabeamSenderBackend
             exabeam_backend = ExabeamSenderBackend()
 
         multi = MultiBackend([exabeam_backend, jsonl_backend])
@@ -735,7 +735,7 @@ class TestStorageBackendProtocol:
 
         # Exabeam POST always fails
         with patch(
-            "aba_telemetry.senders.exabeam.requests.post",
+            "observra.senders.exabeam.requests.post",
             side_effect=ConnectionError("refused"),
         ):
             multi.write(event)

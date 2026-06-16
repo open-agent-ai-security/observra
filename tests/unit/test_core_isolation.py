@@ -4,14 +4,14 @@ from decimal import Decimal
 
 
 class TestCoreIsolation:
-    """Verify aba_telemetry.core imports no framework SDKs."""
+    """Verify observra.core imports no framework SDKs."""
 
     def test_core_has_no_framework_imports(self):
         """Core subpackage imports no framework SDKs (CORE-02 guard)."""
         # Snapshot modules before import
         before = set(sys.modules.keys())
 
-        import aba_telemetry.core  # noqa: F401
+        import observra.core  # noqa: F401
 
         # Check what new modules were loaded
         after = set(sys.modules.keys())
@@ -29,10 +29,10 @@ class TestCoreIsolation:
         )
 
     def test_base_install_no_framework_imports(self):
-        """Top-level aba_telemetry import loads no framework SDKs (CORE-06 guard)."""
+        """Top-level observra import loads no framework SDKs (CORE-06 guard)."""
         before = set(sys.modules.keys())
 
-        import aba_telemetry  # noqa: F401
+        import observra  # noqa: F401
 
         after = set(sys.modules.keys())
         new_modules = after - before
@@ -55,7 +55,7 @@ class TestContextVarIsolation:
 
     def test_scoped_contexts_are_isolated(self):
         """Two framework-scoped contexts cannot read each other's values."""
-        from aba_telemetry.core.context import create_scoped_context
+        from observra.core.context import create_scoped_context
 
         adk_ctx = create_scoped_context('adk')
         claude_ctx = create_scoped_context('claude')
@@ -73,7 +73,7 @@ class TestContextVarIsolation:
 
     def test_scoped_contexts_have_independent_costs(self):
         """Two framework-scoped session_cost vars accumulate independently."""
-        from aba_telemetry.core.context import create_scoped_context
+        from observra.core.context import create_scoped_context
 
         adk_ctx = create_scoped_context('adk')
         claude_ctx = create_scoped_context('claude')
@@ -86,7 +86,7 @@ class TestContextVarIsolation:
 
     def test_scoped_context_names_are_prefixed(self):
         """ContextVar debug names include framework prefix for observability."""
-        from aba_telemetry.core.context import create_scoped_context
+        from observra.core.context import create_scoped_context
 
         ctx = create_scoped_context('myfw')
         # ContextVar.__repr__ includes the name

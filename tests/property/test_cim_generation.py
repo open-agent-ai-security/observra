@@ -13,7 +13,7 @@ import json
 from hypothesis import given, settings, HealthCheck
 from hypothesis import strategies as st
 
-from aba_telemetry.core.events import create_event, TelemetryEvent
+from observra.core.events import create_event, TelemetryEvent
 
 
 # ---------------------------------------------------------------------------

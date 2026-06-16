@@ -3,13 +3,13 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "aba-telemetry"
-version = "1.3.4"
+name = "observra"
+version = "1.0.0"
 description = "Framework-agnostic agent behavior analytics — CIM-based telemetry for AI agents"
 requires-python = ">=3.10"
 license = "Apache-2.0"
 authors = [
-    { name = "Exabeam Labs", email = "labs@exabeam.com" },
+    { name = "Open Agent AI Security Contributors" },
 ]
 keywords = ["agent", "telemetry", "observability", "llm", "ai", "cim"]
 classifiers = [
@@ -27,9 +27,9 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/ExabeamLabs/aba-telemetry"
-Repository = "https://github.com/ExabeamLabs/aba-telemetry"
-Issues = "https://github.com/ExabeamLabs/aba-telemetry/issues"
+Homepage = "https://github.com/open-agent-ai-security/observra"
+Repository = "https://github.com/open-agent-ai-security/observra"
+Issues = "https://github.com/open-agent-ai-security/observra/issues"
 
 [project.optional-dependencies]
 # --- v1.0 supported extras ---
@@ -73,18 +73,18 @@ test = [
     "pytest-benchmark>=5.1",
 ]
 all = [
-    "aba-telemetry[adk,claude,openai-agents,langchain,pydantic-ai,otel,exabeam,encryption,safe-regex]",
+    "observra[adk,claude,openai-agents,langchain,pydantic-ai,otel,exabeam,encryption,safe-regex]",
 ]
 
 [tool.setuptools.packages.find]
 where = ["src"]
-include = ["aba_telemetry*"]
+include = ["observra*"]
 
 [tool.setuptools.package-data]
-aba_telemetry = ["pricing/*.json", "adapters/adk/pricing.json", "adapters/claude/pricing.json", "adapters/openai/pricing.json", "adapters/langchain/pricing.json", "adapters/pydantic_ai/pricing.json"]
+observra = ["pricing/*.json", "adapters/adk/pricing.json", "adapters/claude/pricing.json", "adapters/openai/pricing.json", "adapters/langchain/pricing.json", "adapters/pydantic_ai/pricing.json"]
 
 [tool.pytest.ini_options]
-testpaths = ["tests", "src/aba_telemetry/adapters"]
+testpaths = ["tests", "src/observra/adapters"]
 norecursedirs = ["tests/load", "tests/property", "tests/benchmarks", "tests/uat"]
 asyncio_mode = "auto"
 addopts = [

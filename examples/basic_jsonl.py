@@ -8,7 +8,7 @@ create a plugin, and inspect captured events. No running agent required —
 uses the plugin's in-memory mode to demonstrate event creation.
 """
 
-from aba_telemetry import initialize, create_plugin, get_session_cost
+from observra import initialize, create_plugin, get_session_cost
 
 # Initialize telemetry with JSONL storage
 initialize(

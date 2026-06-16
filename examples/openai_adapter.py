@@ -1,7 +1,7 @@
 """How to add telemetry to an OpenAI Agents SDK agent.
 
 Install:
-    pip install aba-telemetry[openai-agents]
+    pip install observra[openai-agents]
 
 BEFORE (your existing agent):
     from agents import Agent, Runner
@@ -9,8 +9,8 @@ BEFORE (your existing agent):
     result = Runner.run_sync(agent, "Hello")
 
 AFTER (3 lines added):
-    from aba_telemetry import initialize                      # 1. import
-    from aba_telemetry.adapters.openai import OpenAIAdapter
+    from observra import initialize                      # 1. import
+    from observra.adapters.openai import OpenAIAdapter
     from agents import add_trace_processor
     initialize(backend="jsonl", path="telemetry.jsonl")          # 2. init storage
     adapter = OpenAIAdapter()                                   # 3. create adapter
@@ -42,8 +42,8 @@ agent = Agent(
 
 # ── Step 1: Add telemetry (3 lines) ─────────────────────────────
 
-from aba_telemetry import initialize
-from aba_telemetry.adapters.openai import OpenAIAdapter
+from observra import initialize
+from observra.adapters.openai import OpenAIAdapter
 
 initialize(
     backend="jsonl",
@@ -84,5 +84,5 @@ add_trace_processor(adapter)       # register alongside default processors
 # ── View your telemetry ─────────────────────────────────────────
 #
 # CLI dashboard:
-#   aba-telemetry dashboard
+#   observra dashboard
 #

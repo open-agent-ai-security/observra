@@ -21,7 +21,7 @@ use, cost, and anomaly automatically.
 import os
 from google.adk.agents.llm_agent import Agent
 
-from aba_telemetry import initialize, create_plugin
+from observra import initialize, create_plugin
 
 
 # ── Tools ──────────────────────────────────────────────────────────

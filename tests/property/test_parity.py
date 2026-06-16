@@ -6,8 +6,8 @@ import subprocess
 import sys
 from unittest.mock import patch
 
-from aba_telemetry.core.events import TelemetryEvent, create_event
-from aba_telemetry.core import cim
+from observra.core.events import TelemetryEvent, create_event
+from observra.core import cim
 
 
 # ---------------------------------------------------------------------------
@@ -93,22 +93,22 @@ def _to_dict(event: TelemetryEvent) -> dict:
 # ---------------------------------------------------------------------------
 
 _DETERMINISTIC_PATCHES = {
-    "aba_telemetry.core.events.generate_ulid": "01HZTEST000000000000000000",
-    "aba_telemetry.core.events.generate_timestamp": 1714500000.0,
-    "aba_telemetry.core.events.get_trace_id": "trace-test-01",
-    "aba_telemetry.core.events.get_session_id": "sess-test-01",
-    "aba_telemetry.core.events.get_span_id": "span-test-01",
+    "observra.core.events.generate_ulid": "01HZTEST000000000000000000",
+    "observra.core.events.generate_timestamp": 1714500000.0,
+    "observra.core.events.get_trace_id": "trace-test-01",
+    "observra.core.events.get_session_id": "sess-test-01",
+    "observra.core.events.get_span_id": "span-test-01",
 }
 
 
 def _make_event(event_type, **kwargs):
     """Create an event with all stochastic fields patched to deterministic values."""
-    with patch("aba_telemetry.core.events.generate_ulid", return_value="01HZTEST000000000000000000"):
-        with patch("aba_telemetry.core.events.generate_timestamp", return_value=1714500000.0):
-            with patch("aba_telemetry.core.events.get_trace_id", return_value="trace-test-01"):
-                with patch("aba_telemetry.core.events.get_session_id", return_value="sess-test-01"):
-                    with patch("aba_telemetry.core.events.get_span_id", return_value="span-test-01"):
-                        with patch("aba_telemetry.core.events.get_host_context") as mock_ctx:
+    with patch("observra.core.events.generate_ulid", return_value="01HZTEST000000000000000000"):
+        with patch("observra.core.events.generate_timestamp", return_value=1714500000.0):
+            with patch("observra.core.events.get_trace_id", return_value="trace-test-01"):
+                with patch("observra.core.events.get_session_id", return_value="sess-test-01"):
+                    with patch("observra.core.events.get_span_id", return_value="span-test-01"):
+                        with patch("observra.core.events.get_host_context") as mock_ctx:
                             mock_ctx.return_value.host = "test-host"
                             mock_ctx.return_value.user = "test-user"
                             mock_ctx.return_value.os = "Linux"

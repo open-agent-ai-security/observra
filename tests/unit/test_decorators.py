@@ -10,11 +10,11 @@ import asyncio
 import pytest
 from unittest.mock import MagicMock, patch
 
-import aba_telemetry
-import aba_telemetry.adapters.utils as utils_module
-from aba_telemetry import log
-from aba_telemetry.core.dedup import reset_dedup
-from aba_telemetry.core.events import EventType
+import observra
+import observra.adapters.utils as utils_module
+from observra import log
+from observra.core.dedup import reset_dedup
+from observra.core.events import EventType
 
 
 # ---------------------------------------------------------------------------
@@ -70,7 +70,7 @@ def fake_queue():
     proxy = MagicMock()
     proxy.put_nowait = q.put_nowait
     proxy.get_stats = q.get_stats
-    with patch("aba_telemetry.log._get_queue", return_value=proxy):
+    with patch("observra.log._get_queue", return_value=proxy):
         yield q
 
 
@@ -80,7 +80,7 @@ def fake_queue():
 
 def test_tool_decorator_bare(fake_queue):
     """@tool (no parens) emits tool_start + tool_end."""
-    @aba_telemetry.tool
+    @observra.tool
     def my_func(x):
         return x * 2
 
@@ -97,7 +97,7 @@ def test_tool_decorator_bare(fake_queue):
 
 def test_tool_decorator_with_name(fake_queue):
     """@tool(name=...) uses custom tool name."""
-    @aba_telemetry.tool(name="web_search")
+    @observra.tool(name="web_search")
     def search(query):
         return "results"
 
@@ -110,7 +110,7 @@ def test_tool_decorator_with_name(fake_queue):
 
 def test_tool_decorator_duration_ms(fake_queue):
     """tool_end event includes duration_ms > 0."""
-    @aba_telemetry.tool
+    @observra.tool
     def slow_func():
         import time
         time.sleep(0.01)
@@ -127,7 +127,7 @@ def test_tool_decorator_duration_ms(fake_queue):
 
 def test_tool_decorator_no_capture_data_by_default(fake_queue):
     """tool_args and tool_result are None when capture_data=False."""
-    @aba_telemetry.tool
+    @observra.tool
     def search(query: str) -> str:
         return "secret result"
 
@@ -141,7 +141,7 @@ def test_tool_decorator_no_capture_data_by_default(fake_queue):
 
 def test_tool_decorator_capture_data(fake_queue):
     """capture_data=True serialises args and result."""
-    @aba_telemetry.tool(capture_data=True)
+    @observra.tool(capture_data=True)
     def add(a: int, b: int) -> int:
         return a + b
 
@@ -159,7 +159,7 @@ def test_tool_decorator_capture_data(fake_queue):
 
 def test_tool_decorator_error_emits_tool_error(fake_queue):
     """On exception, emits tool_error and re-raises."""
-    @aba_telemetry.tool
+    @observra.tool
     def failing_func():
         raise ValueError("boom")
 
@@ -175,7 +175,7 @@ def test_tool_decorator_error_emits_tool_error(fake_queue):
 
 def test_tool_decorator_error_has_error_fields(fake_queue):
     """tool_error event has error_message and error_type_name."""
-    @aba_telemetry.tool
+    @observra.tool
     def bad():
         raise RuntimeError("something went wrong")
 
@@ -190,7 +190,7 @@ def test_tool_decorator_error_has_error_fields(fake_queue):
 
 def test_tool_decorator_preserves_return_value(fake_queue):
     """Decorated function returns the same value as undecorated."""
-    @aba_telemetry.tool
+    @observra.tool
     def compute(n: int) -> list:
         return list(range(n))
 
@@ -200,7 +200,7 @@ def test_tool_decorator_preserves_return_value(fake_queue):
 
 def test_tool_decorator_preserves_metadata(fake_queue):
     """functools.wraps preserves __name__ and __doc__."""
-    @aba_telemetry.tool
+    @observra.tool
     def documented_func():
         """Does something important."""
         pass
@@ -216,7 +216,7 @@ def test_tool_decorator_preserves_metadata(fake_queue):
 @pytest.mark.asyncio
 async def test_tool_async_emits_start_end(fake_queue):
     """Async @tool emits tool_start + tool_end."""
-    @aba_telemetry.tool
+    @observra.tool
     async def async_search(query: str) -> str:
         return f"results for {query}"
 
@@ -232,7 +232,7 @@ async def test_tool_async_emits_start_end(fake_queue):
 @pytest.mark.asyncio
 async def test_tool_async_error_emits_tool_error(fake_queue):
     """Async @tool emits tool_error on exception."""
-    @aba_telemetry.tool
+    @observra.tool
     async def async_bad():
         raise ConnectionError("network down")
 
@@ -249,7 +249,7 @@ async def test_tool_async_error_emits_tool_error(fake_queue):
 
 def test_model_call_emits_request_response(fake_queue):
     """@model_call emits model_request + model_response."""
-    @aba_telemetry.model_call(model="gpt-4o")
+    @observra.model_call(model="gpt-4o")
     def ask(prompt: str) -> str:
         return "The answer is 42."
 
@@ -265,7 +265,7 @@ def test_model_call_emits_request_response(fake_queue):
 
 def test_model_call_estimates_tokens(fake_queue):
     """model_response includes estimated input_tokens and output_tokens > 0."""
-    @aba_telemetry.model_call(model="claude-sonnet-4-6")
+    @observra.model_call(model="claude-sonnet-4-6")
     def llm(prompt: str) -> str:
         return "A detailed response with many words and tokens."
 
@@ -279,7 +279,7 @@ def test_model_call_estimates_tokens(fake_queue):
 
 def test_model_call_total_tokens(fake_queue):
     """total_tokens = input_tokens + output_tokens."""
-    @aba_telemetry.model_call(model="gpt-4o")
+    @observra.model_call(model="gpt-4o")
     def llm(prompt: str) -> str:
         return "Short reply."
 
@@ -293,7 +293,7 @@ def test_model_call_total_tokens(fake_queue):
 
 def test_model_call_error_emits_model_error(fake_queue):
     """On exception, emits model_error and re-raises."""
-    @aba_telemetry.model_call(model="gpt-4o")
+    @observra.model_call(model="gpt-4o")
     def failing_llm(prompt: str) -> str:
         raise TimeoutError("API timed out")
 
@@ -308,7 +308,7 @@ def test_model_call_error_emits_model_error(fake_queue):
 
 def test_model_call_default_model_name(fake_queue):
     """Without model= kwarg, model_name defaults to 'unknown'."""
-    @aba_telemetry.model_call
+    @observra.model_call
     def llm(prompt: str) -> str:
         return "response"
 
@@ -319,7 +319,7 @@ def test_model_call_default_model_name(fake_queue):
 
 def test_model_call_prompt_arg_by_name(fake_queue):
     """prompt_arg='user_message' extracts named argument as prompt."""
-    @aba_telemetry.model_call(model="claude-sonnet-4-6", prompt_arg="user_message")
+    @observra.model_call(model="claude-sonnet-4-6", prompt_arg="user_message")
     def call_claude(system: str, user_message: str) -> str:
         return "Hello!"
 
@@ -333,7 +333,7 @@ def test_model_call_prompt_arg_by_name(fake_queue):
 
 def test_model_call_prompt_arg_by_index(fake_queue):
     """prompt_arg=1 extracts positional argument at index 1 as prompt."""
-    @aba_telemetry.model_call(model="gpt-4o", prompt_arg=1)
+    @observra.model_call(model="gpt-4o", prompt_arg=1)
     def call(system: str, user: str) -> str:
         return "OK"
 
@@ -346,7 +346,7 @@ def test_model_call_prompt_arg_by_index(fake_queue):
 
 def test_model_call_preserves_return_value(fake_queue):
     """Decorated function returns the original value."""
-    @aba_telemetry.model_call(model="gpt-4o")
+    @observra.model_call(model="gpt-4o")
     def llm(prompt: str) -> dict:
         return {"answer": 42, "confidence": 0.99}
 
@@ -361,7 +361,7 @@ def test_model_call_preserves_return_value(fake_queue):
 @pytest.mark.asyncio
 async def test_model_call_async_emits_request_response(fake_queue):
     """Async @model_call emits model_request + model_response."""
-    @aba_telemetry.model_call(model="gpt-4o")
+    @observra.model_call(model="gpt-4o")
     async def async_llm(prompt: str) -> str:
         return "Async answer."
 
@@ -377,7 +377,7 @@ async def test_model_call_async_emits_request_response(fake_queue):
 @pytest.mark.asyncio
 async def test_model_call_async_error(fake_queue):
     """Async @model_call emits model_error on exception."""
-    @aba_telemetry.model_call(model="gpt-4o")
+    @observra.model_call(model="gpt-4o")
     async def bad_llm(prompt: str) -> str:
         raise ValueError("model unavailable")
 
@@ -394,7 +394,7 @@ async def test_model_call_async_error(fake_queue):
 
 def test_model_call_extracts_openai_chatcompletion(fake_queue):
     """Correctly extracts text from a mock OpenAI ChatCompletion object."""
-    @aba_telemetry.model_call(model="gpt-4o")
+    @observra.model_call(model="gpt-4o")
     def llm(prompt: str):
         # Simulate an OpenAI ChatCompletion response object
         msg = MagicMock()
@@ -415,7 +415,7 @@ def test_model_call_extracts_openai_chatcompletion(fake_queue):
 
 def test_model_call_extracts_content_attr(fake_queue):
     """Correctly extracts text from an object with .content str attribute."""
-    @aba_telemetry.model_call(model="claude-sonnet-4-6")
+    @observra.model_call(model="claude-sonnet-4-6")
     def llm(prompt: str):
         resp = MagicMock()
         resp.content = "This is the answer."
@@ -432,7 +432,7 @@ def test_model_call_extracts_content_attr(fake_queue):
 
 def test_model_call_extracts_text_attr(fake_queue):
     """Correctly extracts text from an object with .text attribute."""
-    @aba_telemetry.model_call(model="gpt-4o")
+    @observra.model_call(model="gpt-4o")
     def llm(prompt: str):
         resp = MagicMock(spec=["text"])
         resp.text = "Response via .text attribute."
@@ -457,10 +457,10 @@ def test_tool_decorator_emits_via_log_source(fake_queue):
     for the same span, one of them is suppressed. Here we verify that @tool correctly
     routes through log.tool_start, which registers source='log'.
     """
-    from aba_telemetry.core.dedup import register_emission
-    from aba_telemetry.core.context import get_span_id
+    from observra.core.dedup import register_emission
+    from observra.core.context import get_span_id
 
-    @aba_telemetry.tool(name="dedup_test_tool")
+    @observra.tool(name="dedup_test_tool")
     def my_tool() -> str:
         return "ok"
 

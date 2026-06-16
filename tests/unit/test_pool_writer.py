@@ -16,7 +16,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from aba_telemetry.core.events import TelemetryEvent
+from observra.core.events import TelemetryEvent
 
 
 def make_event(n: int = 0) -> TelemetryEvent:
@@ -42,22 +42,22 @@ class TestPooledWriterImport:
 
     def test_import_pool_writer_module(self):
         """PooledWriter module can be imported."""
-        from aba_telemetry.core import pool_writer  # noqa: F401
+        from observra.core import pool_writer  # noqa: F401
 
     def test_class_pool_writer_exists(self):
         """PooledWriter class exists in module."""
-        from aba_telemetry.core.pool_writer import PooledWriter  # noqa: F401
+        from observra.core.pool_writer import PooledWriter  # noqa: F401
 
     def test_module_level_functions_exist(self):
         """Module-level worker functions exist for pickling."""
-        from aba_telemetry.core import pool_writer
+        from observra.core import pool_writer
         assert hasattr(pool_writer, "_init_worker")
         assert hasattr(pool_writer, "_write_batch_in_worker")
 
     def test_process_pool_executor_used(self):
         """PooledWriter uses ProcessPoolExecutor (not ThreadPoolExecutor)."""
         import inspect
-        from aba_telemetry.core import pool_writer
+        from observra.core import pool_writer
         source = inspect.getsource(pool_writer)
         assert "ProcessPoolExecutor" in source
 
@@ -67,7 +67,7 @@ class TestPooledWriterWithJSONL:
 
     def test_init_creates_pool_writer(self, tmp_path):
         """PooledWriter constructs without error."""
-        from aba_telemetry.core.pool_writer import PooledWriter
+        from observra.core.pool_writer import PooledWriter
         pw = PooledWriter(
             backend_type="jsonl",
             backend_kwargs={"path": str(tmp_path / "telemetry.jsonl")},
@@ -76,7 +76,7 @@ class TestPooledWriterWithJSONL:
 
     def test_submit_batch_writes_all_events(self, tmp_path):
         """submit_batch() with a list of events writes all events to backend."""
-        from aba_telemetry.core.pool_writer import PooledWriter
+        from observra.core.pool_writer import PooledWriter
         path = tmp_path / "telemetry.jsonl"
         pw = PooledWriter(
             backend_type="jsonl",
@@ -92,7 +92,7 @@ class TestPooledWriterWithJSONL:
 
     def test_submit_batch_empty_is_noop(self, tmp_path):
         """submit_batch() with an empty list is a no-op."""
-        from aba_telemetry.core.pool_writer import PooledWriter
+        from observra.core.pool_writer import PooledWriter
         path = tmp_path / "telemetry.jsonl"
         pw = PooledWriter(
             backend_type="jsonl",
@@ -105,7 +105,7 @@ class TestPooledWriterWithJSONL:
 
     def test_write_single_event_delegates_to_submit_batch(self, tmp_path):
         """write() single-event call uses submit_batch([event]) uniform path."""
-        from aba_telemetry.core.pool_writer import PooledWriter
+        from observra.core.pool_writer import PooledWriter
         path = tmp_path / "telemetry.jsonl"
         pw = PooledWriter(
             backend_type="jsonl",
@@ -119,7 +119,7 @@ class TestPooledWriterWithJSONL:
 
     def test_flush_delegates_to_backend(self, tmp_path):
         """flush() delegates to the underlying main-process backend."""
-        from aba_telemetry.core.pool_writer import PooledWriter
+        from observra.core.pool_writer import PooledWriter
         path = tmp_path / "telemetry.jsonl"
         pw = PooledWriter(
             backend_type="jsonl",
@@ -130,7 +130,7 @@ class TestPooledWriterWithJSONL:
 
     def test_close_shuts_down_executor_and_backend(self, tmp_path):
         """close() shuts down executor and closes backend without error."""
-        from aba_telemetry.core.pool_writer import PooledWriter
+        from observra.core.pool_writer import PooledWriter
         path = tmp_path / "telemetry.jsonl"
         pw = PooledWriter(
             backend_type="jsonl",
@@ -140,7 +140,7 @@ class TestPooledWriterWithJSONL:
 
     def test_get_stats_delegates_to_backend(self, tmp_path):
         """get_stats() returns a BackendStats dict from the underlying backend."""
-        from aba_telemetry.core.pool_writer import PooledWriter
+        from observra.core.pool_writer import PooledWriter
         path = tmp_path / "telemetry.jsonl"
         pw = PooledWriter(
             backend_type="jsonl",
@@ -153,7 +153,7 @@ class TestPooledWriterWithJSONL:
 
     def test_worker_count_capped_at_four(self, tmp_path):
         """Worker pool size is capped at min(4, cpu_count)."""
-        from aba_telemetry.core.pool_writer import PooledWriter
+        from observra.core.pool_writer import PooledWriter
         pw = PooledWriter(
             backend_type="jsonl",
             backend_kwargs={"path": str(tmp_path / "telemetry.jsonl")},
@@ -168,7 +168,7 @@ class TestPooledWriterBrokenPool:
     def test_broken_pool_triggers_recreation_and_retry(self, tmp_path):
         """BrokenProcessPool exception triggers pool recreation and one retry."""
         from concurrent.futures.process import BrokenProcessPool
-        from aba_telemetry.core.pool_writer import PooledWriter
+        from observra.core.pool_writer import PooledWriter
 
         path = tmp_path / "telemetry.jsonl"
         pw = PooledWriter(
@@ -211,7 +211,7 @@ class TestPooledWriterBrokenPool:
     def test_broken_pool_on_retry_logs_error_no_infinite_loop(self, tmp_path):
         """BrokenProcessPool on retry logs error and does NOT retry again."""
         from concurrent.futures.process import BrokenProcessPool
-        from aba_telemetry.core.pool_writer import PooledWriter
+        from observra.core.pool_writer import PooledWriter
         import logging
 
         path = tmp_path / "telemetry.jsonl"
@@ -250,7 +250,7 @@ class TestPooledWriterTimeout:
 
     def test_timeout_error_logs_and_continues(self, tmp_path):
         """TimeoutError on future.result() logs warning and does not raise."""
-        from aba_telemetry.core.pool_writer import PooledWriter
+        from observra.core.pool_writer import PooledWriter
 
         path = tmp_path / "telemetry.jsonl"
         pw = PooledWriter(
@@ -273,7 +273,7 @@ class TestPooledWriterTimeout:
 
     def test_future_result_called_with_timeout(self, tmp_path):
         """future.result() is called with a timeout argument."""
-        from aba_telemetry.core.pool_writer import PooledWriter
+        from observra.core.pool_writer import PooledWriter
         import inspect
         source = inspect.getsource(PooledWriter.submit_batch)
         # The implementation should call future.result(timeout=...)
@@ -291,9 +291,9 @@ class TestBackgroundWorkerBatchAccumulation:
 
     def test_worker_with_pooled_writer_has_batch_params(self, tmp_path):
         """BackgroundWorker accepts batch_size and batch_timeout parameters."""
-        from aba_telemetry.core.worker import BackgroundWorker
-        from aba_telemetry.core.pool_writer import PooledWriter
-        from aba_telemetry.core.queue import DropOldestQueue
+        from observra.core.worker import BackgroundWorker
+        from observra.core.pool_writer import PooledWriter
+        from observra.core.queue import DropOldestQueue
 
         path = tmp_path / "telemetry.jsonl"
         pw = PooledWriter(
@@ -307,9 +307,9 @@ class TestBackgroundWorkerBatchAccumulation:
 
     def test_worker_with_pooled_writer_accumulates_into_batch(self, tmp_path):
         """BackgroundWorker accumulates events and submits batch to PooledWriter."""
-        from aba_telemetry.core.worker import BackgroundWorker
-        from aba_telemetry.core.pool_writer import PooledWriter
-        from aba_telemetry.core.queue import DropOldestQueue
+        from observra.core.worker import BackgroundWorker
+        from observra.core.pool_writer import PooledWriter
+        from observra.core.queue import DropOldestQueue
 
         path = tmp_path / "telemetry.jsonl"
         pw = PooledWriter(
@@ -336,9 +336,9 @@ class TestBackgroundWorkerBatchAccumulation:
 
     def test_worker_with_pooled_writer_flushes_partial_batch_on_timeout(self, tmp_path):
         """BackgroundWorker flushes partial batch on idle timeout (< batch_size)."""
-        from aba_telemetry.core.worker import BackgroundWorker
-        from aba_telemetry.core.pool_writer import PooledWriter
-        from aba_telemetry.core.queue import DropOldestQueue
+        from observra.core.worker import BackgroundWorker
+        from observra.core.pool_writer import PooledWriter
+        from observra.core.queue import DropOldestQueue
 
         path = tmp_path / "telemetry.jsonl"
         pw = PooledWriter(
@@ -364,9 +364,9 @@ class TestBackgroundWorkerBatchAccumulation:
 
     def test_worker_non_pooled_backend_uses_single_event_path(self, tmp_path):
         """BackgroundWorker with non-PooledWriter backend uses original write path."""
-        from aba_telemetry.core.worker import BackgroundWorker
-        from aba_telemetry.core.storage import create_backend
-        from aba_telemetry.core.queue import DropOldestQueue
+        from observra.core.worker import BackgroundWorker
+        from observra.core.storage import create_backend
+        from observra.core.queue import DropOldestQueue
 
         path = tmp_path / "telemetry.jsonl"
         backend = create_backend("jsonl", path=str(path))
@@ -386,9 +386,9 @@ class TestBackgroundWorkerBatchAccumulation:
 
     def test_worker_get_stats_includes_batches_submitted(self, tmp_path):
         """BackgroundWorker.get_stats() includes batches_submitted when using PooledWriter."""
-        from aba_telemetry.core.worker import BackgroundWorker
-        from aba_telemetry.core.pool_writer import PooledWriter
-        from aba_telemetry.core.queue import DropOldestQueue
+        from observra.core.worker import BackgroundWorker
+        from observra.core.pool_writer import PooledWriter
+        from observra.core.queue import DropOldestQueue
 
         path = tmp_path / "telemetry.jsonl"
         pw = PooledWriter(
@@ -413,9 +413,9 @@ class TestBackgroundWorkerBatchAccumulation:
 
     def test_worker_flushes_partial_batch_on_shutdown(self, tmp_path):
         """Remaining batch is flushed before shutdown (sentinel with partial batch pending)."""
-        from aba_telemetry.core.worker import BackgroundWorker
-        from aba_telemetry.core.pool_writer import PooledWriter
-        from aba_telemetry.core.queue import DropOldestQueue
+        from observra.core.worker import BackgroundWorker
+        from observra.core.pool_writer import PooledWriter
+        from observra.core.queue import DropOldestQueue
 
         path = tmp_path / "telemetry.jsonl"
         pw = PooledWriter(

@@ -23,9 +23,9 @@ from unittest.mock import patch
 
 import pytest
 
-from aba_telemetry.adapters.adk.plugin import TelemetryPlugin
-from aba_telemetry.core.detection import MAX_DELEGATION_DEPTH
-from aba_telemetry.core.events import create_event
+from observra.adapters.adk.plugin import TelemetryPlugin
+from observra.core.detection import MAX_DELEGATION_DEPTH
+from observra.core.events import create_event
 
 
 # ─── Helpers ──────────────────────────────────────────────────────────────────

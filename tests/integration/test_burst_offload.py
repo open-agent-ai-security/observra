@@ -20,10 +20,10 @@ from unittest.mock import patch
 
 import pytest
 
-from aba_telemetry.core.events import TelemetryEvent
-from aba_telemetry.core.pool_writer import PooledWriter
-from aba_telemetry.core.queue import DropOldestQueue
-from aba_telemetry.core.worker import BackgroundWorker
+from observra.core.events import TelemetryEvent
+from observra.core.pool_writer import PooledWriter
+from observra.core.queue import DropOldestQueue
+from observra.core.worker import BackgroundWorker
 
 
 # ---------------------------------------------------------------------------
@@ -226,7 +226,7 @@ def test_worker_crash_isolation(tmp_path):
             pw._errors += 1
             return
         # Call original submit_batch (unbound, need to pass pw)
-        from aba_telemetry.core.pool_writer import PooledWriter as _PW
+        from observra.core.pool_writer import PooledWriter as _PW
         _PW.submit_batch(pw, batch)
 
     pw.submit_batch = patched_submit  # type: ignore[method-assign]

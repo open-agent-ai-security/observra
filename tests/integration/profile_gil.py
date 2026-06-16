@@ -16,11 +16,11 @@ import threading
 # Add project root to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 
-from aba_telemetry.core.events import TelemetryEvent, create_event
-from aba_telemetry.core.queue import DropOldestQueue
-from aba_telemetry.core.worker import BackgroundWorker
-from aba_telemetry.core.pool_writer import PooledWriter
-from aba_telemetry.backends.jsonl import JSONLBackend
+from observra.core.events import TelemetryEvent, create_event
+from observra.core.queue import DropOldestQueue
+from observra.core.worker import BackgroundWorker
+from observra.core.pool_writer import PooledWriter
+from observra.backends.jsonl import JSONLBackend
 import tempfile
 
 

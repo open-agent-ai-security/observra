@@ -1,7 +1,7 @@
 """How to add telemetry to a LangGraph / LangChain agent.
 
 Install:
-    pip install aba-telemetry[langchain]
+    pip install observra[langchain]
 
 BEFORE (your existing agent):
     from langgraph.graph import StateGraph, MessagesState
@@ -11,8 +11,8 @@ BEFORE (your existing agent):
     result = app.invoke({"messages": [HumanMessage(content="Hello")]})
 
 AFTER (3 lines added):
-    from aba_telemetry import initialize                          # 1. import
-    from aba_telemetry.adapters.langchain import LangChainAdapter
+    from observra import initialize                          # 1. import
+    from observra.adapters.langchain import LangChainAdapter
     initialize(backend="jsonl", path="telemetry.jsonl")              # 2. init storage
     adapter = LangChainAdapter()                                    # 3. create adapter
 
@@ -51,8 +51,8 @@ app = graph.compile()
 
 # ── Step 1: Add telemetry (3 lines) ─────────────────────────────
 
-from aba_telemetry import initialize
-from aba_telemetry.adapters.langchain import LangChainAdapter
+from observra import initialize
+from observra.adapters.langchain import LangChainAdapter
 
 initialize(
     backend="jsonl",
@@ -103,5 +103,5 @@ adapter = LangChainAdapter()
 # ── View your telemetry ─────────────────────────────────────────
 #
 # CLI dashboard:
-#   aba-telemetry dashboard
+#   observra dashboard
 #

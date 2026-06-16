@@ -7,7 +7,7 @@ Demonstrates configuring cost threshold alerts. When the accumulated session
 cost exceeds the threshold, a `cost_threshold_exceeded` event is emitted.
 """
 
-from aba_telemetry import initialize, create_plugin
+from observra import initialize, create_plugin
 
 # Initialize with cost threshold at $5.00
 initialize(

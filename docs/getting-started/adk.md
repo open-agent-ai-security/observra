@@ -3,15 +3,15 @@
 ## Install
 
 ```bash
-pip install aba-telemetry[adk]
+pip install observra[adk]
 ```
 
 ## Usage
 
 ```python
-import aba_telemetry
+import observra
 
-aba_telemetry.initialize(backend="jsonl", path="telemetry.jsonl")
+observra.initialize(backend="jsonl", path="telemetry.jsonl")
 
 # Your ADK agent code — telemetry is captured automatically
 ```

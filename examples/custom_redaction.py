@@ -7,9 +7,9 @@ Built-in patterns cover API keys, Bearer tokens, passwords, emails, and IPs.
 This example shows how to add custom patterns for organization-specific secrets.
 """
 
-from aba_telemetry import initialize, create_plugin
-from aba_telemetry.core.events import create_event
-from aba_telemetry.core.context import initialize_trace
+from observra import initialize, create_plugin
+from observra.core.events import create_event
+from observra.core.context import initialize_trace
 
 # Initialize with custom redaction patterns
 initialize(

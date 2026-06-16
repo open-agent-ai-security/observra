@@ -1,9 +1,9 @@
-"""Shared fixtures for aba_telemetry test suite."""
+"""Shared fixtures for observra test suite."""
 
 import pytest
 
-from aba_telemetry.core.context import initialize_session, initialize_trace
-from aba_telemetry.core.events import create_event
+from observra.core.context import initialize_session, initialize_trace
+from observra.core.events import create_event
 
 
 @pytest.fixture(autouse=True)

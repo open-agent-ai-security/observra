@@ -2,8 +2,8 @@
 
 import logging
 
-from aba_telemetry.core.logging_handler import TelemetryLoggingHandler
-from aba_telemetry.core.queue import DropOldestQueue
+from observra.core.logging_handler import TelemetryLoggingHandler
+from observra.core.queue import DropOldestQueue
 
 
 def test_handler_creates_event():
