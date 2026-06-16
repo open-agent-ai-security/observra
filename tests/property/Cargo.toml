@@ -1,0 +1,14 @@
+[package]
+name = "property-tests"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+agent-telemetry-fwd = { path = "../../rust" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+proptest = "1"
+
+[[bin]]
+name = "parity-oracle"
+path = "src/main.rs"

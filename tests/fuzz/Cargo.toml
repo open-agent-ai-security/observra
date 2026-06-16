@@ -1,0 +1,26 @@
+[package]
+name = "agent-telemetry-fuzz"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.4"
+agent-telemetry-fwd = { path = "../../rust" }
+
+# Prevent this from interfering with workspaces
+[workspace]
+members = ["."]
+
+[[bin]]
+name = "fuzz_redaction"
+path = "fuzz_targets/fuzz_redaction.rs"
+doc = false
+
+[[bin]]
+name = "fuzz_safe_regex"
+path = "fuzz_targets/fuzz_safe_regex.rs"
+doc = false

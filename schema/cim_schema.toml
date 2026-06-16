@@ -1,0 +1,391 @@
+[meta]
+version = "1.0"
+description = "CIM single source of truth for agent-telemetry v5.0"
+product_id = "aba-telemetry"
+
+# event_type → action + terminal + default_result
+[actions]
+[actions.session_start]
+action = "start_session"
+terminal = false
+
+[actions.session_end]
+action = "end_session"
+terminal = false
+
+[actions.mcp_session_start]
+action = "start_session"
+terminal = false
+
+[actions.mcp_session_end]
+action = "end_session"
+terminal = false
+
+[actions.user]
+action = "prompt_submit"
+terminal = false
+
+[actions.user_message]
+action = "prompt_submit"
+terminal = false
+
+[actions.model_request]
+action = "call_llm"
+terminal = false
+
+[actions.model_response]
+action = "call_llm"
+terminal = true
+default_result = "success"
+
+[actions.model_error]
+action = "call_llm"
+terminal = true
+default_result = "failure"
+
+[actions.turn]
+action = "call_llm"
+terminal = true
+default_result = "success"
+
+[actions.turn_duration]
+action = "call_llm"
+terminal = false
+
+[actions.compact_boundary]
+action = "compact_context"
+terminal = false
+
+[actions.tool_start]
+action = "tool_call"
+terminal = false
+
+[actions.tool_end]
+action = "tool_call"
+terminal = true
+default_result = "success"
+
+[actions.tool_error]
+action = "tool_call"
+terminal = true
+default_result = "failure"
+
+[actions.agent_start]
+action = "invoke_agent"
+terminal = false
+
+[actions.agent_end]
+action = "invoke_agent"
+terminal = true
+default_result = "success"
+
+[actions.agent_handoff]
+action = "invoke_agent"
+terminal = false
+
+[actions.agent_handoff_error]
+action = "invoke_agent"
+terminal = true
+default_result = "failure"
+
+[actions.skill_invocation]
+action = "tool_call"
+terminal = false
+
+[actions.stream_event]
+action = "call_llm"
+terminal = false
+
+[actions.adapter_close]
+action = "end_session"
+terminal = false
+
+[actions.cost_threshold_exceeded]
+action = "policy_event"
+terminal = false
+
+[actions.depth_exceeded]
+action = "policy_event"
+terminal = false
+
+# Update telemetry
+[actions.forwarder_update_available]
+action = "update_available"
+terminal = false
+
+[actions.forwarder_updated]
+action = "update_applied"
+terminal = false
+
+[actions.forwarder_update_failed]
+action = "update_failed"
+terminal = false
+
+# finish_reason mapping: raw → canonical enum
+[[finish_reason]]
+raw = "stop"
+canonical = "stop"
+
+[[finish_reason]]
+raw = "tool_calls"
+canonical = "tool_call"
+
+[[finish_reason]]
+raw = "function_call"
+canonical = "tool_call"
+
+[[finish_reason]]
+raw = "length"
+canonical = "max_tokens"
+
+[[finish_reason]]
+raw = "content_filter"
+canonical = "content_filter"
+
+[[finish_reason]]
+raw = "end_turn"
+canonical = "stop"
+
+[[finish_reason]]
+raw = "tool_use"
+canonical = "tool_call"
+
+[[finish_reason]]
+raw = "max_tokens"
+canonical = "max_tokens"
+
+[[finish_reason]]
+raw = "stop_sequence"
+canonical = "stop"
+
+[[finish_reason]]
+raw = "STOP"
+canonical = "stop"
+
+[[finish_reason]]
+raw = "MAX_TOKENS"
+canonical = "max_tokens"
+
+[[finish_reason]]
+raw = "SAFETY"
+canonical = "content_filter"
+
+[[finish_reason]]
+raw = "RECITATION"
+canonical = "content_filter"
+
+[[finish_reason]]
+raw = "FINISH_REASON_STOP"
+canonical = "stop"
+
+[[finish_reason]]
+raw = "FINISH_REASON_MAX_TOKENS"
+canonical = "max_tokens"
+
+[[finish_reason]]
+raw = "finished"
+canonical = "stop"
+
+[[finish_reason]]
+raw = "filtered"
+canonical = "content_filter"
+
+# vendor classification by model name substring
+[[vendor_map]]
+patterns = ["claude", "anthropic"]
+vendor = "anthropic"
+
+[[vendor_map]]
+patterns = ["gpt", "o1", "o3", "openai"]
+vendor = "openai"
+
+[[vendor_map]]
+patterns = ["gemini", "google", "vertex"]
+vendor = "google"
+
+[[vendor_map]]
+patterns = ["copilot"]
+vendor = "microsoft"
+
+# framework → vendor fallback
+[[framework_vendor]]
+framework = "claude"
+vendor = "anthropic"
+
+[[framework_vendor]]
+framework = "claude_code"
+vendor = "anthropic"
+
+[[framework_vendor]]
+framework = "openai"
+vendor = "openai"
+
+[[framework_vendor]]
+framework = "codex_cli"
+vendor = "openai"
+
+[[framework_vendor]]
+framework = "codex_app"
+vendor = "openai"
+
+[[framework_vendor]]
+framework = "gemini_cli"
+vendor = "google"
+
+[[framework_vendor]]
+framework = "copilot"
+vendor = "microsoft"
+
+# reversibility classification patterns
+[reversibility]
+irreversible = [
+  "delete", "drop", "truncate", "remove", "destroy",
+  "send_email", "send_message", "publish", "post",
+  "transfer", "pay", "charge", "deploy",
+  "overwrite", "format", "wipe",
+]
+reversible = [
+  "read", "get", "fetch", "list", "search", "query",
+  "draft", "preview", "analyze", "summarize",
+]
+
+# action patterns: tool_name substring → action
+[[action_pattern]]
+pattern = "call_llm"
+action = "call_llm"
+priority = 1
+
+[[action_pattern]]
+pattern = "model_request"
+action = "call_llm"
+priority = 2
+
+[[action_pattern]]
+pattern = "inference"
+action = "call_llm"
+priority = 3
+
+[[action_pattern]]
+pattern = "bash"
+action = "execute_code"
+priority = 1
+
+[[action_pattern]]
+pattern = "shell"
+action = "execute_code"
+priority = 2
+
+[[action_pattern]]
+pattern = "execute"
+action = "execute_code"
+priority = 3
+
+[[action_pattern]]
+pattern = "run_code"
+action = "execute_code"
+priority = 4
+
+[[action_pattern]]
+pattern = "computer"
+action = "execute_code"
+priority = 5
+
+[[action_pattern]]
+pattern = "read_file"
+action = "access_file"
+priority = 1
+
+[[action_pattern]]
+pattern = "write_file"
+action = "access_file"
+priority = 2
+
+[[action_pattern]]
+pattern = "file_read"
+action = "access_file"
+priority = 3
+
+[[action_pattern]]
+pattern = "file_write"
+action = "access_file"
+priority = 4
+
+[[action_pattern]]
+pattern = "file_editor"
+action = "access_file"
+priority = 5
+
+[[action_pattern]]
+pattern = "memory_read"
+action = "read_memory"
+priority = 1
+
+[[action_pattern]]
+pattern = "memory_write"
+action = "write_memory"
+priority = 2
+
+[[action_pattern]]
+pattern = "remember"
+action = "write_memory"
+priority = 3
+
+[[action_pattern]]
+pattern = "recall"
+action = "read_memory"
+priority = 4
+
+[[action_pattern]]
+pattern = "http"
+action = "send_external"
+priority = 1
+
+[[action_pattern]]
+pattern = "webhook"
+action = "send_external"
+priority = 2
+
+[[action_pattern]]
+pattern = "email"
+action = "send_external"
+priority = 3
+
+[[action_pattern]]
+pattern = "send_email"
+action = "send_external"
+priority = 4
+
+[[action_pattern]]
+pattern = "api_call"
+action = "send_external"
+priority = 5
+
+[[action_pattern]]
+pattern = "web_fetch"
+action = "send_external"
+priority = 6
+
+[[action_pattern]]
+pattern = "browse"
+action = "send_external"
+priority = 7
+
+[[action_pattern]]
+pattern = "search"
+action = "send_external"
+priority = 8
+
+[[action_pattern]]
+pattern = "handoff"
+action = "invoke_agent"
+priority = 1
+
+[[action_pattern]]
+pattern = "transfer"
+action = "invoke_agent"
+priority = 2
+
+[[action_pattern]]
+pattern = "delegate"
+action = "invoke_agent"
+priority = 3

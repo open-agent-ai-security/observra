@@ -1,0 +1,319 @@
+{
+  "_metadata": {
+    "description": "SIEM parser configuration for agent-telemetry JSON events",
+    "log_source": "agent-telemetry",
+    "format": "json",
+    "transport": "Webhook or OTel log export",
+    "schema_version": "2.0",
+    "note": "All CIM-standardized fields are at the top level. The 'data' object contains framework-specific extras only (e.g. ADK tool_sequence, OpenAI trigger_tool)."
+  },
+  "top_level_fields": {
+    "event_id": {
+      "type": "string",
+      "description": "ULID, globally unique event identifier",
+      "index": true
+    },
+    "timestamp": {
+      "type": "datetime",
+      "format": "ISO-8601",
+      "description": "Event timestamp in UTC",
+      "index": true
+    },
+    "event_type": {
+      "type": "string",
+      "description": "Canonical event type — same value regardless of source framework",
+      "index": true,
+      "enum": [
+        "session_start", "session_end",
+        "agent_start", "agent_end",
+        "model_request", "model_response", "model_error",
+        "tool_start", "tool_end", "tool_error",
+        "user_message",
+        "cost_threshold_exceeded", "depth_exceeded",
+        "agent_handoff", "agent_handoff_error",
+        "stream_event", "adapter_close"
+      ]
+    },
+    "framework": {
+      "type": "string",
+      "description": "Source framework: adk | claude | openai | langgraph | pydantic-ai | copilot | mcp",
+      "index": true,
+      "nullable": true
+    },
+    "trace_id": {
+      "type": "string",
+      "description": "Distributed trace identifier (ULID). Groups all events across agent delegations in one request.",
+      "index": true
+    },
+    "session_id": {
+      "type": "string",
+      "description": "Session/conversation identifier (ULID). Groups all events in one conversation.",
+      "index": true
+    },
+    "span_id": {
+      "type": "string",
+      "description": "Current span identifier (ULID)"
+    },
+    "model_name": {
+      "type": "string",
+      "description": "LLM model name (gemini-2.5-flash, gpt-4o, claude-sonnet-4-6, etc.)",
+      "nullable": true
+    },
+    "agent_name": {
+      "type": "string",
+      "description": "Agent name within the framework",
+      "nullable": true
+    },
+    "tool_name": {
+      "type": "string",
+      "description": "Tool/function/connector name being invoked",
+      "nullable": true
+    },
+    "user_id": {
+      "type": "string",
+      "description": "User identifier (from event data or AGENT_TELEMETRY_USER_ID env var)",
+      "nullable": true
+    },
+    "deployment_env": {
+      "type": "string",
+      "description": "Deployment environment (from DEPLOYMENT_ENV env var)",
+      "nullable": true
+    },
+    "agent_version": {
+      "type": "string",
+      "description": "Agent version (from AGENT_VERSION env var)",
+      "nullable": true
+    },
+    "duration_ms": {
+      "type": "float",
+      "description": "Tool/operation duration in milliseconds",
+      "nullable": true
+    },
+    "input_tokens": {
+      "type": "integer",
+      "description": "Input token count for model call (native or tiktoken-estimated)",
+      "nullable": true
+    },
+    "output_tokens": {
+      "type": "integer",
+      "description": "Output token count for model response (native or estimated)",
+      "nullable": true
+    },
+    "total_tokens": {
+      "type": "integer",
+      "description": "Total tokens for this model call (input + output)",
+      "nullable": true
+    },
+    "cached_tokens": {
+      "type": "integer",
+      "description": "Tokens served from prompt cache (prompt cache hits)",
+      "nullable": true
+    },
+    "reasoning_tokens": {
+      "type": "integer",
+      "description": "Chain-of-thought / thinking tokens (subset of output_tokens)",
+      "nullable": true
+    },
+    "cost_usd": {
+      "type": "float",
+      "description": "Estimated cost in USD for this model call",
+      "nullable": true
+    },
+    "session_cost_usd": {
+      "type": "float",
+      "description": "Cumulative session cost in USD at time of event",
+      "nullable": true
+    },
+    "threshold_usd": {
+      "type": "float",
+      "description": "Configured cost threshold that was exceeded (cost_threshold_exceeded events)",
+      "nullable": true
+    },
+    "exceeded": {
+      "type": "boolean",
+      "description": "True when cost threshold was crossed (cost_threshold_exceeded events)",
+      "nullable": true
+    },
+    "error_message": {
+      "type": "string",
+      "description": "Human-readable error description",
+      "nullable": true
+    },
+    "error_type_name": {
+      "type": "string",
+      "description": "Python exception class name (e.g. TimeoutError, ResourceExhausted, RuntimeError)",
+      "nullable": true
+    },
+    "error_class": {
+      "type": "string",
+      "description": "Error category bucket: timeout | rate_limit | auth | network | tool_error",
+      "nullable": true
+    },
+    "is_retryable": {
+      "type": "boolean",
+      "description": "Whether the error is safe to retry",
+      "nullable": true
+    },
+    "tool_args": {
+      "type": "string",
+      "description": "Serialized tool input arguments (only when capture_tool_data=True)",
+      "nullable": true
+    },
+    "tool_result": {
+      "type": "string",
+      "description": "Serialized tool output / result (only when capture_tool_data=True)",
+      "nullable": true
+    },
+    "user_message_text": {
+      "type": "string",
+      "description": "User prompt text — stripped on hot path for PII protection",
+      "nullable": true
+    },
+    "has_injection_patterns": {
+      "type": "boolean",
+      "description": "True when user input matched known prompt injection patterns",
+      "nullable": true,
+      "index": true
+    },
+    "injection_patterns": {
+      "type": "array",
+      "description": "List of injection pattern names detected in user input",
+      "nullable": true
+    },
+    "source_agent": {
+      "type": "string",
+      "description": "Agent initiating a handoff (agent_handoff / agent_handoff_error events)",
+      "nullable": true
+    },
+    "target_agent": {
+      "type": "string",
+      "description": "Agent receiving a handoff",
+      "nullable": true
+    },
+    "current_depth": {
+      "type": "integer",
+      "description": "Delegation depth when depth_exceeded fires",
+      "nullable": true
+    },
+    "max_depth": {
+      "type": "integer",
+      "description": "Maximum allowed delegation depth",
+      "nullable": true
+    },
+    "triggered_rules": {
+      "type": "array",
+      "description": "List of detection rule names that fired on this event (evaluated at emit time by the agent_telemetry library). Null when no rules matched.",
+      "nullable": true,
+      "index": true,
+      "example": ["Prompt Injection Detected", "High Token Usage"]
+    },
+    "max_severity": {
+      "type": "string",
+      "description": "Highest severity among triggered rules: high | medium | low. Null when triggered_rules is null.",
+      "nullable": true,
+      "index": true,
+      "enum": ["high", "medium", "low", null]
+    },
+    "source": {
+      "type": "string",
+      "description": "Agent source tier: sdk_agent (full telemetry fidelity) | cloud_agent (MCP-only, dark fields). Use to split behavioral models and detection rules by tier.",
+      "nullable": true,
+      "index": true,
+      "enum": ["sdk_agent", "cloud_agent", null]
+    },
+    "estimated": {
+      "type": "boolean",
+      "description": "True when token counts / costs are synthesized from payload size rather than native API values. Always True for cloud_agent source events.",
+      "nullable": true
+    },
+    "telemetry_completeness": {
+      "type": "float",
+      "description": "Ratio of populated CIM fields out of total expected (0.0-1.0). Cloud agents typically score 0.4-0.6 due to dark model-level fields. Use to weight anomaly detection confidence.",
+      "nullable": true
+    },
+    "data": {
+      "type": "object",
+      "description": "Framework-specific extras not in the CIM schema (ADK: tool_sequence, delegation_depth; OpenAI: trigger_tool, tools, handoffs; Copilot: tool_type connector/power-automate; MCP: tool_call_count, telemetry_completeness). Null when empty.",
+      "nullable": true
+    }
+  },
+  "detection_rules_note": "Rules are evaluated by the agent_telemetry library at emit time. Results appear in triggered_rules[] and max_severity on every matching event. Use these simple queries instead of evaluating conditions yourself.",
+  "detection_rules": [
+    {
+      "name": "Prompt Injection Detected",
+      "severity": "high",
+      "condition": "has_injection_patterns == true",
+      "siem_query": "triggered_rules contains 'Prompt Injection Detected'",
+      "description": "User input matched known prompt injection patterns — review injection_patterns field for specifics",
+      "fields": ["has_injection_patterns", "injection_patterns", "user_id", "session_id", "framework"]
+    },
+    {
+      "name": "Cost Threshold Exceeded",
+      "severity": "medium",
+      "condition": "event_type == 'cost_threshold_exceeded'",
+      "description": "Cumulative session cost crossed the configured threshold",
+      "fields": ["session_cost_usd", "threshold_usd", "exceeded", "framework", "agent_name"]
+    },
+    {
+      "name": "Agent Depth Exceeded",
+      "severity": "medium",
+      "condition": "event_type == 'depth_exceeded'",
+      "description": "Agent delegation chain exceeded max depth — possible runaway recursion",
+      "fields": ["current_depth", "max_depth", "agent_name", "framework"]
+    },
+    {
+      "name": "Model Error - Rate Limited",
+      "severity": "low",
+      "condition": "event_type == 'model_error' AND error_class == 'rate_limit'",
+      "description": "LLM API rate limit hit — may indicate abuse or misconfiguration",
+      "fields": ["error_class", "error_type_name", "error_message", "is_retryable", "model_name"]
+    },
+    {
+      "name": "Model Error - Auth Failure",
+      "severity": "high",
+      "condition": "event_type == 'model_error' AND error_class == 'auth'",
+      "description": "LLM API authentication failure — possible credential compromise",
+      "fields": ["error_class", "error_type_name", "error_message", "model_name", "framework"]
+    },
+    {
+      "name": "Tool Error",
+      "severity": "low",
+      "condition": "event_type == 'tool_error'",
+      "description": "Tool invocation failed — check error_message and is_retryable",
+      "fields": ["error_message", "error_type_name", "error_class", "is_retryable", "tool_name"]
+    },
+    {
+      "name": "Agent Handoff Error",
+      "severity": "medium",
+      "condition": "event_type == 'agent_handoff_error'",
+      "description": "Agent-to-agent handoff failed — target agent unavailable",
+      "fields": ["source_agent", "target_agent", "error_message", "framework"]
+    },
+    {
+      "name": "High Token Usage",
+      "severity": "low",
+      "condition": "event_type == 'model_response' AND total_tokens > 10000",
+      "description": "Single model call consumed excessive tokens",
+      "fields": ["input_tokens", "output_tokens", "total_tokens", "cost_usd", "model_name", "framework"]
+    },
+    {
+      "name": "High Single-Call Cost",
+      "severity": "medium",
+      "condition": "event_type == 'model_response' AND cost_usd > 0.50",
+      "description": "Single model call cost exceeded $0.50 — potential runaway agent",
+      "fields": ["cost_usd", "input_tokens", "output_tokens", "model_name", "agent_name", "session_id"]
+    }
+  ],
+  "correlation_keys": {
+    "session": "session_id",
+    "trace": "trace_id",
+    "description": "Use session_id to group all events in a conversation. Use trace_id to correlate events across agent delegations within a single request."
+  },
+  "framework_extras_in_data": {
+    "adk": ["tool_sequence", "sequence_length", "sequence_total_length", "delegation_depth", "tokens_per_minute", "tool_type"],
+    "openai": ["trigger_tool", "trigger_args", "tools", "handoffs", "output_type"],
+    "claude": ["num_turns", "is_error", "session_id_claude", "estimated", "stop_hook_active", "response_text"],
+    "copilot": ["tool_type"],
+    "mcp": ["tool_call_count", "telemetry_completeness", "source", "estimated"]
+  }
+}

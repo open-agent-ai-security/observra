@@ -1,0 +1,52 @@
+{
+  "_metadata": {
+    "source": "https://openai.com/api/pricing/",
+    "captured": "2026-02-18",
+    "note": "Prices per 1M tokens USD. reasoning_tokens are a subset of output_tokens — do not add them separately for cost. o1-mini deprecated Oct 2025, included for historical event compatibility. unknown fallback uses GPT-4o pricing per locked decision."
+  },
+  "gpt-4o": {
+    "input_price_per_1m": "2.50",
+    "output_price_per_1m": "10.00",
+    "cached_input_price_per_1m": "1.25"
+  },
+  "gpt-4o-mini": {
+    "input_price_per_1m": "0.15",
+    "output_price_per_1m": "0.60",
+    "cached_input_price_per_1m": "0.075"
+  },
+  "gpt-4-turbo": {
+    "input_price_per_1m": "10.00",
+    "output_price_per_1m": "30.00",
+    "cached_input_price_per_1m": "0.00"
+  },
+  "o1": {
+    "input_price_per_1m": "15.00",
+    "output_price_per_1m": "60.00",
+    "cached_input_price_per_1m": "7.50"
+  },
+  "o1-mini": {
+    "input_price_per_1m": "3.00",
+    "output_price_per_1m": "12.00",
+    "cached_input_price_per_1m": "0.00"
+  },
+  "o3": {
+    "input_price_per_1m": "2.00",
+    "output_price_per_1m": "8.00",
+    "cached_input_price_per_1m": "0.50"
+  },
+  "o3-mini": {
+    "input_price_per_1m": "1.10",
+    "output_price_per_1m": "4.40",
+    "cached_input_price_per_1m": "0.55"
+  },
+  "o4-mini": {
+    "input_price_per_1m": "1.10",
+    "output_price_per_1m": "4.40",
+    "cached_input_price_per_1m": "0.275"
+  },
+  "unknown": {
+    "input_price_per_1m": "2.50",
+    "output_price_per_1m": "10.00",
+    "cached_input_price_per_1m": "1.25"
+  }
+}

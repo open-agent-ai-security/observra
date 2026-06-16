@@ -1,0 +1,16 @@
+{
+  "_metadata": {
+    "source": "https://openai.com/api/pricing/ and https://anthropic.com/pricing and https://ai.google.dev/pricing",
+    "captured": "2026-02-18",
+    "note": "Prices per 1M tokens USD. Pydantic AI is provider-agnostic — covers OpenAI, Anthropic, and Gemini. Unknown fallback uses gpt-4o pricing."
+  },
+  "gpt-4o": { "input_price_per_1m": "2.50", "output_price_per_1m": "10.00", "cached_input_price_per_1m": "1.25" },
+  "gpt-4o-mini": { "input_price_per_1m": "0.15", "output_price_per_1m": "0.60", "cached_input_price_per_1m": "0.075" },
+  "gpt-4.1": { "input_price_per_1m": "2.00", "output_price_per_1m": "8.00", "cached_input_price_per_1m": "0.50" },
+  "o3-mini": { "input_price_per_1m": "1.10", "output_price_per_1m": "4.40", "cached_input_price_per_1m": "0.55" },
+  "claude-3-5-sonnet-20241022": { "input_price_per_1m": "3.00", "output_price_per_1m": "15.00", "cached_input_price_per_1m": "0.30" },
+  "claude-3-5-haiku-20241022": { "input_price_per_1m": "0.80", "output_price_per_1m": "4.00", "cached_input_price_per_1m": "0.08" },
+  "gemini-1.5-pro": { "input_price_per_1m": "1.25", "output_price_per_1m": "5.00" },
+  "gemini-2.0-flash": { "input_price_per_1m": "0.10", "output_price_per_1m": "0.40" },
+  "unknown": { "input_price_per_1m": "2.50", "output_price_per_1m": "10.00", "cached_input_price_per_1m": "1.25" }
+}

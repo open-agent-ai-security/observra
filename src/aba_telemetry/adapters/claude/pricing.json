@@ -1,0 +1,37 @@
+{
+  "_metadata": {
+    "source": "https://platform.claude.com/docs/en/about-claude/pricing",
+    "captured": "2026-02-18",
+    "note": "Cache hit pricing at 0.1x base input. Prices per 1M tokens."
+  },
+  "claude-opus-4-6": {
+    "input_price_per_1m": "5.00",
+    "output_price_per_1m": "25.00",
+    "cached_input_price_per_1m": "0.50"
+  },
+  "claude-sonnet-4-6": {
+    "input_price_per_1m": "3.00",
+    "output_price_per_1m": "15.00",
+    "cached_input_price_per_1m": "0.30"
+  },
+  "claude-haiku-4-5": {
+    "input_price_per_1m": "1.00",
+    "output_price_per_1m": "5.00",
+    "cached_input_price_per_1m": "0.10"
+  },
+  "claude-opus-4-5": {
+    "input_price_per_1m": "5.00",
+    "output_price_per_1m": "25.00",
+    "cached_input_price_per_1m": "0.50"
+  },
+  "claude-sonnet-4-5": {
+    "input_price_per_1m": "3.00",
+    "output_price_per_1m": "15.00",
+    "cached_input_price_per_1m": "0.30"
+  },
+  "unknown": {
+    "input_price_per_1m": "0.00",
+    "output_price_per_1m": "0.00",
+    "cached_input_price_per_1m": "0.00"
+  }
+}

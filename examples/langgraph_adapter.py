@@ -1,0 +1,107 @@
+"""How to add telemetry to a LangGraph / LangChain agent.
+
+Install:
+    pip install aba-telemetry[langchain]
+
+BEFORE (your existing agent):
+    from langgraph.graph import StateGraph, MessagesState
+    graph = StateGraph(MessagesState)
+    # ... build graph ...
+    app = graph.compile()
+    result = app.invoke({"messages": [HumanMessage(content="Hello")]})
+
+AFTER (3 lines added):
+    from aba_telemetry import initialize                          # 1. import
+    from aba_telemetry.adapters.langchain import LangChainAdapter
+    initialize(backend="jsonl", path="telemetry.jsonl")              # 2. init storage
+    adapter = LangChainAdapter()                                    # 3. create adapter
+
+    # Pass as callback when invoking the graph:
+    result = app.invoke(
+        {"messages": [HumanMessage(content="Hello")]},
+        config={"callbacks": [adapter]},                            # <-- only change
+    )
+
+That's it. Every LLM call, tool use, and chain event is captured.
+Works with any LLM provider (OpenAI, Anthropic, Gemini, etc.).
+"""
+
+# ── Step 0: Your existing LangGraph agent (unchanged) ───────────
+
+from langgraph.graph import StateGraph, MessagesState
+from langchain_core.messages import HumanMessage
+from langchain_openai import ChatOpenAI
+
+llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+
+graph = StateGraph(MessagesState)
+
+
+def llm_node(state):
+    messages = state["messages"]
+    response = llm.invoke(messages)
+    return {"messages": [response]}
+
+
+graph.add_node("llm", llm_node)
+graph.set_entry_point("llm")
+graph.set_finish_point("llm")
+app = graph.compile()
+
+
+# ── Step 1: Add telemetry (3 lines) ─────────────────────────────
+
+from aba_telemetry import initialize
+from aba_telemetry.adapters.langchain import LangChainAdapter
+
+initialize(
+    backend="jsonl",
+    path="telemetry.jsonl",        # where events are stored
+)
+adapter = LangChainAdapter()
+
+
+# ── Step 2: Pass adapter as a callback ──────────────────────────
+
+# result = app.invoke(
+#     {"messages": [HumanMessage(content="What is 2+3?")]},
+#     config={"callbacks": [adapter]},
+# )
+
+# Or bind to the graph for all invocations:
+# app_with_telemetry = app.with_config({"callbacks": [adapter]})
+# result = app_with_telemetry.invoke({"messages": [...]})
+
+# The adapter captures these events automatically:
+#   - chain_start / chain_end (graph lifecycle)
+#   - model_response (with input/output tokens, cost per model)
+#   - tool_call / tool_call_end (with tool name, duration)
+#   - tool_error (with error classification)
+#   - cost_threshold_exceeded (if configured)
+#
+# All events have framework="langgraph" for SIEM filtering.
+# Token counts are extracted from any LLM provider (OpenAI, Anthropic, etc.).
+
+
+# ── Optional: capture tool input/output payloads ────────────────
+#
+# adapter = LangChainAdapter(capture_tool_data=True)
+#
+# This enables tool_args and tool_result in event data.
+
+
+# ── Multi-provider support ──────────────────────────────────────
+#
+# The adapter extracts tokens from any LangChain LLM backend:
+#   - ChatOpenAI (usage_metadata or legacy token_usage)
+#   - ChatAnthropic (usage_metadata or llm_output["usage"])
+#   - ChatGoogleGenerativeAI (usage_metadata)
+#
+# Pricing is calculated per-model regardless of provider.
+
+
+# ── View your telemetry ─────────────────────────────────────────
+#
+# CLI dashboard:
+#   aba-telemetry dashboard
+#
