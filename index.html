@@ -111,10 +111,8 @@ nav {
   list-style: none;
 }
 .nav-center a {
-  font-size: 12px;
+  font-size: 15px;
   font-weight: 500;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
   color: var(--text-sub);
   transition: color 0.18s;
 }
@@ -280,7 +278,11 @@ nav {
 }
 .hero h1 em {
   font-style: normal;
-  color: var(--blue-lt);
+  background: linear-gradient(100deg, var(--blue-lt), var(--blue));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
 }
 .hero-sub {
   font-size: 17px;
@@ -1130,19 +1132,19 @@ footer {
 │  (ADK / Claude / OpenAI / LangGraph / Pydantic) │
 └─────────────────────┬───────────────────────────┘</span>
                       <span class="arch-muted">│ framework callbacks</span>
-                      ▼
+                      <span class="arch-muted">▼</span>
 <span class="arch-blue">┌─────────────────────────────────────────────────┐
 │              Adapter Layer                      │
 │  adapters/{adk,claude,openai,langchain,...}     │
 └─────────────────────┬───────────────────────────┘</span>
                       <span class="arch-muted">│ normalized events</span>
-                      ▼
+                      <span class="arch-muted">▼</span>
 <span class="arch-green">┌─────────────────────────────────────────────────┐
 │              Core Pipeline                      │
 │  CIM normalization → dedup → redaction → cost   │
 └─────────────────────┬───────────────────────────┘</span>
                       <span class="arch-muted">│ enriched events</span>
-                      ▼
+                      <span class="arch-muted">▼</span>
 <span class="arch-green">┌─────────────────────────────────────────────────┐
 │              Backend Layer                      │
 │  jsonl / webhook / otel / multi                 │
