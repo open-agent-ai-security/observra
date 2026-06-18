@@ -1132,19 +1132,19 @@ footer {
 │  (ADK / Claude / OpenAI / LangGraph / Pydantic) │
 └─────────────────────┬───────────────────────────┘</span>
                       <span class="arch-muted">│ framework callbacks</span>
-                      ▼
+                      <span class="arch-muted">▼</span>
 <span class="arch-blue">┌─────────────────────────────────────────────────┐
 │              Adapter Layer                      │
 │  adapters/{adk,claude,openai,langchain,...}     │
 └─────────────────────┬───────────────────────────┘</span>
                       <span class="arch-muted">│ normalized events</span>
-                      ▼
+                      <span class="arch-muted">▼</span>
 <span class="arch-green">┌─────────────────────────────────────────────────┐
 │              Core Pipeline                      │
 │  CIM normalization → dedup → redaction → cost   │
 └─────────────────────┬───────────────────────────┘</span>
                       <span class="arch-muted">│ enriched events</span>
-                      ▼
+                      <span class="arch-muted">▼</span>
 <span class="arch-green">┌─────────────────────────────────────────────────┐
 │              Backend Layer                      │
 │  jsonl / webhook / otel / multi                 │
