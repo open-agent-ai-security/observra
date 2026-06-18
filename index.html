@@ -968,21 +968,56 @@ footer {
   font-size: 12px;
   color: var(--text-muted);
 }
-.footer-sponsor {
+/* Sponsor band — official Exabeam white logo on a fixed dark panel so it
+   reads in both light and dark themes (Praxen-style sponsor treatment) */
+.sponsor-band {
+  position: relative;
+  overflow: hidden;
+  max-width: 1080px;
+  margin: 0 auto 40px;
+  padding: 34px 30px;
+  border: 1px solid #1A3050;
+  border-radius: 16px;
+  background: #0B1626;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 16px;
+  text-align: center;
 }
-.exabeam-wordmark {
-  font-family: 'Space Grotesk', sans-serif;
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--text-sub);
-  letter-spacing: -0.01em;
+.sponsor-band::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(460px 130px at 50% 118%, rgba(30,111,224,0.22), transparent 70%),
+    radial-gradient(460px 130px at 50% -18%, rgba(30,111,224,0.16), transparent 70%);
 }
-.exabeam-wordmark em {
-  font-style: normal;
-  color: var(--blue-lt);
+.sponsor-band > * { position: relative; z-index: 1; }
+.spb-lbl {
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #5E7A96;
+  font-weight: 600;
+}
+.spb-exa { display: inline-block; padding: 4px 6px; line-height: 0; }
+.spb-logo {
+  height: 30px;
+  width: auto;
+  display: block;
+  opacity: 0.96;
+  transition: opacity 0.2s ease;
+}
+.spb-exa:hover .spb-logo { opacity: 1; }
+.spb-note {
+  max-width: 540px;
+  margin: 2px 0 0;
+  color: #9FB6CC;
+  font-size: 14.5px;
+  line-height: 1.6;
 }
 
 /* ════════════════════════════════════════════════
@@ -1525,12 +1560,16 @@ atexit.register(observra.shutdown)
       </ul>
     </div>
   </div>
+  <div class="sponsor-band">
+    <span class="spb-lbl">Proudly sponsored by</span>
+    <a class="spb-exa" href="https://www.exabeam.com/" target="_blank" rel="noopener" aria-label="Exabeam">
+      <img class="spb-logo" src="assets/exabeam-logo-white.svg" alt="Exabeam" width="176" height="30">
+    </a>
+    <p class="spb-note">Exabeam contributed the initial code and continues to support Observra with ongoing development — part of its commitment to security in an increasingly agentic world.</p>
+  </div>
   <div class="footer-bottom">
     <span>Apache 2.0 License · © 2026 Exabeam, Inc.</span>
-    <div class="footer-sponsor">
-      Proudly sponsored by
-      <span class="exabeam-wordmark">exa<em>beam</em></span>
-    </div>
+    <a href="https://github.com/Exabeam/aba-telemetry" target="_blank" rel="noopener">github.com/Exabeam/aba-telemetry</a>
   </div>
 </footer>
 
