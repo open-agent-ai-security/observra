@@ -111,10 +111,8 @@ nav {
   list-style: none;
 }
 .nav-center a {
-  font-size: 12px;
+  font-size: 15px;
   font-weight: 500;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
   color: var(--text-sub);
   transition: color 0.18s;
 }
@@ -280,7 +278,11 @@ nav {
 }
 .hero h1 em {
   font-style: normal;
-  color: var(--blue-lt);
+  background: linear-gradient(100deg, var(--blue-lt), var(--blue));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
 }
 .hero-sub {
   font-size: 17px;
