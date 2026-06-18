@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 from typing import Optional
 
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 
 logger = logging.getLogger(__name__)
 
