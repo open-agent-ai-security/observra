@@ -1058,6 +1058,11 @@ footer {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
 </style>
+<!-- Cookieless web analytics — two tools side by side (temporary A/B comparison):
+     (1) GoatCounter — self-hosted count.js (assets/count.js, ISC), shared community endpoint.
+     (2) Cloudflare Web Analytics — a third-party beacon from static.cloudflareinsights.com. -->
+<script data-goatcounter="https://open-agent-ai-security.goatcounter.com/count" async src="assets/count.js"></script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "223642421cad463daf91bd9429a5f9a0"}'></script>
 </head>
 <body>
 
