@@ -2,6 +2,14 @@ name: Publish to PyPI
 
 on:
   workflow_dispatch:
+    inputs:
+      target:
+        description: "Publish target"
+        required: true
+        type: choice
+        options:
+          - testpypi
+          - pypi
 
 permissions:
   id-token: write
@@ -30,12 +38,13 @@ jobs:
           name: dist
           path: dist/
 
-  publish-pypi:
+  publish:
     needs: build
     runs-on: ubuntu-latest
-    environment: pypi
+    environment: ${{ inputs.target }}
     permissions:
       id-token: write
+      contents: read
     steps:
       - name: Download artifacts
         uses: actions/download-artifact@v4
@@ -44,22 +53,11 @@ jobs:
           path: dist/
 
       - name: Publish to PyPI
+        if: inputs.target == 'pypi'
         uses: pypa/gh-action-pypi-publish@release/v1
 
-  publish-testpypi:
-    needs: build
-    runs-on: ubuntu-latest
-    environment: testpypi
-    permissions:
-      id-token: write
-    steps:
-      - name: Download artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: dist
-          path: dist/
-
       - name: Publish to TestPyPI
+        if: inputs.target == 'testpypi'
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           repository-url: https://test.pypi.org/legacy/
