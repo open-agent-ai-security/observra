@@ -1,7 +1,8 @@
 """Integration tests for TelemetryPlugin."""
 
-import pytest
 from types import SimpleNamespace
+
+import pytest
 
 from observra.adapters.adk.plugin import TelemetryPlugin
 
@@ -467,7 +468,7 @@ async def test_on_event_skips_partial_streaming_chunks():
 @pytest.mark.asyncio
 async def test_after_run_resets_delegation_depth():
     """Test after_run_callback resets delegation depth as safety net."""
-    from observra.core.detection import get_delegation_depth, increment_delegation_depth
+    from observra.core.detection import get_delegation_depth
 
     plugin = TelemetryPlugin(queue=None)
     invocation_context = create_mock_invocation_context()
@@ -489,6 +490,7 @@ async def test_after_run_resets_delegation_depth():
 async def test_concurrent_request_model_name_isolation():
     """Test that model name doesn't bleed between concurrent requests."""
     import asyncio
+
     from observra.adapters.adk.plugin import _last_model_name_var
 
     plugin = TelemetryPlugin(queue=None)

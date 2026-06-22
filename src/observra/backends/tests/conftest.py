@@ -25,8 +25,8 @@ Covers all 11 intermediate module levels required by otel.py:
 
 import sys
 import types as _types
-import pytest
 
+import pytest
 
 # ---------------------------------------------------------------------------
 # Stub classes (used as fallback when real OTel SDK is NOT installed)
@@ -213,7 +213,7 @@ sys.modules.setdefault("opentelemetry.exporter.otlp.proto.http.trace_exporter", 
 @pytest.fixture(autouse=True)
 def init_context():
     """Initialize trace/session context before each test so create_event() works."""
-    from observra.core.context import initialize_trace, initialize_session
+    from observra.core.context import initialize_session, initialize_trace
     initialize_trace()
     initialize_session()
 
@@ -227,8 +227,9 @@ def patch_otlp_exporter(monkeypatch):
     BatchSpanProcessor flush. This fixture replaces it with a no-op class.
     """
     try:
-        import observra.backends.otel as otel_module
         from opentelemetry.sdk.trace.export import SpanExportResult
+
+        import observra.backends.otel as otel_module
 
         class _NoOpExporter:
             """Null exporter — discards all spans without network calls."""

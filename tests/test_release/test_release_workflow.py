@@ -5,7 +5,7 @@ Verifies that .github/workflows/release.yml contains the structural requirements
 that guarantee correct release behaviour without actually running the CI pipeline.
 """
 import pathlib
-import re
+
 import yaml
 
 REPO_ROOT = pathlib.Path(__file__).parent.parent.parent

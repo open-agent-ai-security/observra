@@ -24,7 +24,7 @@ That's it. Every LLM call, tool use, and agent handoff is captured.
 
 # ── Step 0: Your existing OpenAI agent (unchanged) ──────────────
 
-from agents import Agent, Runner, function_tool, add_trace_processor
+from agents import Agent, add_trace_processor, function_tool
 
 
 @function_tool
@@ -42,8 +42,8 @@ agent = Agent(
 
 # ── Step 1: Add telemetry (3 lines) ─────────────────────────────
 
-from observra import initialize
-from observra.adapters.openai import OpenAIAdapter
+from observra import initialize  # noqa: E402
+from observra.adapters.openai import OpenAIAdapter  # noqa: E402
 
 initialize(
     backend="jsonl",

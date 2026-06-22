@@ -37,9 +37,7 @@ from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.trace import set_tracer_provider
 from pydantic_ai import Agent
 
-
 # ── Step 1: Add telemetry ────────────────────────────────────────
-
 from observra import initialize
 from observra.adapters.pydantic_ai import PydanticAIAdapter
 

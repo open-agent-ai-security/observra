@@ -12,19 +12,19 @@ warnings.warn(
 )
 
 # Re-export all public symbols from the real package
-from observra import (
-    TelemetryEvent,
+from observra import (  # noqa: E402
     FrameworkAdapter,
-    __version__,
-    initialize,
-    create_plugin,
-    create_logging_handler,
-    get_stats,
-    get_session_cost,
+    TelemetryEvent,
     TelemetryLoggingHandler,
+    __version__,
     create_event,
+    create_logging_handler,
+    create_plugin,
+    get_session_cost,
+    get_stats,
+    initialize,
 )
-from observra.adapters.adk.plugin import TelemetryPlugin
+from observra.adapters.adk.plugin import TelemetryPlugin  # noqa: E402
 
 __all__ = [
     "TelemetryPlugin",

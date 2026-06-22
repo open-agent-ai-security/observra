@@ -10,7 +10,7 @@ handler attached becomes a telemetry event with type 'log_message'.
 
 import logging
 
-from observra import initialize, create_logging_handler
+from observra import create_logging_handler, initialize
 from observra.core.context import initialize_trace
 
 # Initialize telemetry

@@ -13,7 +13,6 @@ import pytest
 from observra.backends.otel import OTelExportBackend
 from observra.core.events import create_event
 
-
 # ---------------------------------------------------------------------------
 # Helper to create common TelemetryEvent instances
 # ---------------------------------------------------------------------------
@@ -262,7 +261,6 @@ class TestQueryAndErrors:
 
     def test_write_error_increments_error_count(self, captured_spans, monkeypatch):
         """If span creation raises, _errors increments and write() does not raise."""
-        import observra.backends.otel as otel_module
 
         backend = OTelExportBackend()
 

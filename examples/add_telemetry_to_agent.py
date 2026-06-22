@@ -34,7 +34,7 @@ root_agent = Agent(
 
 # ── Step 1: Add telemetry (3 lines) ───────────────────────────────
 
-from observra import initialize, create_plugin
+from observra import create_plugin, initialize  # noqa: E402
 
 initialize(
     backend="jsonl",

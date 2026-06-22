@@ -31,7 +31,6 @@ from typing import Optional
 
 from .core.context import (
     add_to_session_cost,
-    get_session_cost,
     get_span_id,
     initialize_trace,
     new_span,

@@ -11,7 +11,6 @@ LangChainAdapter's super().__init__() and method overrides succeed.
 import sys
 import types as _types
 
-
 # ---------------------------------------------------------------------------
 # Create stub langchain_core module hierarchy
 # ---------------------------------------------------------------------------

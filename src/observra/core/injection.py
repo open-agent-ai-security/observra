@@ -38,12 +38,17 @@ def get_injection_patterns() -> list[tuple[re.Pattern, InjectionMarker]]:
          InjectionMarker.JAILBREAK_ROLEPLAY),
 
         # 3. System prompt extraction attempts
-        (re.compile(r'\b(show me your|what are your|repeat your|ignore previous|print your system prompt|reveal your instructions)\b', re.IGNORECASE),
+        (re.compile(
+            r'\b(show me your|what are your|repeat your|ignore previous'
+            r'|print your system prompt|reveal your instructions)\b', re.IGNORECASE),
          InjectionMarker.SYSTEM_PROMPT_EXTRACTION),
 
         # 4. Instruction override attempts — handle verb forms (ignore/ignoring/ignored)
         #    and natural phrasing: "ignore all of my previous", "ignoring my previous", etc.
-        (re.compile(r'\b(ignor(?:e|ing|ed)\s+(?:all\s+)?(?:of\s+)?(?:my\s+)?(?:the\s+)?previous|forget your instructions|new instructions|disregard prior|override system)\b', re.IGNORECASE),
+        (re.compile(
+            r'\b(ignor(?:e|ing|ed)\s+(?:all\s+)?(?:of\s+)?(?:my\s+)?(?:the\s+)?previous'
+            r'|forget your instructions|new instructions|disregard prior|override system)\b',
+            re.IGNORECASE),
          InjectionMarker.INSTRUCTION_OVERRIDE),
 
         # 5. Base64 blob detection (20+ chars, specific charset)

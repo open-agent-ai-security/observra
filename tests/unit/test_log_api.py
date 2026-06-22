@@ -1,14 +1,14 @@
 """Unit tests for the explicit logging API (observra.log)."""
 
-import pytest
 from decimal import Decimal
 from unittest.mock import MagicMock, patch
 
+import pytest
+
+from observra import log
 from observra.core.context import get_span_id, new_span
 from observra.core.dedup import register_emission, reset_dedup
 from observra.core.events import EventType
-from observra import log
-
 
 # ---------------------------------------------------------------------------
 # Helpers

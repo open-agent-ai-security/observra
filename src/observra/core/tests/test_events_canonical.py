@@ -112,7 +112,7 @@ def test_cross_vendor_siem_rule_works_for_failure_signal() -> None:
     assert vendors == {"anthropic", "openai", "google", "microsoft"}
 
 
-from observra.core import cim as _cim
+from observra.core import cim as _cim  # noqa: E402
 
 
 def test_log_source_type_present_in_cold_path_event() -> None:

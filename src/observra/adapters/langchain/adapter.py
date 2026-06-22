@@ -41,11 +41,11 @@ from typing import Any, Optional
 
 from langchain_core.callbacks.base import BaseCallbackHandler
 
-from observra.core.events import create_event, TelemetryEvent
+from observra.adapters.utils import normalize_langchain_tokens, safe_serialize
+from observra.core.context import initialize_session, initialize_trace
 from observra.core.cost import CostCalculator
-from observra.core.context import initialize_trace, initialize_session
 from observra.core.dedup import register_emission, reset_dedup
-from observra.adapters.utils import safe_serialize, normalize_langchain_tokens
+from observra.core.events import TelemetryEvent, create_event
 
 logger = logging.getLogger(__name__)
 

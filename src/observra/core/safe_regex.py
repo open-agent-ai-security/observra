@@ -18,6 +18,7 @@ Usage:
 import queue
 import re
 import threading
+from typing import Union
 
 # Try to import google-re2. If not available, we fall back to stdlib re.
 try:
@@ -85,7 +86,7 @@ class SafeRegexError(ValueError):
 def compile_safe_pattern(
     pattern_str: str,
     max_length: int = MAX_PATTERN_LENGTH,
-) -> "Union[re.Pattern, re2.Pattern]":  # type: ignore[name-defined]
+) -> "Union[re.Pattern, re2.Pattern]":  # type: ignore[name-defined]  # noqa: F821
     """Compile a user-provided regex pattern with safety guardrails.
 
     Enforces:
@@ -125,7 +126,7 @@ def compile_safe_pattern(
     return _compile_with_re_fallback(pattern_str)
 
 
-def _compile_with_re2(pattern_str: str) -> "re2.Pattern":  # type: ignore[name-defined]
+def _compile_with_re2(pattern_str: str) -> "re2.Pattern":  # type: ignore[name-defined]  # noqa: F821
     """Compile using google-re2. RE2 natively rejects backtracking patterns."""
     try:
         return _re2_module.compile(pattern_str)

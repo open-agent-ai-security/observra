@@ -20,7 +20,7 @@ OpenAI Agents SDK run is never disrupted by telemetry errors.
 from __future__ import annotations
 
 import logging
-from datetime import datetime, timezone
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Optional
 
@@ -32,11 +32,11 @@ from agents.tracing.span_data import (
     HandoffSpanData,
 )
 
-from observra.core.events import create_event, TelemetryEvent
+from observra.adapters.utils import normalize_openai_tokens, safe_serialize
+from observra.core.context import initialize_session, initialize_trace
 from observra.core.cost import CostCalculator
-from observra.core.context import initialize_trace, initialize_session
 from observra.core.dedup import register_emission, reset_dedup
-from observra.adapters.utils import safe_serialize, normalize_openai_tokens
+from observra.core.events import TelemetryEvent, create_event
 
 logger = logging.getLogger(__name__)
 

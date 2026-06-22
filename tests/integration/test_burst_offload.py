@@ -12,11 +12,8 @@ Per 32-CONTEXT.md:
 - 5,000 events in 1s, asserts no queue overflow and p95 < 50ms
 """
 
-import statistics
 import threading
 import time
-from pathlib import Path
-from unittest.mock import patch
 
 import pytest
 
@@ -24,7 +21,6 @@ from observra.core.events import TelemetryEvent
 from observra.core.pool_writer import PooledWriter
 from observra.core.queue import DropOldestQueue
 from observra.core.worker import BackgroundWorker
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -209,13 +205,13 @@ def test_worker_crash_isolation(tmp_path):
     )
 
     # Track call count for the patch
-    call_count = {"n": 0}
-    original_write_batch = None
+    _call_count = {"n": 0}  # noqa: F841
+    _original_write_batch = None  # noqa: F841
 
     # We need to patch the module-level function used by the subprocess.
     # Since the subprocess uses its own memory space, we instead patch
     # submit_batch on PooledWriter to simulate the failure behavior.
-    original_submit = pw.submit_batch.__func__ if hasattr(pw.submit_batch, '__func__') else None
+    _original_submit = pw.submit_batch.__func__ if hasattr(pw.submit_batch, '__func__') else None  # noqa: F841
     submit_call_count = {"n": 0}
 
     def patched_submit(batch):

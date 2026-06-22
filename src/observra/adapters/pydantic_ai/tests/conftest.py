@@ -11,7 +11,6 @@ PydanticAIAdapter's super().__init__() and method overrides succeed.
 import sys
 import types as _types
 
-
 # ---------------------------------------------------------------------------
 # Create stub opentelemetry.sdk.trace module hierarchy
 # ---------------------------------------------------------------------------

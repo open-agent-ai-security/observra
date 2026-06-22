@@ -14,11 +14,10 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from observra.core.adapter import FrameworkAdapter
 from observra.adapters.adk.plugin import TelemetryPlugin
 from observra.adapters.utils import normalize_adk_tokens
+from observra.core.adapter import FrameworkAdapter
 from observra.core.events import create_event
-
 
 # ---------------------------------------------------------------------------
 # 1. Protocol conformance

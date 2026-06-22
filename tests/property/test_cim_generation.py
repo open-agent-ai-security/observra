@@ -10,11 +10,11 @@ Run with:
 
 import dataclasses
 import json
-from hypothesis import given, settings, HealthCheck
+
+from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
-from observra.core.events import create_event, TelemetryEvent
-
+from observra.core.events import TelemetryEvent, create_event
 
 # ---------------------------------------------------------------------------
 # Hypothesis strategies

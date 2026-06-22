@@ -19,10 +19,10 @@ use, cost, and anomaly automatically.
 """
 
 import os
+
 from google.adk.agents.llm_agent import Agent
 
-from observra import initialize, create_plugin
-
+from observra import create_plugin, initialize
 
 # ── Tools ──────────────────────────────────────────────────────────
 
@@ -38,7 +38,10 @@ def lookup_topic(topic: str) -> dict:
     return {
         "topic": topic,
         "status": "success",
-        "result": f"Use your knowledge to provide a clear, concise overview of: {topic}. Summarize key facts in 2-3 paragraphs.",
+        "result": (
+            f"Use your knowledge to provide a clear, concise overview of: {topic}. "
+            "Summarize key facts in 2-3 paragraphs."
+        ),
     }
 
 

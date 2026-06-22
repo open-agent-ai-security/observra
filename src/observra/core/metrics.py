@@ -13,7 +13,6 @@ Design constraints:
 import math
 import threading
 from collections import deque
-from typing import Any
 
 
 class RingBuffer:

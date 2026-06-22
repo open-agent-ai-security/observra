@@ -11,7 +11,6 @@ so OpenAIAdapter's __init_subclass__ and super() calls succeed.
 import sys
 import types as _types
 
-
 # ---------------------------------------------------------------------------
 # Create stub agents.tracing module hierarchy
 # ---------------------------------------------------------------------------

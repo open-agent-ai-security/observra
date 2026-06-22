@@ -15,13 +15,12 @@ import re
 
 import pytest
 
+from observra.core.redaction import Redactor
 from observra.core.safe_regex import (
     MAX_PATTERN_LENGTH,
     SafeRegexError,
     compile_safe_pattern,
 )
-from observra.core.redaction import Redactor
-
 
 # ── Test 1: valid pattern compiles and returns a compiled pattern ──────────────
 

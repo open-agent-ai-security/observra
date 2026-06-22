@@ -43,10 +43,10 @@ from typing import Any, Optional
 
 from opentelemetry.sdk.trace import SpanProcessor
 
-from observra.core.events import create_event, TelemetryEvent
+from observra.adapters.utils import NormalizedTokens, safe_serialize
 from observra.core.cost import CostCalculator
 from observra.core.dedup import register_emission
-from observra.adapters.utils import NormalizedTokens, safe_serialize
+from observra.core.events import TelemetryEvent, create_event
 
 logger = logging.getLogger(__name__)
 

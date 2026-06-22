@@ -4,9 +4,6 @@ TDD RED phase — all tests should FAIL before implementation.
 """
 
 import json
-import os
-import tempfile
-from pathlib import Path
 
 import pytest
 
@@ -17,7 +14,6 @@ from observra.core.encryption import (
     get_encryption_key,
 )
 from observra.core.events import TelemetryEvent
-
 
 # ─── Helper ──────────────────────────────────────────────────────────────────
 
@@ -97,7 +93,6 @@ def test_get_encryption_key_returns_none_when_unavailable(monkeypatch):
     """get_encryption_key() returns None when env var absent and keyring unavailable."""
     monkeypatch.delenv("ABA_TELEMETRY_KEY", raising=False)
     # Stub keyring to simulate unavailability
-    import sys
     # Ensure keyring fails gracefully — either missing or returning None
     try:
         import keyring
@@ -132,7 +127,7 @@ def test_jsonl_backend_encrypted_writes_non_json(monkeypatch, tmp_path):
         actual_path = output_path
 
     content = actual_path.read_text(encoding="utf-8")
-    lines = [l for l in content.splitlines() if l.strip()]
+    lines = [line for line in content.splitlines() if line.strip()]
     assert len(lines) >= 1
 
     for line in lines:
@@ -156,7 +151,7 @@ def test_backends_without_encryption_behave_normally(tmp_path):
     backend.close()
 
     content = output_path.read_text(encoding="utf-8")
-    lines = [l for l in content.splitlines() if l.strip()]
+    lines = [line for line in content.splitlines() if line.strip()]
     assert len(lines) == 1
     parsed = json.loads(lines[0])
     assert parsed["event_id"] == event.event_id

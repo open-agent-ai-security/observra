@@ -17,7 +17,6 @@ from unittest.mock import MagicMock
 
 import pytest
 
-
 # ---------------------------------------------------------------------------
 # Stub span data classes — patched into adapter module so isinstance() works
 # ---------------------------------------------------------------------------
@@ -59,7 +58,7 @@ def _patch_span_classes(monkeypatch):
 @pytest.fixture(autouse=True)
 def _init_context():
     """Initialize valid trace/session context for every test."""
-    from observra.core.context import initialize_trace, initialize_session
+    from observra.core.context import initialize_session, initialize_trace
     initialize_trace()
     initialize_session()
 
@@ -149,8 +148,8 @@ def _make_handoff_span(from_agent="orchestrator", to_agent="specialist",
 
 def test_openai_adapter_satisfies_protocol():
     """OpenAIAdapter must satisfy FrameworkAdapter Protocol."""
-    from observra.core.adapter import FrameworkAdapter
     from observra.adapters.openai.adapter import OpenAIAdapter
+    from observra.core.adapter import FrameworkAdapter
 
     adapter = OpenAIAdapter()
     assert isinstance(adapter, FrameworkAdapter), (
@@ -404,7 +403,7 @@ def test_error_resilience_in_on_span_end():
             raise RuntimeError("kaboom")
 
     # span_data that raises when accessed
-    bad_span = types.SimpleNamespace(
+    _bad_span = types.SimpleNamespace(  # noqa: F841
         span_id="bad-001",
         span_data=_MockAgentSpanData(name="x", tools=[], handoffs=None, output_type="str"),
     )
@@ -550,7 +549,7 @@ def test_pricing_config_loads_openai_models():
 
 def test_normalize_openai_tokens():
     """normalize_openai_tokens must return correct NormalizedTokens shape."""
-    from observra.adapters.utils import normalize_openai_tokens, NormalizedTokens
+    from observra.adapters.utils import NormalizedTokens, normalize_openai_tokens
 
     # Full usage dict with nested details
     usage = {

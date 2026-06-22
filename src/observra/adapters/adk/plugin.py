@@ -4,20 +4,34 @@ This module provides the core plugin class that captures every ADK lifecycle eve
 as a TelemetryEvent, using defensive error handling to ensure observation-only mode.
 """
 
+import logging
 import time
 from contextvars import ContextVar
 from decimal import Decimal
+
 from google.adk.plugins import BasePlugin
-from observra.core.events import create_event, TelemetryEvent
-from observra.core.context import initialize_trace, initialize_session, new_span, get_session_id, add_to_session_cost, reset_session_cost, get_session_cost
+
+from observra.adapters.utils import normalize_adk_tokens
+from observra.adapters.utils import safe_serialize as _safe_serialize
+from observra.core.context import (
+    add_to_session_cost,
+    initialize_trace,
+    new_span,
+    reset_session_cost,
+)
 from observra.core.cost import CostCalculator
 from observra.core.dedup import register_emission, reset_dedup
-from observra.core.detection import classify_error, initialize_delegation_depth, increment_delegation_depth, decrement_delegation_depth, get_delegation_depth, MAX_DELEGATION_DEPTH
-from observra.core.velocity import initialize_velocity_tracker, record_token_usage
-from observra.core.sequences import initialize_tool_sequence, record_tool_call, get_tool_sequence
+from observra.core.detection import (
+    MAX_DELEGATION_DEPTH,
+    classify_error,
+    decrement_delegation_depth,
+    increment_delegation_depth,
+    initialize_delegation_depth,
+)
+from observra.core.events import TelemetryEvent, create_event
 from observra.core.injection import detect_injection_patterns
-from observra.adapters.utils import normalize_adk_tokens, NormalizedTokens, safe_serialize as _safe_serialize
-import logging
+from observra.core.sequences import get_tool_sequence, initialize_tool_sequence, record_tool_call
+from observra.core.velocity import initialize_velocity_tracker, record_token_usage
 
 logger = logging.getLogger(__name__)
 
@@ -61,7 +75,15 @@ class TelemetryPlugin(BasePlugin):
     Phase 2: Events routed to async queue when available, fallback to in-memory.
     """
 
-    def __init__(self, queue=None, cost_calculator: CostCalculator | None = None, cost_threshold_usd: Decimal | None = None, max_delegation_depth: int | None = None, capture_tool_data: bool = False, max_sequence_length: int = 100):
+    def __init__(
+        self,
+        queue=None,
+        cost_calculator: CostCalculator | None = None,
+        cost_threshold_usd: Decimal | None = None,
+        max_delegation_depth: int | None = None,
+        capture_tool_data: bool = False,
+        max_sequence_length: int = 100,
+    ):
         """Initialize telemetry plugin with optional async queue and cost tracking.
 
         Args:
@@ -96,7 +118,11 @@ class TelemetryPlugin(BasePlugin):
         # NOTE: _last_model_name and _threshold_exceeded moved to module-level
         # ContextVars for concurrent request safety (plugin singleton is shared
         # across all requests in a Runner).
-        logger.debug(f"TelemetryPlugin initialized (queue={'async' if queue else 'in-memory'}, threshold={'$' + str(cost_threshold_usd) if cost_threshold_usd else 'none'}, capture_tool_data={capture_tool_data}, max_sequence_length={max_sequence_length})")
+        logger.debug(
+            f"TelemetryPlugin initialized (queue={'async' if queue else 'in-memory'}, "
+            f"threshold={'$' + str(cost_threshold_usd) if cost_threshold_usd else 'none'}, "
+            f"capture_tool_data={capture_tool_data}, max_sequence_length={max_sequence_length})"
+        )
 
     # ========================================================================
     # FrameworkAdapter Protocol

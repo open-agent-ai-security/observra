@@ -14,10 +14,10 @@ from __future__ import annotations
 import logging
 from typing import Iterator, Optional
 
-from opentelemetry.sdk.resources import Resource, SERVICE_NAME
+from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
+from opentelemetry.sdk.resources import SERVICE_NAME, Resource
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
-from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
 from opentelemetry.trace import SpanKind
 
 from observra.core.events import TelemetryEvent

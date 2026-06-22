@@ -3,8 +3,8 @@
 import json
 
 from observra.backends.jsonl import JSONLBackend
-from observra.core.storage import create_backend
 from observra.core.events import create_event
+from observra.core.storage import create_backend
 
 
 def test_jsonl_write_and_read(tmp_jsonl_path):

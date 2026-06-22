@@ -4,13 +4,13 @@ import logging
 from dataclasses import dataclass
 from typing import Any, Literal, Optional
 
-from .context import get_trace_id, get_session_id, get_span_id
-from .utils import generate_ulid, generate_timestamp
-from .redaction import Redactor
-from .hot_cold import is_hot_path, HOT_PATH_SAFE_STRING_KEYS
-from .rules import evaluate_rules
 from . import cim as _cim
+from .context import get_session_id, get_span_id, get_trace_id
 from .host_context import get_host_context
+from .hot_cold import HOT_PATH_SAFE_STRING_KEYS, is_hot_path
+from .redaction import Redactor
+from .rules import evaluate_rules
+from .utils import generate_timestamp, generate_ulid
 
 logger = logging.getLogger(__name__)
 
@@ -145,7 +145,10 @@ class EventType:
 
 
 # Framework name type alias
-FrameworkName = Literal["adk", "claude", "claude_code", "codex_cli", "codex_app", "gemini_cli", "openai", "langgraph", "pydantic-ai", "copilot", "mcp", "openclaw", "unknown"]
+FrameworkName = Literal[
+    "adk", "claude", "claude_code", "codex_cli", "codex_app", "gemini_cli",
+    "openai", "langgraph", "pydantic-ai", "copilot", "mcp", "openclaw", "unknown",
+]
 
 # Module-level redactor singleton (configured via initialize())
 _redactor: Redactor = Redactor()

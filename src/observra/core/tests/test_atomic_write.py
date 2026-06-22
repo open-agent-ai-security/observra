@@ -5,12 +5,8 @@ import json
 import threading
 from pathlib import Path
 
-import pytest
-
 from observra.core.atomic_write import (
     atomic_write_json,
-    atomic_write_text,
-    ConfigWriteError,
 )
 
 

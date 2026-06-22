@@ -8,13 +8,8 @@ Tests cover:
 - BackgroundWorker batch accumulation with PooledWriter
 """
 
-import queue
-import threading
 import time
-from pathlib import Path
-from unittest.mock import MagicMock, patch
-
-import pytest
+from unittest.mock import MagicMock
 
 from observra.core.events import TelemetryEvent
 
@@ -57,6 +52,7 @@ class TestPooledWriterImport:
     def test_process_pool_executor_used(self):
         """PooledWriter uses ProcessPoolExecutor (not ThreadPoolExecutor)."""
         import inspect
+
         from observra.core import pool_writer
         source = inspect.getsource(pool_writer)
         assert "ProcessPoolExecutor" in source
@@ -168,6 +164,7 @@ class TestPooledWriterBrokenPool:
     def test_broken_pool_triggers_recreation_and_retry(self, tmp_path):
         """BrokenProcessPool exception triggers pool recreation and one retry."""
         from concurrent.futures.process import BrokenProcessPool
+
         from observra.core.pool_writer import PooledWriter
 
         path = tmp_path / "telemetry.jsonl"
@@ -179,8 +176,8 @@ class TestPooledWriterBrokenPool:
 
         # Patch the executor's submit to raise BrokenProcessPool on first call,
         # then succeed on second call after pool recreation
-        original_create_pool = pw._create_pool
-        call_count = {"n": 0}
+        _original_create_pool = pw._create_pool  # noqa: F841
+        _call_count = {"n": 0}  # noqa: F841
 
         mock_future = MagicMock()
         mock_future.result.return_value = 1
@@ -211,8 +208,8 @@ class TestPooledWriterBrokenPool:
     def test_broken_pool_on_retry_logs_error_no_infinite_loop(self, tmp_path):
         """BrokenProcessPool on retry logs error and does NOT retry again."""
         from concurrent.futures.process import BrokenProcessPool
+
         from observra.core.pool_writer import PooledWriter
-        import logging
 
         path = tmp_path / "telemetry.jsonl"
         pw = PooledWriter(
@@ -273,8 +270,9 @@ class TestPooledWriterTimeout:
 
     def test_future_result_called_with_timeout(self, tmp_path):
         """future.result() is called with a timeout argument."""
-        from observra.core.pool_writer import PooledWriter
         import inspect
+
+        from observra.core.pool_writer import PooledWriter
         source = inspect.getsource(PooledWriter.submit_batch)
         # The implementation should call future.result(timeout=...)
         assert "timeout=" in source or "result(" in source
@@ -291,9 +289,9 @@ class TestBackgroundWorkerBatchAccumulation:
 
     def test_worker_with_pooled_writer_has_batch_params(self, tmp_path):
         """BackgroundWorker accepts batch_size and batch_timeout parameters."""
-        from observra.core.worker import BackgroundWorker
         from observra.core.pool_writer import PooledWriter
         from observra.core.queue import DropOldestQueue
+        from observra.core.worker import BackgroundWorker
 
         path = tmp_path / "telemetry.jsonl"
         pw = PooledWriter(
@@ -307,9 +305,9 @@ class TestBackgroundWorkerBatchAccumulation:
 
     def test_worker_with_pooled_writer_accumulates_into_batch(self, tmp_path):
         """BackgroundWorker accumulates events and submits batch to PooledWriter."""
-        from observra.core.worker import BackgroundWorker
         from observra.core.pool_writer import PooledWriter
         from observra.core.queue import DropOldestQueue
+        from observra.core.worker import BackgroundWorker
 
         path = tmp_path / "telemetry.jsonl"
         pw = PooledWriter(
@@ -336,9 +334,9 @@ class TestBackgroundWorkerBatchAccumulation:
 
     def test_worker_with_pooled_writer_flushes_partial_batch_on_timeout(self, tmp_path):
         """BackgroundWorker flushes partial batch on idle timeout (< batch_size)."""
-        from observra.core.worker import BackgroundWorker
         from observra.core.pool_writer import PooledWriter
         from observra.core.queue import DropOldestQueue
+        from observra.core.worker import BackgroundWorker
 
         path = tmp_path / "telemetry.jsonl"
         pw = PooledWriter(
@@ -364,9 +362,9 @@ class TestBackgroundWorkerBatchAccumulation:
 
     def test_worker_non_pooled_backend_uses_single_event_path(self, tmp_path):
         """BackgroundWorker with non-PooledWriter backend uses original write path."""
-        from observra.core.worker import BackgroundWorker
-        from observra.core.storage import create_backend
         from observra.core.queue import DropOldestQueue
+        from observra.core.storage import create_backend
+        from observra.core.worker import BackgroundWorker
 
         path = tmp_path / "telemetry.jsonl"
         backend = create_backend("jsonl", path=str(path))
@@ -386,9 +384,9 @@ class TestBackgroundWorkerBatchAccumulation:
 
     def test_worker_get_stats_includes_batches_submitted(self, tmp_path):
         """BackgroundWorker.get_stats() includes batches_submitted when using PooledWriter."""
-        from observra.core.worker import BackgroundWorker
         from observra.core.pool_writer import PooledWriter
         from observra.core.queue import DropOldestQueue
+        from observra.core.worker import BackgroundWorker
 
         path = tmp_path / "telemetry.jsonl"
         pw = PooledWriter(
@@ -413,9 +411,9 @@ class TestBackgroundWorkerBatchAccumulation:
 
     def test_worker_flushes_partial_batch_on_shutdown(self, tmp_path):
         """Remaining batch is flushed before shutdown (sentinel with partial batch pending)."""
-        from observra.core.worker import BackgroundWorker
         from observra.core.pool_writer import PooledWriter
         from observra.core.queue import DropOldestQueue
+        from observra.core.worker import BackgroundWorker
 
         path = tmp_path / "telemetry.jsonl"
         pw = PooledWriter(

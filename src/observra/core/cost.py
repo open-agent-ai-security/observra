@@ -7,7 +7,7 @@ Decimal precision, and ModelPricing dataclass for pricing configuration.
 import json
 import logging
 from dataclasses import dataclass
-from decimal import Decimal, ROUND_HALF_UP
+from decimal import ROUND_HALF_UP, Decimal
 from pathlib import Path
 from typing import Optional
 

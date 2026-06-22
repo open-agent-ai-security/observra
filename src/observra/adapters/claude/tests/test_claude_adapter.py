@@ -20,16 +20,15 @@ import types
 import warnings
 from decimal import Decimal
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
 
 import observra.adapters.utils as utils_module
-from observra.core.context import initialize_session, initialize_trace
-from observra.core.events import create_event
 from observra.adapters.claude.adapter import ClaudeAdapter
 from observra.adapters.utils import estimate_tokens, safe_serialize
-
+from observra.core.context import initialize_session, initialize_trace
+from observra.core.events import create_event
 
 # ---------------------------------------------------------------------------
 # Global session fixture — valid context required for create_event()
@@ -508,7 +507,7 @@ def test_cost_threshold_exceeded_emitted_when_session_cost_exceeds_threshold():
     )
     # Note: 'message' field is stripped by hot-path processing (cost_threshold_exceeded is HOT_PATH)
 
-    event_count_after_first = len(adapter._events)
+    _event_count_after_first = len(adapter._events)  # noqa: F841
 
     # Second ResultMessage — also exceeds threshold, but only-once guard prevents re-emission
     result_msg_2 = types.SimpleNamespace(

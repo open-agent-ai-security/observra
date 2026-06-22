@@ -85,7 +85,7 @@ def test_bench_contextvar_propagation(benchmark):
     Measures the overhead of the ContextVar-based trace/session propagation
     that runs on every event capture path.
     """
-    from observra.core.context import trace_id_var, session_id_var
+    from observra.core.context import session_id_var, trace_id_var
 
     def run_propagation():
         token1 = trace_id_var.set("trace-abc-123")

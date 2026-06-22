@@ -1,5 +1,6 @@
 """Framework adapter protocol for agent telemetry."""
 from typing import Protocol, runtime_checkable
+
 from .events import TelemetryEvent
 
 

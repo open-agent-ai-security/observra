@@ -16,10 +16,10 @@ from datetime import datetime, timezone
 from typing import Iterator, Literal, Optional
 
 from opentelemetry._logs import LogRecord, SeverityNumber
+from opentelemetry.exporter.otlp.proto.http._log_exporter import OTLPLogExporter
 from opentelemetry.sdk._logs import LoggerProvider
 from opentelemetry.sdk._logs.export import BatchLogRecordProcessor
-from opentelemetry.exporter.otlp.proto.http._log_exporter import OTLPLogExporter
-from opentelemetry.sdk.resources import Resource, SERVICE_NAME
+from opentelemetry.sdk.resources import SERVICE_NAME, Resource
 
 from observra.core.events import TelemetryEvent
 from observra.core.types import BackendStats

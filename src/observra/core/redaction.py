@@ -4,8 +4,8 @@ import re
 from typing import Any
 
 from .metrics import _registry
-from .patterns import get_compiled_patterns, redact_string
-from .safe_regex import SafeRegexError, compile_safe_pattern
+from .patterns import redact_string
+from .safe_regex import compile_safe_pattern
 
 
 class Redactor:

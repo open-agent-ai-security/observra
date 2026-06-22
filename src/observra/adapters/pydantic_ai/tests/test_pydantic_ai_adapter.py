@@ -11,12 +11,10 @@ All tests use types.SimpleNamespace to create mock ReadableSpan objects (duck-ty
 """
 
 import types
-from decimal import Decimal
 from pathlib import Path
 from unittest.mock import MagicMock
 
 import pytest
-
 
 # ---------------------------------------------------------------------------
 # Mock span factories
@@ -72,7 +70,7 @@ def _make_agent_span(agent_name="test_agent"):
 @pytest.fixture(autouse=True)
 def _init_context():
     """Initialize valid trace/session context for every test."""
-    from observra.core.context import initialize_trace, initialize_session
+    from observra.core.context import initialize_session, initialize_trace
     initialize_trace()
     initialize_session()
 
@@ -83,8 +81,8 @@ def _init_context():
 
 def test_protocol_conformance():
     """PydanticAIAdapter must satisfy FrameworkAdapter Protocol with framework_name='pydantic-ai'."""
-    from observra.core.adapter import FrameworkAdapter
     from observra.adapters.pydantic_ai.adapter import PydanticAIAdapter
+    from observra.core.adapter import FrameworkAdapter
 
     adapter = PydanticAIAdapter()
     assert isinstance(adapter, FrameworkAdapter), (

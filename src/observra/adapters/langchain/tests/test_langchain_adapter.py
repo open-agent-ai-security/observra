@@ -17,7 +17,6 @@ from unittest.mock import MagicMock
 
 import pytest
 
-
 # ---------------------------------------------------------------------------
 # Mock LLMResult factories
 # ---------------------------------------------------------------------------
@@ -83,7 +82,7 @@ def _make_run_id():
 @pytest.fixture(autouse=True)
 def _init_context():
     """Initialize valid trace/session context for every test."""
-    from observra.core.context import initialize_trace, initialize_session
+    from observra.core.context import initialize_session, initialize_trace
     initialize_trace()
     initialize_session()
 
@@ -94,8 +93,8 @@ def _init_context():
 
 def test_langchain_adapter_satisfies_protocol():
     """LangChainAdapter must satisfy FrameworkAdapter Protocol with framework_name='langgraph'."""
-    from observra.core.adapter import FrameworkAdapter
     from observra.adapters.langchain.adapter import LangChainAdapter
+    from observra.core.adapter import FrameworkAdapter
 
     adapter = LangChainAdapter()
     assert isinstance(adapter, FrameworkAdapter), (
@@ -518,7 +517,7 @@ def test_pricing_config_loads_models():
 
 def test_normalize_langchain_tokens_all_paths():
     """normalize_langchain_tokens must handle all 3 extraction paths, None, and empty response."""
-    from observra.adapters.utils import normalize_langchain_tokens, NormalizedTokens
+    from observra.adapters.utils import NormalizedTokens, normalize_langchain_tokens
 
     # (a) usage_metadata path
     result_a = normalize_langchain_tokens(

@@ -8,14 +8,14 @@ Usage:
     from observra.public import initialize, TelemetryEvent, ADKAdapter
 """
 from observra import (
-    initialize,
-    create_plugin,
-    create_logging_handler,
-    get_stats,
     TelemetryEvent,
+    create_logging_handler,
+    create_plugin,
+    get_stats,
+    initialize,
+    observability,
 )
 from observra.core.storage import StorageBackend
-from observra import observability
 
 # Convenience re-export: stable get_metrics surface (OBS-01)
 get_metrics = observability.get_metrics

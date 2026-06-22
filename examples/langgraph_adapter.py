@@ -28,9 +28,8 @@ Works with any LLM provider (OpenAI, Anthropic, Gemini, etc.).
 
 # ── Step 0: Your existing LangGraph agent (unchanged) ───────────
 
-from langgraph.graph import StateGraph, MessagesState
-from langchain_core.messages import HumanMessage
 from langchain_openai import ChatOpenAI
+from langgraph.graph import MessagesState, StateGraph
 
 llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
 
@@ -51,8 +50,8 @@ app = graph.compile()
 
 # ── Step 1: Add telemetry (3 lines) ─────────────────────────────
 
-from observra import initialize
-from observra.adapters.langchain import LangChainAdapter
+from observra import initialize  # noqa: E402
+from observra.adapters.langchain import LangChainAdapter  # noqa: E402
 
 initialize(
     backend="jsonl",

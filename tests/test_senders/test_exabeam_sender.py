@@ -9,11 +9,12 @@ Covers all ACs from Story 3.1:
 """
 
 import os
-import pytest
 from unittest.mock import MagicMock, patch
 
+import pytest
+
+from observra.core.context import initialize_session, initialize_trace
 from observra.core.events import create_event
-from observra.core.context import initialize_trace, initialize_session
 
 
 def _make_env(
@@ -719,9 +720,10 @@ class TestStorageBackendProtocol:
 
     def test_multibackend_exabeam_failure_does_not_block_jsonl(self, tmp_path):
         """Exabeam failure in MultiBackend must not prevent JSONLBackend from writing."""
-        from observra.backends.multi import MultiBackend
-        from observra.backends.jsonl import JSONLBackend
         import json
+
+        from observra.backends.jsonl import JSONLBackend
+        from observra.backends.multi import MultiBackend
 
         jsonl_path = tmp_path / "telemetry.jsonl"
         jsonl_backend = JSONLBackend(path=str(jsonl_path))

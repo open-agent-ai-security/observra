@@ -32,10 +32,12 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 logging.basicConfig(level=logging.WARNING)
 
-from observra.core.events import create_event, EventType, TelemetryEvent
-from observra.core.context import (
-    initialize_trace, initialize_session, new_span,
+from observra.core.context import (  # noqa: E402
+    initialize_session,
+    initialize_trace,
+    new_span,
 )
+from observra.core.events import EventType, TelemetryEvent, create_event  # noqa: E402
 
 # ── Shared state ────────────────────────────────────────────────────────
 _all_events: list[TelemetryEvent] = []
@@ -82,7 +84,9 @@ def run_adk_session(verbose: bool = False) -> list[TelemetryEvent]:
         await plugin.before_model_callback(callback_context=cb_ctx, llm_request=llm_req)
         await plugin.after_model_callback(callback_context=cb_ctx, llm_response=llm_resp)
         await plugin.before_tool_callback(tool=tool, tool_args={}, tool_context=tool_ctx)
-        await plugin.after_tool_callback(tool=tool, tool_args={}, tool_context=tool_ctx, result="CVE-2024-1234: Critical RCE")
+        await plugin.after_tool_callback(
+            tool=tool, tool_args={}, tool_context=tool_ctx, result="CVE-2024-1234: Critical RCE"
+        )
         await plugin.after_agent_callback(agent=agent, callback_context=cb_ctx)
         await plugin.after_run_callback(invocation_context=ctx)
         await plugin.close()
@@ -101,16 +105,20 @@ def run_adk_session(verbose: bool = False) -> list[TelemetryEvent]:
 
 # Stub SDK modules for mock mode
 class _MockAgentSpanData:
-    def __init__(self, **kw): self.__dict__.update(kw)
+    def __init__(self, **kw):
+        self.__dict__.update(kw)
 
 class _MockGenerationSpanData:
-    def __init__(self, **kw): self.__dict__.update(kw)
+    def __init__(self, **kw):
+        self.__dict__.update(kw)
 
 class _MockFunctionSpanData:
-    def __init__(self, **kw): self.__dict__.update(kw)
+    def __init__(self, **kw):
+        self.__dict__.update(kw)
 
 class _MockHandoffSpanData:
-    def __init__(self, **kw): self.__dict__.update(kw)
+    def __init__(self, **kw):
+        self.__dict__.update(kw)
 
 def _ensure_openai_stubs():
     """Inject agents.tracing stubs if not installed."""
@@ -132,7 +140,8 @@ def _ensure_openai_stubs():
     msd.GenerationSpanData = _MockGenerationSpanData
     msd.FunctionSpanData = _MockFunctionSpanData
     msd.HandoffSpanData = _MockHandoffSpanData
-    m.tracing = mt; mt.span_data = msd
+    m.tracing = mt
+    mt.span_data = msd
     sys.modules["agents"] = m
     sys.modules["agents.tracing"] = mt
     sys.modules["agents.tracing.span_data"] = msd
@@ -143,14 +152,15 @@ def run_openai_session(verbose: bool = False) -> list[TelemetryEvent]:
     print("\n── OpenAI (GPT-4o) ──")
     _ensure_openai_stubs()
 
-    from observra.adapters.openai.adapter import OpenAIAdapter
     import observra.adapters.openai.adapter as mod
+    from observra.adapters.openai.adapter import OpenAIAdapter
     mod.AgentSpanData = _MockAgentSpanData
     mod.GenerationSpanData = _MockGenerationSpanData
     mod.FunctionSpanData = _MockFunctionSpanData
     mod.HandoffSpanData = _MockHandoffSpanData
 
-    initialize_trace(); initialize_session()
+    initialize_trace()
+    initialize_session()
     adapter = OpenAIAdapter(queue=None, capture_tool_data=True)
 
     # Agent span start -> session_start
@@ -198,7 +208,8 @@ def run_claude_session(verbose: bool = False) -> list[TelemetryEvent]:
     import observra.adapters.utils as utils_mod
     utils_mod.TIKTOKEN_DISABLED = True
 
-    initialize_trace(); initialize_session()
+    initialize_trace()
+    initialize_session()
     from observra.adapters.claude.adapter import ClaudeAdapter
     adapter = ClaudeAdapter(queue=None)
 
@@ -265,7 +276,8 @@ def _ensure_langchain_stubs():
     lco = types.ModuleType("langchain_core.outputs")
     lcbb.BaseCallbackHandler = _BCH
     lco.LLMResult = type("LLMResult", (), {})
-    lc.callbacks = lcb; lcb.base = lcbb
+    lc.callbacks = lcb
+    lcb.base = lcbb
     sys.modules.setdefault("langchain_core", lc)
     sys.modules.setdefault("langchain_core.callbacks", lcb)
     sys.modules.setdefault("langchain_core.callbacks.base", lcbb)
@@ -277,7 +289,8 @@ def run_langgraph_session(verbose: bool = False) -> list[TelemetryEvent]:
     print("\n── LangGraph (Gemini 2.5 Pro) ──")
     _ensure_langchain_stubs()
 
-    initialize_trace(); initialize_session()
+    initialize_trace()
+    initialize_session()
     from observra.adapters.langchain.adapter import LangChainAdapter
     adapter = LangChainAdapter(queue=None, capture_tool_data=False)
 
@@ -331,7 +344,8 @@ def _ensure_otel_stubs():
     ost = types.ModuleType("opentelemetry.sdk.trace")
     ost.SpanProcessor = _SP
     ost.ReadableSpan = type("ReadableSpan", (), {})
-    o.sdk = os_; os_.trace = ost
+    o.sdk = os_
+    os_.trace = ost
     sys.modules.setdefault("opentelemetry", o)
     sys.modules.setdefault("opentelemetry.sdk", os_)
     sys.modules.setdefault("opentelemetry.sdk.trace", ost)
@@ -342,7 +356,8 @@ def run_pydantic_ai_session(verbose: bool = False) -> list[TelemetryEvent]:
     print("\n── Pydantic AI (GPT-4o) ──")
     _ensure_otel_stubs()
 
-    initialize_trace(); initialize_session()
+    initialize_trace()
+    initialize_session()
     from observra.adapters.pydantic_ai.adapter import PydanticAIAdapter
     adapter = PydanticAIAdapter(capture_tool_data=True)
 
@@ -373,11 +388,14 @@ def run_copilot_session(verbose: bool = False) -> list[TelemetryEvent]:
     print("\n── Copilot (Azure GPT-4o) ──")
     from observra.adapters.copilot.adapter import CopilotAdapter
 
-    initialize_trace(); initialize_session()
+    initialize_trace()
+    initialize_session()
     adapter = CopilotAdapter(queue=None)
 
     adapter.emit(create_event(EventType.SESSION_START, agent_name="customer_support_copilot", framework="copilot"))
-    adapter.emit(create_event(EventType.USER_MESSAGE, agent_name="customer_support_copilot", framework="copilot", has_injection_patterns=False))
+    adapter.emit(create_event(
+        EventType.USER_MESSAGE, agent_name="customer_support_copilot",
+        framework="copilot", has_injection_patterns=False))
 
     new_span()
     adapter.emit(create_event(EventType.AGENT_START, agent_name="customer_support_copilot", framework="copilot"))
@@ -386,12 +404,16 @@ def run_copilot_session(verbose: bool = False) -> list[TelemetryEvent]:
         input_tokens=420, output_tokens=180, total_tokens=600, cost_usd=0.00285))
 
     new_span()
-    adapter.emit(create_event(EventType.TOOL_START, tool_name="search_knowledge_base", framework="copilot", tool_type="connector"))
+    adapter.emit(create_event(
+        EventType.TOOL_START, tool_name="search_knowledge_base",
+        framework="copilot", tool_type="connector"))
     adapter.emit(create_event(EventType.TOOL_END, tool_name="search_knowledge_base", framework="copilot",
         tool_type="connector", duration_ms=890.3, tool_result="KB article: Reset password via SSO portal"))
 
     new_span()
-    adapter.emit(create_event(EventType.TOOL_START, tool_name="enrich_customer_context", framework="copilot", tool_type="power-automate"))
+    adapter.emit(create_event(
+        EventType.TOOL_START, tool_name="enrich_customer_context",
+        framework="copilot", tool_type="power-automate"))
     adapter.emit(create_event(EventType.TOOL_END, tool_name="enrich_customer_context", framework="copilot",
         tool_type="power-automate", duration_ms=1450.7))
 
@@ -416,9 +438,11 @@ def _transform(event: TelemetryEvent) -> dict:
     raw = asdict(event)
     data = raw.get("data") or {}
     dur = data.pop("duration_ms", None)
-    if dur is not None: dur = float(dur)
+    if dur is not None:
+        dur = float(dur)
     success = data.pop("success", None)
-    if success is not None: success = bool(success)
+    if success is not None:
+        success = bool(success)
     err_type = data.pop("error_type", None)
     return {
         "event_id": raw["event_id"],
@@ -441,7 +465,8 @@ def _transform(event: TelemetryEvent) -> dict:
 # ========================================================================
 
 def _fmt(val) -> str:
-    if val is None: return "-"
+    if val is None:
+        return "-"
     if isinstance(val, float):
         return f"{val:.6f}" if val < 0.01 else f"{val:.4f}"
     return str(val)
@@ -493,7 +518,8 @@ def print_normalization_table(events: list[TelemetryEvent]):
 
         # top
         print("┌─" + "─"*label_w + "─" + "".join("┬─" + "─"*col_w[f] + "─" for f in FRAMEWORK_ORDER) + "┐")
-        print("│ " + "Field".ljust(label_w) + " " + "".join("│ " + FRAMEWORK_LABELS[f].ljust(col_w[f]) + " " for f in FRAMEWORK_ORDER) + "│")
+        hdr = "".join("│ " + FRAMEWORK_LABELS[f].ljust(col_w[f]) + " " for f in FRAMEWORK_ORDER)
+        print("│ " + "Field".ljust(label_w) + " " + hdr + "│")
         print("├─" + "─"*label_w + "─" + "".join("┼─" + "─"*col_w[f] + "─" for f in FRAMEWORK_ORDER) + "┤")
         for fname, ext in fields:
             row = "│ " + fname.ljust(label_w) + " "
@@ -566,7 +592,7 @@ def main():
         print(f"  {FRAMEWORK_LABELS[fw]:>11}  {bar} {count}")
     print(f"\nTotal: {len(_all_events)} events, {len(fw_counts)} frameworks, 1 unified schema")
     print(f"JSONL: {output_path}")
-    print(f"\nEvery framework → same field names → same SIEM rules → one pane of glass.")
+    print("\nEvery framework → same field names → same SIEM rules → one pane of glass.")
 
 
 if __name__ == "__main__":

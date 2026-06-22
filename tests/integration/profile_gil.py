@@ -11,17 +11,17 @@ Or without py-spy (prints timing comparison):
 import os
 import sys
 import time
-import threading
 
 # Add project root to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 
+import tempfile
+
+from observra.backends.jsonl import JSONLBackend
 from observra.core.events import TelemetryEvent, create_event
+from observra.core.pool_writer import PooledWriter
 from observra.core.queue import DropOldestQueue
 from observra.core.worker import BackgroundWorker
-from observra.core.pool_writer import PooledWriter
-from observra.backends.jsonl import JSONLBackend
-import tempfile
 
 
 def make_events(n: int) -> list[TelemetryEvent]:
@@ -106,15 +106,15 @@ def main():
             t_pooled = run_pooled(events, tmpdir)
             print(f"Pooled: {t_pooled:.3f}s ({n_events/t_pooled:.0f} events/s)")
 
-            print(f"\n--- Summary ---")
+            print("\n--- Summary ---")
             print(f"Direct: {t_direct:.3f}s")
             print(f"Pooled: {t_pooled:.3f}s")
             if t_direct > 0:
                 ratio = t_direct / t_pooled if t_pooled > 0 else float('inf')
                 print(f"Speedup: {ratio:.2f}x")
-            print(f"\nGIL analysis: ProcessPoolExecutor uses separate processes.")
-            print(f"By definition, child processes have their own GIL.")
-            print(f"The main thread's GIL is NOT held during subprocess I/O.")
+            print("\nGIL analysis: ProcessPoolExecutor uses separate processes.")
+            print("By definition, child processes have their own GIL.")
+            print("The main thread's GIL is NOT held during subprocess I/O.")
         else:
             print(f"Unknown mode: {mode}")
             print("Usage: python3 profile_gil.py [direct|pooled|compare]")

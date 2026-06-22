@@ -9,8 +9,8 @@ __version__ = "1.0.1"
 
 logger = logging.getLogger(__name__)
 
-_worker: Optional["BackgroundWorker"] = None
-_queue: Optional["DropOldestQueue"] = None
+_worker: Optional["BackgroundWorker"] = None  # noqa: F821
+_queue: Optional["DropOldestQueue"] = None  # noqa: F821
 _cost_calculator = None
 _cost_threshold = None
 _max_sequence_length: int = 100
@@ -163,9 +163,9 @@ def get_stats() -> dict:
     return stats
 
 
+from observra import observability  # noqa: E402
 from observra.core.events import TelemetryEvent  # noqa: E402
 from observra.core.storage import StorageBackend  # noqa: E402
-from observra import observability  # noqa: E402
 
 get_metrics = observability.get_metrics
 

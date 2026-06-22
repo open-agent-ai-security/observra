@@ -3,12 +3,9 @@
 import json
 import os
 import subprocess
-import sys
 from unittest.mock import patch
 
 from observra.core.events import TelemetryEvent, create_event
-from observra.core import cim
-
 
 # ---------------------------------------------------------------------------
 # Canonical JSON helpers

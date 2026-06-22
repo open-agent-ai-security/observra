@@ -7,7 +7,7 @@ Demonstrates configuring cost threshold alerts. When the accumulated session
 cost exceeds the threshold, a `cost_threshold_exceeded` event is emitted.
 """
 
-from observra import initialize, create_plugin
+from observra import create_plugin, initialize
 
 # Initialize with cost threshold at $5.00
 initialize(
@@ -19,8 +19,8 @@ initialize(
 plugin = create_plugin()
 
 print("Cost tracking configured:")
-print(f"  Threshold: $5.00")
-print(f"  Pricing: bundled Gemini models (Flash, Pro, etc.)")
+print("  Threshold: $5.00")
+print("  Pricing: bundled Gemini models (Flash, Pro, etc.)")
 print()
 print("How it works:")
 print("  1. Every after_model event includes: input_tokens, output_tokens, cost_usd")

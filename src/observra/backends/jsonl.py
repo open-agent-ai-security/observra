@@ -79,7 +79,10 @@ class JSONLBackend:
         self._oldest_ts: float | None = None
         self._newest_ts: float | None = None
 
-        logger.debug(f"Initialized JSONLBackend: path={self._path}, max_bytes={max_bytes}, encrypted={self._encryption is not None}")
+        logger.debug(
+            f"Initialized JSONLBackend: path={self._path}, max_bytes={max_bytes}, "
+            f"encrypted={self._encryption is not None}"
+        )
 
     def write(self, event: TelemetryEvent) -> None:
         """Write a single event as a JSON line.

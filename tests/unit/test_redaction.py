@@ -1,9 +1,8 @@
 """Unit tests for redaction module."""
 
-import re
 
-from observra.core.redaction import Redactor
 from observra.core.patterns import redact_string
+from observra.core.redaction import Redactor
 
 
 def test_redact_api_key():

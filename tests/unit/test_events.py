@@ -1,9 +1,10 @@
 """Unit tests for events module."""
 
-import pytest
 from dataclasses import FrozenInstanceError
 
-from observra.core.events import create_event, TelemetryEvent
+import pytest
+
+from observra.core.events import TelemetryEvent, create_event
 
 
 def test_create_event_has_required_fields():

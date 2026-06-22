@@ -27,7 +27,6 @@ from observra.adapters.adk.plugin import TelemetryPlugin
 from observra.core.detection import MAX_DELEGATION_DEPTH
 from observra.core.events import create_event
 
-
 # ─── Helpers ──────────────────────────────────────────────────────────────────
 
 def make_ctx(agent_name="security_analyst"):
@@ -693,6 +692,6 @@ async def test_all_nine_detection_rules_fire():
     }
     missing = expected - rules_seen
     assert not missing, (
-        f"These detection rules never fired — check the rule conditions and test inputs:\n"
+        "These detection rules never fired — check the rule conditions and test inputs:\n"
         + "\n".join(f"  - {r}" for r in sorted(missing))
     )

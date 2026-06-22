@@ -6,6 +6,7 @@ Verifies that all ecosystem version pins are aligned before a release tag is pus
 import json
 import pathlib
 import re
+
 import tomllib
 
 REPO_ROOT = pathlib.Path(__file__).parent.parent.parent

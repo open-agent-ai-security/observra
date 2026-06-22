@@ -6,7 +6,7 @@ Covers:
   - OTel attributes remain unchanged regardless of body_schema
 """
 import json
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
 

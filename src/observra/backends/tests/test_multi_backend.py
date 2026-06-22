@@ -17,7 +17,6 @@ from observra.backends.multi import MultiBackend
 from observra.core.events import create_event
 from observra.core.types import BackendStats
 
-
 # ---------------------------------------------------------------------------
 # Inline mock backend helpers
 # ---------------------------------------------------------------------------

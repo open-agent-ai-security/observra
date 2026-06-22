@@ -39,10 +39,15 @@ def get_compiled_patterns() -> list[tuple[re.Pattern, RedactionMarker]]:
         (re.compile(r'\b([A-Za-z0-9\-_]{20,})\.([A-Za-z0-9\-_]{3,})\.([A-Za-z0-9\-_]+)\b'), RedactionMarker.JWT),
 
         # 4. Generic API keys (contextual with keyword prefix to avoid ULIDs/hashes)
-        (re.compile(r'\b(api[_-]?key|apikey|api[_-]?token|secret[_-]?key|access[_-]?token)[\s:=]+[\'"]?([A-Za-z0-9\-_]{20,})[\'"]?', re.IGNORECASE), RedactionMarker.API_KEY),
+        (re.compile(
+            r'\b(api[_-]?key|apikey|api[_-]?token|secret[_-]?key|access[_-]?token)'
+            r'[\s:=]+[\'"]?([A-Za-z0-9\-_]{20,})[\'"]?', re.IGNORECASE
+        ), RedactionMarker.API_KEY),
 
         # 5. Password assignments (contextual with keyword prefix)
-        (re.compile(r'\b(password|passwd|pwd|pass)[\s:=]+[\'"]?([^\s\'"]{8,})[\'"]?', re.IGNORECASE), RedactionMarker.PASSWORD),
+        (re.compile(
+            r'\b(password|passwd|pwd|pass)[\s:=]+[\'"]?([^\s\'"]{8,})[\'"]?', re.IGNORECASE
+        ), RedactionMarker.PASSWORD),
 
         # 6. Email addresses (RFC 5322 simplified)
         (re.compile(r'\b([A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,})\b'), RedactionMarker.EMAIL),

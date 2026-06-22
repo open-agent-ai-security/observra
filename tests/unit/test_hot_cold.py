@@ -1,6 +1,6 @@
 """Unit tests for hot_cold module."""
 
-from observra.core.hot_cold import is_hot_path, is_cold_path, HOT_PATH_EVENT_TYPES, COLD_PATH_EVENT_TYPES
+from observra.core.hot_cold import COLD_PATH_EVENT_TYPES, HOT_PATH_EVENT_TYPES, is_cold_path, is_hot_path
 
 
 def test_hot_path_types():

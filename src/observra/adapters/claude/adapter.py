@@ -20,10 +20,10 @@ from decimal import Decimal
 from pathlib import Path
 from typing import Any, Optional
 
-from observra.core.events import create_event, TelemetryEvent
+from observra.adapters.utils import estimate_tokens, safe_serialize
 from observra.core.cost import CostCalculator
 from observra.core.dedup import register_emission
-from observra.adapters.utils import safe_serialize, estimate_tokens
+from observra.core.events import TelemetryEvent, create_event
 
 logger = logging.getLogger(__name__)
 

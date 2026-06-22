@@ -24,8 +24,6 @@ import csv
 import json
 import sys
 from pathlib import Path
-from typing import Optional
-
 
 # ---------------------------------------------------------------------------
 # RSS analysis
@@ -155,7 +153,7 @@ def analyze_events(
                     ts_event = event.get("timestamp")
                     ts_write = event.get("_sink_write_ts")
                     if ts_event and ts_write:
-                        from datetime import datetime, timezone
+                        from datetime import datetime
 
                         def _parse(s: str):
                             # Handle both Z-suffix and +00:00 forms.

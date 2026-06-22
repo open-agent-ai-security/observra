@@ -1,12 +1,12 @@
 """Unit tests for detection module."""
 
 from observra.core.detection import (
+    MAX_DELEGATION_DEPTH,
     classify_error,
-    initialize_delegation_depth,
-    increment_delegation_depth,
     decrement_delegation_depth,
     get_delegation_depth,
-    MAX_DELEGATION_DEPTH,
+    increment_delegation_depth,
+    initialize_delegation_depth,
 )
 
 

@@ -3,8 +3,8 @@
 import json
 import logging
 import threading
-import urllib.request
 import urllib.error
+import urllib.request
 from dataclasses import asdict
 
 from observra.core.events import TelemetryEvent
