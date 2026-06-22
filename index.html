@@ -522,44 +522,76 @@ section { padding: 88px 40px; }
 .p-step p { font-size: 13px; color: var(--text-sub); line-height: 1.6; }
 
 /* Architecture diagram */
-.arch-box {
-  margin-top: 56px;
-  background: var(--mono-bg);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  overflow: hidden;
-}
-.arch-header {
-  background: var(--bg-card);
-  padding: 10px 16px;
-  display: flex;
-  gap: 6px;
-  align-items: center;
-  border-bottom: 1px solid var(--border);
-}
+/* window dots — shared with the live-event terminal panel below */
 .win-dot { width: 10px; height: 10px; border-radius: 50%; }
 .win-red    { background: #FF5F57; }
 .win-yellow { background: #FFBD2E; }
 .win-green  { background: #28C840; }
-.arch-label {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-  color: var(--text-muted);
-  margin-left: 8px;
-  letter-spacing: 0.08em;
+
+/* ── Architecture flow diagram ── */
+.arch-flow {
+  margin: 56px auto 0;
+  max-width: 700px;
+  display: flex;
+  flex-direction: column;
 }
-.arch-body {
-  padding: 28px 32px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 12px;
-  line-height: 1.9;
-  color: var(--mono-text);
-  overflow-x: auto;
-  white-space: pre;
+.arch-node {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 22px 26px;
+  border-radius: 14px;
+  background: var(--bg-card);
+  border: 1px solid var(--node-bd);
+  box-shadow: 0 22px 48px -30px var(--glow);
 }
-.arch-blue  { color: var(--blue-lt); }
-.arch-green { color: var(--green); }
-.arch-muted { color: var(--text-muted); }
+.arch-node::before {
+  content: "";
+  position: absolute; inset: 0;
+  border-radius: 14px;
+  background: radial-gradient(130% 130% at 0% 0%, var(--glow), transparent 58%);
+  opacity: 0.55;
+  pointer-events: none;
+}
+.arch-node > * { position: relative; }
+.arch-row { display: flex; align-items: center; gap: 20px; }
+.arch-ic {
+  flex-shrink: 0;
+  width: 52px; height: 52px;
+  border-radius: 12px;
+  display: grid; place-items: center;
+  background: var(--node);
+  border: 1px solid var(--node-bd);
+}
+.arch-ic svg { width: 26px; height: 26px; stroke: var(--accent); fill: none;
+  stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.arch-node h4 { font-size: 19px; font-weight: 600; margin: 0 0 3px; }
+.arch-node p { font-size: 13px; color: var(--text-sub); margin: 0; }
+.arch-node p.mono { font-family: 'JetBrains Mono', monospace; font-size: 12.5px; }
+
+.arch-node.n-agent   { --accent:#a78bfa; --glow:rgba(139,92,246,0.22); --node:rgba(139,92,246,0.12); --node-bd:rgba(139,92,246,0.34); }
+.arch-node.n-adapter { --accent:#34d399; --glow:rgba(16,185,129,0.20);  --node:rgba(16,185,129,0.12);  --node-bd:rgba(16,185,129,0.34); }
+.arch-node.n-core    { --accent:#4DA3FF; --glow:rgba(30,111,224,0.22);  --node:rgba(30,111,224,0.12);  --node-bd:rgba(30,111,224,0.34); }
+.arch-node.n-backend { --accent:#f5b34d; --glow:rgba(245,158,11,0.18);  --node:rgba(245,158,11,0.12);  --node-bd:rgba(245,158,11,0.34); }
+
+.arch-link { display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 9px 0; }
+.arch-link .lbl {
+  font-size: 12px; color: var(--text-sub);
+  background: var(--bg-card); border: 1px solid var(--border);
+  padding: 3px 12px; border-radius: 20px;
+}
+.arch-link .arr { width: 16px; height: 16px; stroke: var(--text-muted); fill: none;
+  stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+.arch-sinks {
+  display: flex; margin-top: 16px; padding-top: 14px;
+  border-top: 1px solid var(--node-bd);
+}
+.arch-sink { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 7px; }
+.arch-sink + .arch-sink { border-left: 1px solid var(--node-bd); }
+.arch-sink svg { width: 18px; height: 18px; stroke: var(--text-sub); fill: none;
+  stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.arch-sink span { font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); }
 
 /* ════════════════════════════════════════════════
    FRAMEWORKS
@@ -1166,35 +1198,40 @@ footer {
       </div>
     </div>
 
-    <div class="arch-box reveal">
-      <div class="arch-header">
-        <div class="win-dot win-red"></div>
-        <div class="win-dot win-yellow"></div>
-        <div class="win-dot win-green"></div>
-        <span class="arch-label">observra · system diagram</span>
+    <div class="arch-flow reveal">
+      <div class="arch-node n-agent">
+        <div class="arch-row">
+          <div class="arch-ic"><svg viewBox="0 0 24 24"><polyline points="8 6 3 12 8 18"/><polyline points="16 6 21 12 16 18"/></svg></div>
+          <div><h4>Agent Code</h4><p>ADK / Claude / OpenAI / LangGraph / Pydantic AI</p></div>
+        </div>
       </div>
-      <div class="arch-body"><span class="arch-blue">┌─────────────────────────────────────────────────┐
-│                  Agent Code                     │
-│  (ADK / Claude / OpenAI / LangGraph / Pydantic) │
-└─────────────────────┬───────────────────────────┘</span>
-                      <span class="arch-muted">│ framework callbacks</span>
-                      <span class="arch-muted">▼</span>
-<span class="arch-blue">┌─────────────────────────────────────────────────┐
-│              Adapter Layer                      │
-│  adapters/{adk,claude,openai,langchain,...}     │
-└─────────────────────┬───────────────────────────┘</span>
-                      <span class="arch-muted">│ normalized events</span>
-                      <span class="arch-muted">▼</span>
-<span class="arch-green">┌─────────────────────────────────────────────────┐
-│              Core Pipeline                      │
-│  CIM normalization → dedup → redaction → cost   │
-└─────────────────────┬───────────────────────────┘</span>
-                      <span class="arch-muted">│ enriched events</span>
-                      <span class="arch-muted">▼</span>
-<span class="arch-green">┌─────────────────────────────────────────────────┐
-│              Backend Layer                      │
-│  jsonl / webhook / otel / multi                 │
-└─────────────────────────────────────────────────┘</span></div>
+      <div class="arch-link"><span class="lbl">framework callbacks</span><svg class="arr" viewBox="0 0 24 24"><path d="M12 5v14M6 13l6 6 6-6"/></svg></div>
+      <div class="arch-node n-adapter">
+        <div class="arch-row">
+          <div class="arch-ic"><svg viewBox="0 0 24 24"><path d="M9 2v6M15 2v6"/><path d="M7 8h10v3a5 5 0 0 1-10 0z"/><path d="M12 16v6"/></svg></div>
+          <div><h4>Adapter Layer</h4><p class="mono">adapters/{adk, claude, openai, langchain, …}</p></div>
+        </div>
+      </div>
+      <div class="arch-link"><span class="lbl">normalized events</span><svg class="arr" viewBox="0 0 24 24"><path d="M12 5v14M6 13l6 6 6-6"/></svg></div>
+      <div class="arch-node n-core">
+        <div class="arch-row">
+          <div class="arch-ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.4v3.2M12 18.4v3.2M21.6 12h-3.2M5.6 12H2.4M18.36 5.64l-2.26 2.26M7.9 16.1l-2.26 2.26M18.36 18.36l-2.26-2.26M7.9 7.9 5.64 5.64"/></svg></div>
+          <div><h4>Core Pipeline</h4><p>CIM normalization → dedup → redaction → cost</p></div>
+        </div>
+      </div>
+      <div class="arch-link"><span class="lbl">enriched events</span><svg class="arr" viewBox="0 0 24 24"><path d="M12 5v14M6 13l6 6 6-6"/></svg></div>
+      <div class="arch-node n-backend">
+        <div class="arch-row">
+          <div class="arch-ic"><svg viewBox="0 0 24 24"><path d="M4 6c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3z"/><path d="M4 6v6c0 1.7 3.6 3 8 3s8-1.3 8-3V6"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg></div>
+          <div><h4>Backend Layer</h4><p>JSONL / Webhook / OTel / Multi</p></div>
+        </div>
+        <div class="arch-sinks">
+          <div class="arch-sink"><svg viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg><span>JSONL</span></div>
+          <div class="arch-sink"><svg viewBox="0 0 24 24"><path d="M9 15l6-6"/><path d="M12 6l1-1a4 4 0 0 1 6 6l-1 1"/><path d="M12 18l-1 1a4 4 0 0 1-6-6l1-1"/></svg><span>Webhook</span></div>
+          <div class="arch-sink"><svg viewBox="0 0 24 24"><path d="M4 19h16"/><path d="M7 19v-5M12 19V7M17 19v-8"/></svg><span>OTel</span></div>
+          <div class="arch-sink"><svg viewBox="0 0 24 24"><path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/></svg><span>Multi</span></div>
+        </div>
+      </div>
     </div>
   </div>
 </section>
