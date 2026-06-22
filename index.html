@@ -539,15 +539,14 @@ section { padding: 88px 40px; }
 .arch-link .arr { width: 16px; height: 16px; stroke: var(--text-muted); fill: none;
   stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 
-.arch-sinks {
-  display: flex; margin-top: 16px; padding-top: 14px;
-  border-top: 1px solid var(--node-bd);
+.arch-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.arch-tags span {
+  font-size: 11px; font-weight: 500;
+  color: var(--accent);
+  background: var(--node);
+  border: 1px solid var(--node-bd);
+  padding: 2px 10px; border-radius: 20px;
 }
-.arch-sink { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 7px; }
-.arch-sink + .arch-sink { border-left: 1px solid var(--node-bd); }
-.arch-sink svg { width: 18px; height: 18px; stroke: var(--text-sub); fill: none;
-  stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
-.arch-sink span { font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); }
 
 /* ════════════════════════════════════════════════
    FRAMEWORKS
@@ -1129,34 +1128,28 @@ footer {
       <div class="arch-node n-agent">
         <div class="arch-row">
           <div class="arch-ic"><svg viewBox="0 0 24 24"><polyline points="8 6 3 12 8 18"/><polyline points="16 6 21 12 16 18"/></svg></div>
-          <div><h4>Agent Code</h4><p>Your agent runs unmodified — ADK, Claude, OpenAI Agents, LangGraph, and Pydantic AI all emit framework callbacks automatically.</p></div>
+          <div><h4>Agent Code</h4><p>Your agent runs unmodified — ADK, Claude, OpenAI Agents, LangGraph, and Pydantic AI all emit framework callbacks automatically.</p><div class="arch-tags"><span>ADK</span><span>Claude</span><span>OpenAI</span><span>LangGraph</span><span>Pydantic AI</span></div></div>
         </div>
       </div>
       <div class="arch-link"><span class="lbl">framework callbacks</span><svg class="arr" viewBox="0 0 24 24"><path d="M12 5v14M6 13l6 6 6-6"/></svg></div>
       <div class="arch-node n-adapter">
         <div class="arch-row">
           <div class="arch-ic"><svg viewBox="0 0 24 24"><path d="M9 2v6M15 2v6"/><path d="M7 8h10v3a5 5 0 0 1-10 0z"/><path d="M12 16v6"/></svg></div>
-          <div><h4>Adapter Layer</h4><p>Framework-specific adapters intercept callbacks and translate them into normalized events — no per-agent code required.</p></div>
+          <div><h4>Adapter Layer</h4><p>Framework-specific adapters intercept callbacks and translate them into normalized events — no per-agent code required.</p><div class="arch-tags"><span>adk</span><span>claude</span><span>openai</span><span>langchain</span><span>pydantic_ai</span></div></div>
         </div>
       </div>
       <div class="arch-link"><span class="lbl">normalized events</span><svg class="arr" viewBox="0 0 24 24"><path d="M12 5v14M6 13l6 6 6-6"/></svg></div>
       <div class="arch-node n-core">
         <div class="arch-row">
           <div class="arch-ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.4v3.2M12 18.4v3.2M21.6 12h-3.2M5.6 12H2.4M18.36 5.64l-2.26 2.26M7.9 16.1l-2.26 2.26M18.36 18.36l-2.26-2.26M7.9 7.9 5.64 5.64"/></svg></div>
-          <div><h4>Core Pipeline</h4><p>CIM normalization, deduplication, PII redaction, and per-session cost calculation happen in sequence before any backend sees the event.</p></div>
+          <div><h4>Core Pipeline</h4><p>CIM normalization, deduplication, PII redaction, and per-session cost calculation happen in sequence before any backend sees the event.</p><div class="arch-tags"><span>CIM normalize</span><span>dedup</span><span>redact</span><span>cost</span></div></div>
         </div>
       </div>
       <div class="arch-link"><span class="lbl">enriched events</span><svg class="arr" viewBox="0 0 24 24"><path d="M12 5v14M6 13l6 6 6-6"/></svg></div>
       <div class="arch-node n-backend">
         <div class="arch-row">
           <div class="arch-ic"><svg viewBox="0 0 24 24"><path d="M4 6c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3z"/><path d="M4 6v6c0 1.7 3.6 3 8 3s8-1.3 8-3V6"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg></div>
-          <div><h4>Backend Layer</h4><p>Enriched events are routed to JSONL, Webhook, OTel Spans, OTel Logs, or any combination via MultiBackend fan-out.</p></div>
-        </div>
-        <div class="arch-sinks">
-          <div class="arch-sink"><svg viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg><span>JSONL</span></div>
-          <div class="arch-sink"><svg viewBox="0 0 24 24"><path d="M9 15l6-6"/><path d="M12 6l1-1a4 4 0 0 1 6 6l-1 1"/><path d="M12 18l-1 1a4 4 0 0 1-6-6l1-1"/></svg><span>Webhook</span></div>
-          <div class="arch-sink"><svg viewBox="0 0 24 24"><path d="M4 19h16"/><path d="M7 19v-5M12 19V7M17 19v-8"/></svg><span>OTel</span></div>
-          <div class="arch-sink"><svg viewBox="0 0 24 24"><path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/></svg><span>Multi</span></div>
+          <div><h4>Backend Layer</h4><p>Enriched events are routed to JSONL, Webhook, OTel Spans, OTel Logs, or any combination via MultiBackend fan-out.</p><div class="arch-tags"><span>JSONL</span><span>Webhook</span><span>OTel</span><span>Multi</span></div></div>
         </div>
       </div>
     </div>
