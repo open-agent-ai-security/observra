@@ -1,3 +1,6 @@
+# Copyright 2026 Exabeam, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
 """Tests for observra.core.encryption module.
 
 TDD RED phase — all tests should FAIL before implementation.

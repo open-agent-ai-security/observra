@@ -1,3 +1,6 @@
+# Copyright 2026 Exabeam, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
 """Backward-compatible shim for adk_telemetry package.
 
 This module allows `from adk_telemetry import X` to continue working

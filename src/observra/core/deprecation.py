@@ -1,3 +1,6 @@
+# Copyright 2026 Exabeam, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
 """Deprecation decorator for the observra public API.
 
 Provides a @deprecated decorator that emits DeprecationWarning at call time

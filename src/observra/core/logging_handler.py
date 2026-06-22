@@ -1,3 +1,6 @@
+# Copyright 2026 Exabeam, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
 """Custom logging handler that bridges stdlib logging to telemetry events."""
 
 import logging

@@ -1,3 +1,6 @@
+# Copyright 2026 Exabeam, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
 """Test configuration for OTelExportBackend and MultiBackend tests.
 
 This conftest injects stub OTel modules into sys.modules at collection time so that

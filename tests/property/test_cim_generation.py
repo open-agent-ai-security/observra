@@ -1,3 +1,6 @@
+# Copyright 2026 Exabeam, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
 """Property-based CIM event generation tests (TEST-03).
 
 Generates 10,000+ random valid CIM events using Hypothesis strategies

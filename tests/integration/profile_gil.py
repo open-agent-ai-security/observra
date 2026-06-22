@@ -1,3 +1,6 @@
+# Copyright 2026 Exabeam, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
 """Profile GIL contention with and without ProcessPoolExecutor offload.
 
 Run with py-spy:

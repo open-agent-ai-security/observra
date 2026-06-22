@@ -1,3 +1,6 @@
+# Copyright 2026 Exabeam, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
 """Burst load regression test for PooledWriter + BackgroundWorker pipeline.
 
 Tests validate:

@@ -1,3 +1,6 @@
+# Copyright 2026 Exabeam, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
 """OTelExportBackend: exports TelemetryEvents as OTel spans via OTLP HTTP.
 
 This backend implements the StorageBackend Protocol and creates a PRIVATE

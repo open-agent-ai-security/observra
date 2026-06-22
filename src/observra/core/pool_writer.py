@@ -1,3 +1,6 @@
+# Copyright 2026 Exabeam, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
 """ProcessPoolExecutor wrapper for StorageBackend write offload (PERF-04, PERF-05).
 
 This module provides PooledWriter, which wraps any StorageBackend and offloads

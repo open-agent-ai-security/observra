@@ -1,3 +1,6 @@
+# Copyright 2026 Exabeam, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
 """How to add telemetry to any ADK agent.
 
 This is the simplest possible integration. You have an existing ADK agent

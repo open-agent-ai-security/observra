@@ -1,3 +1,6 @@
+# Copyright 2026 Exabeam, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
 """Tests for ExabeamSenderBackend — HTTPS webhook delivery to Exabeam SIEM.
 
 Covers all ACs from Story 3.1:

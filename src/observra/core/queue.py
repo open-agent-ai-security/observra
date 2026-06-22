@@ -1,3 +1,6 @@
+# Copyright 2026 Exabeam, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
 """Thread-safe queue with drop-oldest semantics for non-blocking telemetry.
 
 This module provides DropOldestQueue, a wrapper around queue.Queue that

@@ -1,3 +1,6 @@
+# Copyright 2026 Exabeam, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
 """End-to-end contract tests for ``create_event``.
 
 Asserts that every event from every framework carries the same canonical

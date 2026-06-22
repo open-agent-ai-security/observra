@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# Copyright 2026 Exabeam, Inc.
+# SPDX-License-Identifier: Apache-2.0
 """Generate observra/core/cim.py from cim_schema.toml."""
 
 from __future__ import annotations

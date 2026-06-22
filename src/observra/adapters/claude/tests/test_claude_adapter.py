@@ -1,3 +1,6 @@
+# Copyright 2026 Exabeam, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
 """Co-located tests for the Claude adapter.
 
 Validates Protocol conformance, all 5 hook callbacks, wrap_stream() for

@@ -1,3 +1,6 @@
+# Copyright 2026 Exabeam, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
 """Tests for safe_regex module — ReDoS prevention for user-provided patterns.
 
 These tests verify:

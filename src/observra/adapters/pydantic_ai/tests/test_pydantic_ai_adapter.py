@@ -1,3 +1,6 @@
+# Copyright 2026 Exabeam, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
 """Co-located tests for the Pydantic AI adapter.
 
 Validates Protocol conformance, all span routing paths (model v2, tool v2/v3, agent skip),

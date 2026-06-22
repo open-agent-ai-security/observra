@@ -1,3 +1,6 @@
+# Copyright 2026 Exabeam, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
 """Shared token normalization utilities for framework adapters.
 
 Provides NormalizedTokens dataclass and per-framework normalize_*_tokens()

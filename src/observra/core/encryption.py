@@ -1,3 +1,6 @@
+# Copyright 2026 Exabeam, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
 """Encryption at rest for observra backends.
 
 Provides Fernet symmetric encryption (cryptography package) with

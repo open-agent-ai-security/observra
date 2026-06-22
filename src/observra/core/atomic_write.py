@@ -1,3 +1,6 @@
+# Copyright 2026 Exabeam, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
 """Atomic file writes with backup, fsync, and validation for config files.
 
 Provides atomic write primitives for JSON and text config files,

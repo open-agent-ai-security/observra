@@ -1,3 +1,6 @@
+# Copyright 2026 Exabeam, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
 """Co-located tests for the OpenAI adapter.
 
 Validates Protocol conformance, all 4 span type handlers (AgentSpanData,

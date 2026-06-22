@@ -1,3 +1,6 @@
+# Copyright 2026 Exabeam, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
 """Benchmark-specific fixtures for tests/benchmarks/."""
 
 from __future__ import annotations

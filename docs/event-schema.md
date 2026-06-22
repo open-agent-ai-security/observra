@@ -1,3 +1,7 @@
+<!--
+  Copyright 2026 Exabeam, Inc.
+  SPDX-License-Identifier: Apache-2.0
+-->
 # Event Schema
 
 The Common Information Model (CIM) defines the canonical event structure for all telemetry events emitted by observra.

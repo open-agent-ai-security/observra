@@ -1,3 +1,6 @@
+# Copyright 2026 Exabeam, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
 """Error classification and delegation depth tracking for agent behavior analysis."""
 
 import logging

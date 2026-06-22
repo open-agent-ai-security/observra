@@ -1,3 +1,6 @@
+# Copyright 2026 Exabeam, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
 """Tests verifying core/ has zero framework SDK imports and ContextVar isolation."""
 import sys
 from decimal import Decimal

@@ -1,3 +1,6 @@
+# Copyright 2026 Exabeam, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
 """Thread-safe MetricsRegistry singleton and RingBuffer for self-observability.
 
 This module provides the foundational metric collection infrastructure per D-01.

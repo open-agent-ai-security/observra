@@ -1,3 +1,6 @@
+# Copyright 2026 Exabeam, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
 """Host identity (hostname + login user + os + arch + lib version).
 
 Read once at first access via stdlib calls (no subprocesses), then reused

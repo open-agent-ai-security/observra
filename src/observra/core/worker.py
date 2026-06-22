@@ -1,3 +1,6 @@
+# Copyright 2026 Exabeam, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
 """Background worker thread for async telemetry event processing.
 
 This module provides BackgroundWorker, a daemon thread that consumes events

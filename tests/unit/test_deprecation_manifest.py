@@ -1,3 +1,6 @@
+# Copyright 2026 Exabeam, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
 """Tests verifying all deprecated symbols carry required metadata for CI and docs tooling."""
 import importlib
 import inspect
