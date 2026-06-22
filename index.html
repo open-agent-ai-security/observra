@@ -827,53 +827,6 @@ section { padding: 88px 40px; }
 .c-num     { color: var(--yellow); }
 .c-fn      { color: #C586C0; }
 
-/* Compatibility table */
-.compat-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
-  margin-top: 48px;
-}
-.compat-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 13px;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  overflow: hidden;
-}
-.compat-table th {
-  background: var(--table-head);
-  padding: 10px 16px;
-  text-align: left;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-  letter-spacing: 0.07em;
-  color: var(--text-muted);
-  border-bottom: 1px solid var(--border);
-}
-.compat-table td {
-  padding: 10px 16px;
-  border-bottom: 1px solid var(--border);
-  color: var(--text-sub);
-}
-.compat-table tr:last-child td { border-bottom: none; }
-.compat-table tr:nth-child(even) td { background: var(--table-stripe); }
-.status-primary {
-  color: var(--green);
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-}
-.status-ok {
-  color: var(--blue-lt);
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-}
-.status-no {
-  color: var(--text-muted);
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-}
 
 /* ════════════════════════════════════════════════
    QUICK START FULL CODE
@@ -1034,7 +987,6 @@ footer {
   .features-layout { grid-template-columns: 1fr; }
   .install-layout { grid-template-columns: 1fr; }
   .qs-layout { grid-template-columns: 1fr; }
-  .compat-grid { grid-template-columns: 1fr; }
   .footer-grid { grid-template-columns: 1fr 1fr; }
 }
 @media (max-width: 600px) {
@@ -1439,35 +1391,6 @@ observra.initialize(
 atexit.register(observra.shutdown)
         </div>
       </div>
-    </div>
-
-    <!-- Compatibility tables -->
-    <p class="eyebrow" style="margin-top:72px;">Compatibility</p>
-    <div class="compat-grid reveal">
-      <table class="compat-table">
-        <thead>
-          <tr><th>Python Version</th><th>Status</th></tr>
-        </thead>
-        <tbody>
-          <tr><td>3.12</td><td><span class="status-primary">✓ Supported (primary)</span></td></tr>
-          <tr><td>3.11</td><td><span class="status-ok">✓ Supported</span></td></tr>
-          <tr><td>3.10</td><td><span class="status-ok">✓ Supported (minimum)</span></td></tr>
-          <tr><td>&lt; 3.10</td><td><span class="status-no">✗ Not supported</span></td></tr>
-        </tbody>
-      </table>
-      <table class="compat-table">
-        <thead>
-          <tr><th>Framework</th><th>Min Version</th></tr>
-        </thead>
-        <tbody>
-          <tr><td>Google ADK</td><td><span class="status-ok">≥ 1.0.0</span></td></tr>
-          <tr><td>Claude Agent SDK</td><td><span class="status-ok">≥ 0.1.37</span></td></tr>
-          <tr><td>OpenAI Agents SDK</td><td><span class="status-ok">≥ 0.9.0</span></td></tr>
-          <tr><td>LangChain Core</td><td><span class="status-ok">≥ 1.0.0</span></td></tr>
-          <tr><td>LangGraph</td><td><span class="status-ok">≥ 0.2.0</span></td></tr>
-          <tr><td>Pydantic AI</td><td><span class="status-ok">&lt; 2.0.0</span></td></tr>
-        </tbody>
-      </table>
     </div>
   </div>
 </section>
