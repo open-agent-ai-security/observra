@@ -319,33 +319,38 @@ nav {
   animation: fade-up 0.55s 1.0s ease forwards;
 }
 .cta-primary {
+  display: inline-flex; align-items: center; gap: 8px;
   background: var(--blue);
   color: #fff;
   font-weight: 600;
   font-size: 14px;
   padding: 13px 26px;
-  border-radius: 8px;
-  display: flex; align-items: center; gap: 8px;
-  transition: background 0.2s, box-shadow 0.2s;
+  border-radius: 9px;
+  border: 1px solid transparent;
+  box-shadow: 0 4px 14px -4px var(--blue-glow);
+  transition: transform 0.18s, background 0.18s, box-shadow 0.18s;
 }
 .cta-primary:hover {
   background: var(--blue-lt);
-  box-shadow: 0 0 28px var(--blue-glow);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 22px -6px var(--blue-glow);
   text-decoration: none;
 }
 .cta-secondary {
-  background: transparent;
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--bg-card);
   color: var(--text-sub);
-  font-weight: 500;
+  font-weight: 600;
   font-size: 14px;
   padding: 13px 26px;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  transition: border-color 0.2s, color 0.2s;
+  border-radius: 9px;
+  border: 1px solid var(--border-lt);
+  transition: color 0.18s, border-color 0.18s, background 0.18s;
 }
 .cta-secondary:hover {
   border-color: var(--blue);
   color: var(--text);
+  background: var(--bg-card-alt);
   text-decoration: none;
 }
 
