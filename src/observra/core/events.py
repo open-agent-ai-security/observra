@@ -214,6 +214,10 @@ class TelemetryEvent:
     framework: FrameworkName = "unknown"
     skill_name: Optional[str] = None  # MCP skill identifier (analogous to tool_name for MCP proxy events)
 
+    # Schema version — identifies which CIM schema this event conforms to.
+    # Independent of library_version (package semver).
+    cim_version: Optional[str] = None
+
     # Host context — populated automatically by create_event() from the cached
     # HostContext. Sources MAY pre-set any of these (e.g. a remote relay
     # forwarding events from another machine) and create_event won't clobber.
@@ -333,6 +337,7 @@ def create_event(
         model_name=model_name,
         data=data,
         framework=framework,
+        cim_version=_cim.CIM_VERSION,
         host=ctx.host,
         user=ctx.user,
         os=ctx.os,
