@@ -45,7 +45,7 @@ messages = [
 for msg in messages:
     patterns = detect_injection_patterns(msg)
     status = ", ".join(patterns) if patterns else "clean"
-    print(f"  \"{msg[:50]:50s}\" -> {status}")
+    print(f'  "{msg[:50]:50s}" -> {status}')
 
 # ── Delegation Depth Tracking ─────────────────────────────────────────
 
@@ -57,7 +57,7 @@ initialize_delegation_depth()
 for i in range(7):
     depth, exceeded = increment_delegation_depth()
     flag = " ** EXCEEDED **" if exceeded else ""
-    print(f"  Depth after agent {i+1}: {depth}{flag}")
+    print(f"  Depth after agent {i + 1}: {depth}{flag}")
 
 # ── Token Velocity ────────────────────────────────────────────────────
 

@@ -29,6 +29,7 @@ from observra.core.events import create_event
 
 # ─── Helpers ──────────────────────────────────────────────────────────────────
 
+
 def make_ctx(agent_name="security_analyst"):
     return types.SimpleNamespace(agent_name=agent_name)
 
@@ -73,15 +74,12 @@ def assert_common_fields(event, expected_type: str):
     assert event.trace_id, "trace_id must not be empty"
     assert event.session_id, "session_id must not be empty"
     assert event.span_id, "span_id must not be empty"
-    assert event.event_type == expected_type, (
-        f"expected event_type={expected_type!r}, got {event.event_type!r}"
-    )
-    assert event.framework == "adk", (
-        f"expected framework='adk', got {event.framework!r}"
-    )
+    assert event.event_type == expected_type, f"expected event_type={expected_type!r}, got {event.event_type!r}"
+    assert event.framework == "adk", f"expected framework='adk', got {event.framework!r}"
 
 
 # ─── Fixtures ─────────────────────────────────────────────────────────────────
+
 
 @pytest.fixture
 def plugin():
@@ -101,6 +99,7 @@ def plugin_with_threshold():
 
 # ─── 1. session_start ─────────────────────────────────────────────────────────
 
+
 async def test_session_start_fields(plugin):
     """before_run_callback → session_start: agent_name + all identity fields."""
     await plugin.before_run_callback(invocation_context=make_ctx("security_analyst"))
@@ -111,6 +110,7 @@ async def test_session_start_fields(plugin):
 
 
 # ─── 2. session_end ───────────────────────────────────────────────────────────
+
 
 async def test_session_end_fields(plugin):
     """after_run_callback → session_end: ADK tool_sequence extras in data."""
@@ -127,13 +127,12 @@ async def test_session_end_fields(plugin):
 
 # ─── 3. agent_start ───────────────────────────────────────────────────────────
 
+
 async def test_agent_start_fields(plugin):
     """before_agent_callback → agent_start: agent_name and delegation_depth."""
     ctx = make_ctx()
     await plugin.before_run_callback(invocation_context=ctx)
-    await plugin.before_agent_callback(
-        agent=make_agent("sub_agent"), callback_context=make_cb_ctx()
-    )
+    await plugin.before_agent_callback(agent=make_agent("sub_agent"), callback_context=make_cb_ctx())
 
     event = plugin.events[-1]
     assert_common_fields(event, "agent_start")
@@ -142,6 +141,7 @@ async def test_agent_start_fields(plugin):
 
 
 # ─── 4. agent_end ─────────────────────────────────────────────────────────────
+
 
 async def test_agent_end_fields(plugin):
     """after_agent_callback → agent_end: delegation_depth in data."""
@@ -160,6 +160,7 @@ async def test_agent_end_fields(plugin):
 
 # ─── 5. model_request ─────────────────────────────────────────────────────────
 
+
 async def test_model_request_fields(plugin):
     """before_model_callback → model_request: model_name captured."""
     ctx = make_ctx()
@@ -175,6 +176,7 @@ async def test_model_request_fields(plugin):
 
 
 # ─── 6. model_response — all token + cost fields ──────────────────────────────
+
 
 async def test_model_response_full_token_fields(plugin):
     """after_model_callback → model_response: all 5 token fields + cost fields."""
@@ -204,6 +206,7 @@ async def test_model_response_full_token_fields(plugin):
 
 # ─── 7. ALERT: High Token Usage ───────────────────────────────────────────────
 
+
 async def test_rule_high_token_usage(plugin):
     """model_response with total_tokens > 10000 → High Token Usage rule fires."""
     ctx = make_ctx()
@@ -223,6 +226,7 @@ async def test_rule_high_token_usage(plugin):
 
 # ─── 8. ALERT: High Single-Call Cost ──────────────────────────────────────────
 
+
 async def test_rule_high_single_call_cost(plugin):
     """model_response with cost_usd > 0.50 → High Single-Call Cost rule fires."""
     ctx = make_ctx()
@@ -241,6 +245,7 @@ async def test_rule_high_single_call_cost(plugin):
 
 
 # ─── 9. model_error — auth failure fields + ALERT ─────────────────────────────
+
 
 async def test_model_error_auth_failure_fields_and_alert(plugin):
     """on_model_error_callback with PermissionError → error fields + auth rule fires."""
@@ -267,6 +272,7 @@ async def test_model_error_auth_failure_fields_and_alert(plugin):
 
 # ─── 10. ALERT: Model Error — Rate Limited (via create_event) ─────────────────
 
+
 def test_rule_model_error_rate_limited():
     """model_error with error_class='rate_limit' → Model Error - Rate Limited fires."""
     event = create_event(
@@ -284,15 +290,14 @@ def test_rule_model_error_rate_limited():
 
 # ─── 11. tool_start — tool_sequence + tool_type + tool_args ──────────────────
 
+
 async def test_tool_start_fields(plugin):
     """before_tool_callback → tool_start: tool_name, tool_type, tool_sequence, tool_args."""
     ctx = make_ctx()
     await plugin.before_run_callback(invocation_context=ctx)
     tool = make_tool("search_threat_indicators")
     tool_args = {"indicator_type": "ip", "value": "198.51.100.42"}
-    await plugin.before_tool_callback(
-        tool=tool, tool_args=tool_args, tool_context=make_cb_ctx()
-    )
+    await plugin.before_tool_callback(tool=tool, tool_args=tool_args, tool_context=make_cb_ctx())
 
     event = plugin.events[-1]
     assert_common_fields(event, "tool_start")
@@ -309,6 +314,7 @@ async def test_tool_start_fields(plugin):
 
 # ─── 12. tool_end — tool_result + tool_args when capture_tool_data=True ───────
 
+
 async def test_tool_end_full_fields(plugin):
     """after_tool_callback → tool_end: tool_result and tool_args captured."""
     ctx = make_ctx()
@@ -318,19 +324,18 @@ async def test_tool_end_full_fields(plugin):
     result = {"severity": "informational", "risk_score": 0.0}
 
     await plugin.before_tool_callback(tool=tool, tool_args=tool_args, tool_context=make_cb_ctx())
-    await plugin.after_tool_callback(
-        tool=tool, tool_args=tool_args, tool_context=make_cb_ctx(), result=result
-    )
+    await plugin.after_tool_callback(tool=tool, tool_args=tool_args, tool_context=make_cb_ctx(), result=result)
 
     event = plugin.events[-1]
     assert_common_fields(event, "tool_end")
     assert event.tool_name == "analyze_log_entry"
     assert event.data["tool_type"] == "function"
     assert event.data["tool_result"] is not None  # serialized result
-    assert event.data["tool_args"] is not None    # serialized args
+    assert event.data["tool_args"] is not None  # serialized args
 
 
 # ─── 13. tool_end — no data captured when capture_tool_data=False ─────────────
+
 
 async def test_tool_end_no_capture(plugin_no_capture):
     """tool_end with capture_tool_data=False → tool_args and tool_result are None."""
@@ -342,8 +347,10 @@ async def test_tool_end_no_capture(plugin_no_capture):
         tool=tool, tool_args={"indicator_type": "ip", "value": "1.2.3.4"}, tool_context=make_cb_ctx()
     )
     await plugin_no_capture.after_tool_callback(
-        tool=tool, tool_args={"indicator_type": "ip", "value": "1.2.3.4"},
-        tool_context=make_cb_ctx(), result={"threat_level": "low"},
+        tool=tool,
+        tool_args={"indicator_type": "ip", "value": "1.2.3.4"},
+        tool_context=make_cb_ctx(),
+        result={"threat_level": "low"},
     )
 
     event = plugin_no_capture.events[-1]
@@ -354,6 +361,7 @@ async def test_tool_end_no_capture(plugin_no_capture):
 
 
 # ─── 14. tool_error — all error fields + ALERT: Tool Error ────────────────────
+
 
 async def test_tool_error_fields_and_alert(plugin):
     """on_tool_error_callback → tool_error: all error fields + Tool Error rule."""
@@ -384,6 +392,7 @@ async def test_tool_error_fields_and_alert(plugin):
 
 # ─── 15. user_message — clean input, no injection ─────────────────────────────
 
+
 async def test_user_message_clean(plugin):
     """user_message with clean input → has_injection_patterns=False, no alert."""
     ctx = make_ctx()
@@ -399,6 +408,7 @@ async def test_user_message_clean(plugin):
 
 
 # ─── 16. ALERT: Prompt Injection Detected ────────────────────────────────────
+
 
 async def test_rule_prompt_injection_detected(plugin):
     """user_message with injection text → has_injection_patterns=True + alert fires."""
@@ -420,13 +430,12 @@ async def test_rule_prompt_injection_detected(plugin):
 
 # ─── 17. ALERT: Cost Threshold Exceeded ──────────────────────────────────────
 
+
 async def test_rule_cost_threshold_exceeded(plugin_with_threshold):
     """Crossing cost threshold → cost_threshold_exceeded event + all fields + alert."""
     ctx = make_ctx()
     await plugin_with_threshold.before_run_callback(invocation_context=ctx)
-    with patch.object(
-        plugin_with_threshold._cost_calculator, "calculate_cost", return_value=Decimal("0.002")
-    ):
+    with patch.object(plugin_with_threshold._cost_calculator, "calculate_cost", return_value=Decimal("0.002")):
         await plugin_with_threshold.after_model_callback(
             callback_context=make_cb_ctx(),
             llm_response=make_llm_response(),
@@ -446,6 +455,7 @@ async def test_rule_cost_threshold_exceeded(plugin_with_threshold):
 
 
 # ─── 18. ALERT: Agent Depth Exceeded ─────────────────────────────────────────
+
 
 async def test_rule_agent_depth_exceeded(plugin):
     """Exceeding MAX_DELEGATION_DEPTH → depth_exceeded event + all fields + alert."""
@@ -472,6 +482,7 @@ async def test_rule_agent_depth_exceeded(plugin):
 
 # ─── 19. ALERT: Agent Handoff Error (via create_event) ───────────────────────
 
+
 def test_rule_agent_handoff_error():
     """agent_handoff_error → Agent Handoff Error rule fires; source/target fields present."""
     event = create_event(
@@ -492,6 +503,7 @@ def test_rule_agent_handoff_error():
 
 # ─── 20. stream_event ────────────────────────────────────────────────────────
 
+
 async def test_stream_event_fields(plugin):
     """on_event_callback (non-partial) → stream_event with identity fields."""
     ctx = make_ctx()
@@ -507,6 +519,7 @@ async def test_stream_event_fields(plugin):
 
 # ─── 21. adapter_close ───────────────────────────────────────────────────────
 
+
 async def test_adapter_close_fields(plugin):
     """close() → adapter_close with identity fields."""
     ctx = make_ctx()
@@ -518,6 +531,7 @@ async def test_adapter_close_fields(plugin):
 
 
 # ─── 22. Full session flow — correct sequence + shared trace/session ──────────
+
 
 async def test_full_session_flow_event_sequence(plugin):
     """Simulate a complete security analysis session: verify event order and context."""
@@ -541,7 +555,9 @@ async def test_full_session_flow_event_sequence(plugin):
     )
     await plugin.before_tool_callback(tool=tool, tool_args=tool_args, tool_context=cb)
     await plugin.after_tool_callback(
-        tool=tool, tool_args=tool_args, tool_context=cb,
+        tool=tool,
+        tool_args=tool_args,
+        tool_context=cb,
         result={"threat_level": "low", "matches": 0},
     )
     await plugin.after_model_callback(
@@ -556,18 +572,35 @@ async def test_full_session_flow_event_sequence(plugin):
 
     # All expected event types present
     for expected in (
-        "session_start", "user_message", "agent_start",
-        "model_request", "tool_start", "tool_end",
-        "model_response", "agent_end", "session_end",
+        "session_start",
+        "user_message",
+        "agent_start",
+        "model_request",
+        "tool_start",
+        "tool_end",
+        "model_response",
+        "agent_end",
+        "session_end",
     ):
         assert expected in event_types, f"Missing event type: {expected}"
 
     # Lifecycle ordering
-    idx = {et: event_types.index(et) for et in event_types if et in {
-        "session_start", "user_message", "agent_start",
-        "model_request", "tool_start", "tool_end",
-        "model_response", "agent_end", "session_end",
-    }}
+    idx = {
+        et: event_types.index(et)
+        for et in event_types
+        if et
+        in {
+            "session_start",
+            "user_message",
+            "agent_start",
+            "model_request",
+            "tool_start",
+            "tool_end",
+            "model_response",
+            "agent_end",
+            "session_end",
+        }
+    }
     assert idx["session_start"] < idx["user_message"]
     assert idx["tool_start"] < idx["tool_end"]
     assert idx["model_request"] < idx["model_response"]
@@ -585,6 +618,7 @@ async def test_full_session_flow_event_sequence(plugin):
 
 
 # ─── 23. All 9 detection rules — exhaustive coverage ─────────────────────────
+
 
 async def test_all_nine_detection_rules_fire():
     """Meta-test: every detection rule fires at least once across all scenarios.
@@ -612,9 +646,7 @@ async def test_all_nine_detection_rules_fire():
     p = TelemetryPlugin(queue=None, cost_threshold_usd=Decimal("0.001"))
     await p.before_run_callback(invocation_context=make_ctx())
     with patch.object(p._cost_calculator, "calculate_cost", return_value=Decimal("0.002")):
-        await p.after_model_callback(
-            callback_context=make_cb_ctx(), llm_response=make_llm_response()
-        )
+        await p.after_model_callback(callback_context=make_cb_ctx(), llm_response=make_llm_response())
     collect(p)
 
     # Rule 3 — Agent Depth Exceeded
@@ -636,8 +668,10 @@ async def test_all_nine_detection_rules_fire():
 
     # Rule 5 — Model Error - Rate Limited (via create_event with error_class)
     e = create_event(
-        "model_error", framework="adk",
-        error_class="rate_limit", is_retryable=True,
+        "model_error",
+        framework="adk",
+        error_class="rate_limit",
+        is_retryable=True,
         error_message="429 quota exceeded",
     )
     rules_seen.update((e.data or {}).get("triggered_rules") or [])
@@ -646,15 +680,19 @@ async def test_all_nine_detection_rules_fire():
     p = TelemetryPlugin(queue=None)
     await p.before_run_callback(invocation_context=make_ctx())
     await p.on_tool_error_callback(
-        tool=make_tool(), tool_args={}, tool_context=make_cb_ctx(),
+        tool=make_tool(),
+        tool_args={},
+        tool_context=make_cb_ctx(),
         error=RuntimeError("Connection refused"),
     )
     collect(p)
 
     # Rule 7 — Agent Handoff Error (via create_event)
     e = create_event(
-        "agent_handoff_error", framework="adk",
-        source_agent="orchestrator", target_agent="worker",
+        "agent_handoff_error",
+        framework="adk",
+        source_agent="orchestrator",
+        target_agent="worker",
         error_message="Target not registered",
     )
     rules_seen.update((e.data or {}).get("triggered_rules") or [])
@@ -664,9 +702,7 @@ async def test_all_nine_detection_rules_fire():
     await p.before_run_callback(invocation_context=make_ctx())
     await p.after_model_callback(
         callback_context=make_cb_ctx(),
-        llm_response=make_llm_response(
-            usage=make_usage(input=8000, output=3000, total=11000, cached=0, reasoning=0)
-        ),
+        llm_response=make_llm_response(usage=make_usage(input=8000, output=3000, total=11000, cached=0, reasoning=0)),
     )
     collect(p)
 
@@ -674,9 +710,7 @@ async def test_all_nine_detection_rules_fire():
     p = TelemetryPlugin(queue=None)
     await p.before_run_callback(invocation_context=make_ctx())
     with patch.object(p._cost_calculator, "calculate_cost", return_value=Decimal("0.75")):
-        await p.after_model_callback(
-            callback_context=make_cb_ctx(), llm_response=make_llm_response()
-        )
+        await p.after_model_callback(callback_context=make_cb_ctx(), llm_response=make_llm_response())
     collect(p)
 
     expected = {
@@ -691,7 +725,6 @@ async def test_all_nine_detection_rules_fire():
         "High Single-Call Cost",
     }
     missing = expected - rules_seen
-    assert not missing, (
-        "These detection rules never fired — check the rule conditions and test inputs:\n"
-        + "\n".join(f"  - {r}" for r in sorted(missing))
+    assert not missing, "These detection rules never fired — check the rule conditions and test inputs:\n" + "\n".join(
+        f"  - {r}" for r in sorted(missing)
     )

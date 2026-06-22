@@ -189,9 +189,7 @@ class LangChainAdapter(BaseCallbackHandler):
     # BaseCallbackHandler — LLM callbacks
     # ========================================================================
 
-    def on_chat_model_start(
-        self, serialized: dict, messages: list, *, run_id: Any, **kwargs: Any
-    ) -> None:
+    def on_chat_model_start(self, serialized: dict, messages: list, *, run_id: Any, **kwargs: Any) -> None:
         """Capture model name from chat model start for use in on_llm_end.
 
         Chat models (ChatOpenAI, ChatAnthropic, etc.) fire this callback instead
@@ -214,9 +212,7 @@ class LangChainAdapter(BaseCallbackHandler):
             self._error_count += 1
             logger.error(f"LangChainAdapter error in on_chat_model_start: {e}", exc_info=True)
 
-    def on_llm_start(
-        self, serialized: dict, prompts: list, *, run_id: Any, **kwargs: Any
-    ) -> None:
+    def on_llm_start(self, serialized: dict, prompts: list, *, run_id: Any, **kwargs: Any) -> None:
         """Capture model name from legacy LLM start for use in on_llm_end.
 
         Legacy completion-API LLMs fire this callback. Chat models fire
@@ -316,9 +312,7 @@ class LangChainAdapter(BaseCallbackHandler):
             self._error_count += 1
             logger.error(f"LangChainAdapter error in on_llm_end: {e}", exc_info=True)
 
-    def on_llm_new_token(
-        self, token: str, *, chunk: Any = None, run_id: Any, **kwargs: Any
-    ) -> None:
+    def on_llm_new_token(self, token: str, *, chunk: Any = None, run_id: Any, **kwargs: Any) -> None:
         """Intentional no-op for streaming chunk events.
 
         Streaming deduplication: LangChain fires on_llm_new_token once per chunk
@@ -334,9 +328,7 @@ class LangChainAdapter(BaseCallbackHandler):
     # BaseCallbackHandler — tool callbacks
     # ========================================================================
 
-    def on_tool_start(
-        self, serialized: dict, input_str: str, *, run_id: Any, **kwargs: Any
-    ) -> None:
+    def on_tool_start(self, serialized: dict, input_str: str, *, run_id: Any, **kwargs: Any) -> None:
         """Emit tool_call event and record start time for duration computation.
 
         Stores (tool_name, start_time) by run_id for correlation in on_tool_end.
@@ -449,11 +441,7 @@ class LangChainAdapter(BaseCallbackHandler):
             parent_run_id: UUID of parent chain, or None if top-level
         """
         try:
-            chain_name = (
-                serialized.get("name")
-                or serialized.get("id", ["unknown"])[-1]
-                or "unknown"
-            )
+            chain_name = serialized.get("name") or serialized.get("id", ["unknown"])[-1] or "unknown"
 
             # Initialize trace context only for top-level graph invocation
             if parent_run_id is None:

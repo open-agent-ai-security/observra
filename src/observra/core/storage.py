@@ -106,10 +106,11 @@ def create_backend(backend_type: str, **kwargs) -> StorageBackend:
         >>> backend = create_backend('multi', backends=[jsonl, otel])
     """
     # Lazy imports to avoid circular dependencies
-    if backend_type == 'jsonl':
+    if backend_type == "jsonl":
         from observra.backends.jsonl import JSONLBackend
+
         return JSONLBackend(**kwargs)
-    elif backend_type == 'otel':
+    elif backend_type == "otel":
         try:
             from observra.backends.otel import OTelExportBackend
         except ImportError:
@@ -118,7 +119,7 @@ def create_backend(backend_type: str, **kwargs) -> StorageBackend:
                 "for the OTel export backend. Install with: pip install observra[otel]"
             )
         return OTelExportBackend(**kwargs)
-    elif backend_type == 'otel_log':
+    elif backend_type == "otel_log":
         try:
             from observra.backends.otel_log import OTelLogBackend
         except ImportError:
@@ -127,15 +128,16 @@ def create_backend(backend_type: str, **kwargs) -> StorageBackend:
                 "for the OTel log backend. Install with: pip install observra[otel]"
             )
         return OTelLogBackend(**kwargs)
-    elif backend_type == 'webhook':
+    elif backend_type == "webhook":
         from observra.backends.webhook import WebhookBackend
+
         return WebhookBackend(**kwargs)
-    elif backend_type == 'multi':
+    elif backend_type == "multi":
         from observra.backends.multi import MultiBackend
-        backends_list = kwargs.pop('backends', [])
+
+        backends_list = kwargs.pop("backends", [])
         return MultiBackend(backends_list)
     else:
         raise ValueError(
-            f"Unknown backend type: {backend_type}. "
-            f"Supported types: 'jsonl', 'otel', 'otel_log', 'webhook', 'multi'"
+            f"Unknown backend type: {backend_type}. Supported types: 'jsonl', 'otel', 'otel_log', 'webhook', 'multi'"
         )

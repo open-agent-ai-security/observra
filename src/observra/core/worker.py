@@ -95,11 +95,7 @@ class BackgroundWorker:
         self._batches_submitted: int = 0
 
         # Create and start daemon thread
-        self._thread = threading.Thread(
-            target=self._run,
-            daemon=True,
-            name="observra-worker"
-        )
+        self._thread = threading.Thread(target=self._run, daemon=True, name="observra-worker")
         self._thread.start()
         logger.info("BackgroundWorker started (pooled=%s)", self._is_pooled)
 
@@ -189,8 +185,7 @@ class BackgroundWorker:
                         # Check circuit breaker after batch failure
                         if self._consecutive_errors >= self._cb_threshold:
                             logger.error(
-                                "Circuit breaker tripped after %d consecutive "
-                                "failures, cooling down %.1fs",
+                                "Circuit breaker tripped after %d consecutive failures, cooling down %.1fs",
                                 self._consecutive_errors,
                                 self._cb_cooldown,
                             )
@@ -220,8 +215,7 @@ class BackgroundWorker:
                         # Circuit breaker: trip after N consecutive failures
                         if self._consecutive_errors >= self._cb_threshold:
                             logger.error(
-                                "Circuit breaker tripped after %d consecutive "
-                                "failures, cooling down %.1fs",
+                                "Circuit breaker tripped after %d consecutive failures, cooling down %.1fs",
                                 self._consecutive_errors,
                                 self._cb_cooldown,
                             )
@@ -287,8 +281,7 @@ class BackgroundWorker:
             self._storage.close()
 
             logger.info(
-                "BackgroundWorker shutdown complete. "
-                "Processed: %d, Errors: %d, Batches: %d",
+                "BackgroundWorker shutdown complete. Processed: %d, Errors: %d, Batches: %d",
                 self._events_processed,
                 self._errors,
                 self._batches_submitted,

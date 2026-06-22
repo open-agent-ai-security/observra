@@ -64,10 +64,12 @@ def _find_latest_backup(path: Path) -> Optional[Path]:
     backups = [Path(p) for p in glob.glob(pattern)]
     if not backups:
         return None
+
     # Prefer ctime then mtime; on systems without ctime fall back to mtime.
     def _sort_key(p: Path):
         st = p.stat()
         return (st.st_ctime, st.st_mtime)
+
     backups.sort(key=_sort_key, reverse=True)
     return backups[0]
 
@@ -95,9 +97,7 @@ def _write_atomic(path: Path, content: str) -> None:
         try:
             shutil.copy2(str(path), str(backup))
         except OSError as exc:
-            raise ConfigWriteError(
-                f"Failed to create backup {backup} for {path}: {exc}"
-            ) from exc
+            raise ConfigWriteError(f"Failed to create backup {backup} for {path}: {exc}") from exc
 
     # Write to temp, fsync for durability, then close before rename.
     fd = os.open(str(tmp), os.O_CREAT | os.O_WRONLY | os.O_TRUNC, 0o644)
@@ -173,16 +173,12 @@ def atomic_write_json(path: Path, data: dict) -> None:
         loaded = json.loads(loaded_text)
     except (json.JSONDecodeError, OSError) as exc:
         if _restore_backup(path):
-            raise ConfigWriteError(
-                f"Validation failed for {path}; restored from backup: {exc}"
-            ) from exc
+            raise ConfigWriteError(f"Validation failed for {path}; restored from backup: {exc}") from exc
         raise ConfigWriteError(f"Validation failed for {path}: {exc}") from exc
 
     if loaded != data:
         if _restore_backup(path):
-            raise ConfigWriteError(
-                f"Validation failed for {path}: round-trip mismatch; restored from backup"
-            )
+            raise ConfigWriteError(f"Validation failed for {path}: round-trip mismatch; restored from backup")
         raise ConfigWriteError(f"Validation failed for {path}: round-trip mismatch")
 
 
@@ -204,14 +200,10 @@ def atomic_write_text(path: Path, text: str) -> None:
         read_back = path.read_text(encoding="utf-8")
     except OSError as exc:
         if _restore_backup(path):
-            raise ConfigWriteError(
-                f"Validation failed for {path}; restored from backup: {exc}"
-            ) from exc
+            raise ConfigWriteError(f"Validation failed for {path}; restored from backup: {exc}") from exc
         raise ConfigWriteError(f"Validation failed for {path}: {exc}") from exc
 
     if read_back != text:
         if _restore_backup(path):
-            raise ConfigWriteError(
-                f"Validation failed for {path}: round-trip mismatch; restored from backup"
-            )
+            raise ConfigWriteError(f"Validation failed for {path}: round-trip mismatch; restored from backup")
         raise ConfigWriteError(f"Validation failed for {path}: round-trip mismatch")

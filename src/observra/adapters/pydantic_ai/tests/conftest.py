@@ -15,6 +15,7 @@ import types as _types
 # Create stub opentelemetry.sdk.trace module hierarchy
 # ---------------------------------------------------------------------------
 
+
 class _StubSpanProcessor:
     """Stub SpanProcessor — no-op implementations of all 4 required methods."""
 

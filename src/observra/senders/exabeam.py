@@ -12,15 +12,31 @@ from observra.core.types import BackendStats
 
 logger = logging.getLogger(__name__)
 
-_CANONICAL_FIELDS: frozenset[str] = frozenset({
-    "time", "event_id", "event_type", "framework",
-    "session_id", "trace_id", "span_id",
-    "agent_name", "tool_name", "model_name",
-    "mcp_agent_id", "mcp_session_id",
-    "injection_detected", "has_injection_patterns", "injection_patterns",
-    "tool_velocity", "tool_sequence", "suspicious_sequence",
-    "delegation_depth", "error_type_name", "is_retryable",
-})
+_CANONICAL_FIELDS: frozenset[str] = frozenset(
+    {
+        "time",
+        "event_id",
+        "event_type",
+        "framework",
+        "session_id",
+        "trace_id",
+        "span_id",
+        "agent_name",
+        "tool_name",
+        "model_name",
+        "mcp_agent_id",
+        "mcp_session_id",
+        "injection_detected",
+        "has_injection_patterns",
+        "injection_patterns",
+        "tool_velocity",
+        "tool_sequence",
+        "suspicious_sequence",
+        "delegation_depth",
+        "error_type_name",
+        "is_retryable",
+    }
+)
 
 
 class ExabeamSenderBackend:
@@ -43,24 +59,20 @@ class ExabeamSenderBackend:
         if not endpoint:
             raise ValueError("EXABEAM_ENDPOINT environment variable not set")
         if not endpoint.startswith("https://"):
-            raise ValueError(
-                "EXABEAM_ENDPOINT must use HTTPS. Got: %s" % endpoint
-            )
+            raise ValueError("EXABEAM_ENDPOINT must use HTTPS. Got: %s" % endpoint)
         api_key = os.environ.get("EXABEAM_API_KEY")
         if not api_key:
             raise ValueError("EXABEAM_API_KEY environment variable not set")
 
         mode = os.environ.get("EXABEAM_PAYLOAD_MODE", "json")
         if mode not in {"json", "raw"}:
-            raise ValueError(
-                "EXABEAM_PAYLOAD_MODE must be 'json' or 'raw'. Got: %s" % mode
-            )
+            raise ValueError("EXABEAM_PAYLOAD_MODE must be 'json' or 'raw'. Got: %s" % mode)
 
         field_map: dict = {}
         for env_key, env_val in os.environ.items():
             if not env_key.startswith("EXABEAM_FIELD_"):
                 continue
-            canonical = env_key[len("EXABEAM_FIELD_"):].lower()
+            canonical = env_key[len("EXABEAM_FIELD_") :].lower()
             if canonical not in _CANONICAL_FIELDS:
                 logger.warning(
                     "EXABEAM_FIELD_%s is not a known canonical field — override ignored",
@@ -76,9 +88,9 @@ class ExabeamSenderBackend:
         self._write_count = 0
 
     def __repr__(self) -> str:
-        base = (
-            "ExabeamSenderBackend(endpoint=%s, api_key=<redacted>, payload_mode=%s"
-            % (self._endpoint, self._payload_mode)
+        base = "ExabeamSenderBackend(endpoint=%s, api_key=<redacted>, payload_mode=%s" % (
+            self._endpoint,
+            self._payload_mode,
         )
         if self._field_map:
             base += ", field_overrides=%d" % len(self._field_map)
@@ -183,7 +195,4 @@ class ExabeamSenderBackend:
         )
 
     def query(self, **kwargs) -> Iterator[TelemetryEvent]:
-        raise NotImplementedError(
-            "ExabeamSenderBackend does not support query(). "
-            "Querying is not supported in v1."
-        )
+        raise NotImplementedError("ExabeamSenderBackend does not support query(). Querying is not supported in v1.")

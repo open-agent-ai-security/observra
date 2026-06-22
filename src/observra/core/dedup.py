@@ -18,7 +18,7 @@ from contextvars import ContextVar
 logger = logging.getLogger(__name__)
 
 # Maps (event_type, span_id) -> source tag ("log" | "adapter")
-_emitted_var: ContextVar[dict[tuple[str, str], str]] = ContextVar('dedup_emitted')
+_emitted_var: ContextVar[dict[tuple[str, str], str]] = ContextVar("dedup_emitted")
 
 
 def register_emission(event_type: str, span_id: str, *, source: str = "adapter") -> bool:
@@ -43,10 +43,7 @@ def register_emission(event_type: str, span_id: str, *, source: str = "adapter")
     existing_source = emitted.get(key)
 
     if existing_source is not None and existing_source != source:
-        logger.debug(
-            f"Dedup: skipping {event_type} in span {span_id[:8]}... "
-            f"(already emitted by {existing_source})"
-        )
+        logger.debug(f"Dedup: skipping {event_type} in span {span_id[:8]}... (already emitted by {existing_source})")
         return False
 
     # First emitter or same source — allow and record

@@ -11,18 +11,24 @@ class TestGetMetrics:
 
     def test_returns_required_keys(self):
         from observra import observability
+
         m = observability.get_metrics()
         required = {
-            "drop_count", "queue_depth",
-            "write_latency_p50", "write_latency_p99", "write_latency_p999",
+            "drop_count",
+            "queue_depth",
+            "write_latency_p50",
+            "write_latency_p99",
+            "write_latency_p999",
             "redaction_applied_count",
-            "backend_write_success", "backend_write_failure",
+            "backend_write_success",
+            "backend_write_failure",
             "labels",
         }
         assert required == set(m.keys())
 
     def test_defaults_to_zeros_when_no_pipeline(self):
         from observra import observability
+
         m = observability.get_metrics()
         assert m["drop_count"] == 0
         assert m["queue_depth"] == 0
@@ -36,6 +42,7 @@ class TestGetMetrics:
 
     def test_reflects_registry_state(self):
         from observra import observability
+
         _registry.inc_counter("observra_events_dropped_total", 5)
         _registry.set_gauge("observra_queue_depth", 3.0)
         _registry.get_histogram("observra_write_latency_seconds").push(0.002)
@@ -52,6 +59,7 @@ class TestGetMetrics:
 
     def test_labels_reflected(self):
         from observra import observability
+
         _registry.set_label("framework", "adk")
         _registry.set_label("sink", "jsonl")
         m = observability.get_metrics()
@@ -60,6 +68,7 @@ class TestGetMetrics:
     def test_get_metrics_does_not_raise_without_pipeline(self):
         """Calling get_metrics() with no pipeline initialized must not raise."""
         from observra import observability
+
         try:
             m = observability.get_metrics()
             assert isinstance(m, dict)
@@ -86,10 +95,12 @@ class TestMetricNameConformance:
     def test_histogram_names_end_in_seconds(self):
         """Latency histograms use _seconds suffix per OpenMetrics -- live registry check."""
         from observra.core.metrics import _registry
+
         _registry.reset()
         # Push a sample to ensure the histogram key exists in the registry
         _registry.get_histogram("observra_write_latency_seconds").push(0.001)
         from observra import observability
+
         m = observability.get_metrics()
         # Verify histogram-derived keys exist and the internal metric name is correct
         assert m["write_latency_p50"] is not None, "Histogram should return a value after push"

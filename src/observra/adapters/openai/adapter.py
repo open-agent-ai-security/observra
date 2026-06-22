@@ -336,9 +336,7 @@ class OpenAIAdapter(TracingProcessor):
                 if isinstance(item, dict) and item.get("type") in ("function_call", "tool_call"):
                     tool_calls.append(item)
             if tool_calls:
-                event_kwargs["tool_calls_in_generation"] = safe_serialize(
-                    tool_calls, self._payload_max_bytes
-                )
+                event_kwargs["tool_calls_in_generation"] = safe_serialize(tool_calls, self._payload_max_bytes)
 
         if span.error is not None:
             event_kwargs["error_message"] = str(span.error)

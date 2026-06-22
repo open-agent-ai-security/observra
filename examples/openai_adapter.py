@@ -47,10 +47,10 @@ from observra.adapters.openai import OpenAIAdapter  # noqa: E402
 
 initialize(
     backend="jsonl",
-    path="telemetry.jsonl",        # where events are stored
+    path="telemetry.jsonl",  # where events are stored
 )
 adapter = OpenAIAdapter()
-add_trace_processor(adapter)       # register alongside default processors
+add_trace_processor(adapter)  # register alongside default processors
 
 
 # ── Step 2: Run your agent normally ─────────────────────────────

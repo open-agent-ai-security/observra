@@ -91,44 +91,55 @@ def test_plugin_survives_reinit(tmp_path):
 
 # ── Public API Surface Stability ─────────────────────────────────────────────
 
-_PUBLIC_API_STABLE_SURFACE = frozenset({
-    "initialize",
-    "create_plugin",
-    "create_logging_handler",
-    "get_stats",
-    "get_metrics",       # Phase 38 OBS-01: stable self-metrics API
-    "observability",     # Phase 38 OBS-01: observability module
-    "TelemetryEvent",
-    "StorageBackend",
-    "ADKAdapter",
-    "ClaudeAdapter",
-    "OpenAIAdapter",
-    "LangChainAdapter",
-    "PydanticAIAdapter",
-})
+_PUBLIC_API_STABLE_SURFACE = frozenset(
+    {
+        "initialize",
+        "create_plugin",
+        "create_logging_handler",
+        "get_stats",
+        "get_metrics",  # Phase 38 OBS-01: stable self-metrics API
+        "observability",  # Phase 38 OBS-01: observability module
+        "TelemetryEvent",
+        "StorageBackend",
+        "ADKAdapter",
+        "ClaudeAdapter",
+        "OpenAIAdapter",
+        "LangChainAdapter",
+        "PydanticAIAdapter",
+    }
+)
 
 
 def test_public_api_snapshot():
     """public.py __all__ matches the frozen v1.0 surface manifest (D-04)."""
     import observra.public as pub
+
     assert set(pub.__all__) == _PUBLIC_API_STABLE_SURFACE, (
-        "Public API surface has drifted. Update _PUBLIC_API_STABLE_SURFACE "
-        "deliberately if this change is intentional."
+        "Public API surface has drifted. Update _PUBLIC_API_STABLE_SURFACE deliberately if this change is intentional."
     )
 
 
 def test_public_api_import_does_not_leak_framework_sdks():
     """Importing observra.public must not trigger framework SDK imports."""
     import sys
+
     before = set(sys.modules.keys())
     import observra.public  # noqa: F401
+
     after = set(sys.modules.keys())
     new_mods = after - before
     framework_modules = [
-        m for m in new_mods
-        if any(fw in m for fw in [
-            'google.adk', 'anthropic', 'openai',
-            'langchain', 'pydantic_ai',
-        ])
+        m
+        for m in new_mods
+        if any(
+            fw in m
+            for fw in [
+                "google.adk",
+                "anthropic",
+                "openai",
+                "langchain",
+                "pydantic_ai",
+            ]
+        )
     ]
     assert framework_modules == [], f"Framework modules leaked: {framework_modules}"

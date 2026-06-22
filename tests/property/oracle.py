@@ -16,11 +16,7 @@ def strip_none_values(d):
             if nested:
                 out[k] = nested
         elif isinstance(v, list):
-            out[k] = [
-                strip_none_values(i) if isinstance(i, dict) else i
-                for i in v
-                if i is not None
-            ]
+            out[k] = [strip_none_values(i) if isinstance(i, dict) else i for i in v if i is not None]
         else:
             out[k] = v
     return out
@@ -31,7 +27,7 @@ def main():
     obj = json.loads(raw)
     result = json.dumps(
         strip_none_values(obj),
-        separators=(',', ':'),
+        separators=(",", ":"),
         ensure_ascii=False,
     )
     sys.stdout.write(result)

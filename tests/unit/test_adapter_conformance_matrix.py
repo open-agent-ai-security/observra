@@ -158,9 +158,7 @@ PydanticAIAdapter = importlib.import_module("observra.adapters.pydantic_ai.adapt
 AgentSpanData = importlib.import_module("agents.tracing.span_data").AgentSpanData
 
 
-CANONICAL_EVENT_TYPES = {
-    value for key, value in vars(EventType).items() if key.isupper() and isinstance(value, str)
-}
+CANONICAL_EVENT_TYPES = {value for key, value in vars(EventType).items() if key.isupper() and isinstance(value, str)}
 
 ADAPTER_MATRIX = [
     ("adk", TelemetryPlugin),

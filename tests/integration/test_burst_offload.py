@@ -92,16 +92,12 @@ def test_burst_5000_events_no_overflow(tmp_path):
 
     # Verify no events were dropped
     stats = q.get_stats()
-    assert stats["dropped"] == 0, (
-        f"Expected 0 dropped events, got {stats['dropped']}"
-    )
+    assert stats["dropped"] == 0, f"Expected 0 dropped events, got {stats['dropped']}"
 
     # Verify all 5,000 events were written to disk
     assert output_path.exists(), "Output file not created"
     lines = output_path.read_text().strip().splitlines()
-    assert len(lines) == 5_000, (
-        f"Expected 5000 lines in output, got {len(lines)}"
-    )
+    assert len(lines) == 5_000, f"Expected 5000 lines in output, got {len(lines)}"
 
 
 # ---------------------------------------------------------------------------
@@ -157,9 +153,7 @@ def test_burst_p95_batch_latency_under_50ms(tmp_path):
     pw.close()
 
     # Need at least a few batches to compute meaningful percentiles
-    assert len(latencies) >= 10, (
-        f"Not enough batches recorded for p95 (got {len(latencies)})"
-    )
+    assert len(latencies) >= 10, f"Not enough batches recorded for p95 (got {len(latencies)})"
 
     sorted_latencies = sorted(latencies)
     p50 = sorted_latencies[int(0.50 * len(sorted_latencies))]
@@ -167,14 +161,10 @@ def test_burst_p95_batch_latency_under_50ms(tmp_path):
     p99 = sorted_latencies[int(0.99 * len(sorted_latencies))]
 
     print(
-        f"\n  Batch latency: p50={p50 * 1000:.1f}ms  "
-        f"p95={p95 * 1000:.1f}ms  p99={p99 * 1000:.1f}ms  "
-        f"n={len(latencies)}"
+        f"\n  Batch latency: p50={p50 * 1000:.1f}ms  p95={p95 * 1000:.1f}ms  p99={p99 * 1000:.1f}ms  n={len(latencies)}"
     )
 
-    assert p95 < 0.050, (
-        f"p95 batch latency {p95 * 1000:.1f}ms exceeds 50ms threshold"
-    )
+    assert p95 < 0.050, f"p95 batch latency {p95 * 1000:.1f}ms exceeds 50ms threshold"
 
 
 # ---------------------------------------------------------------------------
@@ -211,7 +201,7 @@ def test_worker_crash_isolation(tmp_path):
     # We need to patch the module-level function used by the subprocess.
     # Since the subprocess uses its own memory space, we instead patch
     # submit_batch on PooledWriter to simulate the failure behavior.
-    _original_submit = pw.submit_batch.__func__ if hasattr(pw.submit_batch, '__func__') else None  # noqa: F841
+    _original_submit = pw.submit_batch.__func__ if hasattr(pw.submit_batch, "__func__") else None  # noqa: F841
     submit_call_count = {"n": 0}
 
     def patched_submit(batch):
@@ -223,6 +213,7 @@ def test_worker_crash_isolation(tmp_path):
             return
         # Call original submit_batch (unbound, need to pass pw)
         from observra.core.pool_writer import PooledWriter as _PW
+
         _PW.submit_batch(pw, batch)
 
     pw.submit_batch = patched_submit  # type: ignore[method-assign]
@@ -238,9 +229,7 @@ def test_worker_crash_isolation(tmp_path):
     assert worker._thread.is_alive(), "BackgroundWorker thread died after worker failures"
 
     # At most ~4 errors from modulo-3 pattern across 10 batches
-    assert pw._errors <= 4, (
-        f"Expected at most 4 errors, got {pw._errors}"
-    )
+    assert pw._errors <= 4, f"Expected at most 4 errors, got {pw._errors}"
 
     worker.shutdown()
     pw.close()
@@ -313,9 +302,7 @@ def test_pool_recreation_on_broken_pool(tmp_path):
     if output_path.exists():
         lines = output_path.read_text().strip().splitlines()
         # Some events should be written (either from retry of batch1 or batch2)
-        assert len(lines) >= 5, (
-            f"Expected at least 5 events after pool recreation, got {len(lines)}"
-        )
+        assert len(lines) >= 5, f"Expected at least 5 events after pool recreation, got {len(lines)}"
 
 
 # ---------------------------------------------------------------------------

@@ -86,10 +86,10 @@ _EVENT_SCHEMAS: dict[str, dict[str, Any]] = {
         "tool_outputs": None,
         "injection_patterns": None,
         "has_injection_patterns": None,
-        "tool_velocity": None,       # float: calls/min from velocity.py sliding window
-        "tool_sequence": None,       # list[str]: tool names in session order
-        "suspicious_sequence": None, # bool: matches suspicious pattern (sequences.py)
-        "delegation_depth": None,    # int: 0 for top-level, N for subagent (Story 2.3)
+        "tool_velocity": None,  # float: calls/min from velocity.py sliding window
+        "tool_sequence": None,  # list[str]: tool names in session order
+        "suspicious_sequence": None,  # bool: matches suspicious pattern (sequences.py)
+        "delegation_depth": None,  # int: 0 for top-level, N for subagent (Story 2.3)
         # NOTE: error_type and error_retryable intentionally NOT in schema
         # They appear ONLY for error events (must be absent, not None, on success)
     },
@@ -139,15 +139,26 @@ class EventType:
     ADAPTER_CLOSE = "adapter_close"
 
     # MCP proxy server (observra/mcp/) — FastMCP transparent proxy events
-    SKILL_INVOCATION = "skill_invocation"    # Tool call intercepted by proxy (cold path)
+    SKILL_INVOCATION = "skill_invocation"  # Tool call intercepted by proxy (cold path)
     MCP_SESSION_START = "mcp_session_start"  # MCP client connected (hot path)
-    MCP_SESSION_END = "mcp_session_end"      # MCP client disconnected (hot path)
+    MCP_SESSION_END = "mcp_session_end"  # MCP client disconnected (hot path)
 
 
 # Framework name type alias
 FrameworkName = Literal[
-    "adk", "claude", "claude_code", "codex_cli", "codex_app", "gemini_cli",
-    "openai", "langgraph", "pydantic-ai", "copilot", "mcp", "openclaw", "unknown",
+    "adk",
+    "claude",
+    "claude_code",
+    "codex_cli",
+    "codex_app",
+    "gemini_cli",
+    "openai",
+    "langgraph",
+    "pydantic-ai",
+    "copilot",
+    "mcp",
+    "openclaw",
+    "unknown",
 ]
 
 # Module-level redactor singleton (configured via initialize())
@@ -186,6 +197,7 @@ class TelemetryEvent:
         data: Additional event-specific data
         framework: Framework that generated this event
     """
+
     # Required fields
     event_id: str
     timestamp: float
@@ -234,7 +246,7 @@ def create_event(
     model_name: Optional[str] = None,
     framework: FrameworkName = "unknown",
     skill_name: Optional[str] = None,
-    **kwargs: Any
+    **kwargs: Any,
 ) -> TelemetryEvent:
     """Create a new telemetry event with context propagation.
 
@@ -271,10 +283,7 @@ def create_event(
             merged["result"] = default_result
     # For tool calls, auto-derive reversibility from the tool name when the
     # adapter didn't pre-set it. Mirrors what the Rust hook parser does.
-    if (
-        event_type in ("tool_start", "tool_end", "tool_error")
-        and "reversible" not in merged
-    ):
+    if event_type in ("tool_start", "tool_end", "tool_error") and "reversible" not in merged:
         rev = _cim.classify_reversibility(tool_name)
         if rev is not None:
             merged["reversible"] = rev
@@ -295,11 +304,7 @@ def create_event(
             # values that are classification metadata, never PII — preserve them so
             # downstream SIEM parsers keep their CIM alignment.
             data = {
-                k: (
-                    v
-                    if (not isinstance(v, str) or k in HOT_PATH_SAFE_STRING_KEYS)
-                    else None
-                )
+                k: (v if (not isinstance(v, str) or k in HOT_PATH_SAFE_STRING_KEYS) else None)
                 for k, v in merged.items()
             }
             # If all values are None and dict would be meaningless, keep it (uniform schema)

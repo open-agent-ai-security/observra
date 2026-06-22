@@ -32,9 +32,7 @@ def generate() -> str:
 
     lines: list[str] = []
 
-    lines.append(
-        '"""Cross-source CIM-aligned data block contract — GENERATED FROM cim_schema.toml. DO NOT EDIT."""'
-    )
+    lines.append('"""Cross-source CIM-aligned data block contract — GENERATED FROM cim_schema.toml. DO NOT EDIT."""')
     lines.append("")
     lines.append("from __future__ import annotations")
     lines.append("")
@@ -117,9 +115,7 @@ def generate() -> str:
 
     # _ACTION_PATTERNS sorted by priority ascending then pattern ascending.
     action_patterns = schema.get("action_pattern", [])
-    action_patterns_sorted = sorted(
-        action_patterns, key=lambda ap: (ap["priority"], ap["pattern"])
-    )
+    action_patterns_sorted = sorted(action_patterns, key=lambda ap: (ap["priority"], ap["pattern"]))
 
     max_pat_len = max(len(ap["pattern"]) for ap in action_patterns_sorted) if action_patterns_sorted else 0
     lines.append("_ACTION_PATTERNS: list[tuple[str, Action]] = [")
@@ -192,15 +188,15 @@ def generate() -> str:
     vendor_map = schema.get("vendor_map", [])
     lines.append("def vendor_from_model(model: Optional[str]) -> str:")
     lines.append('    """Classify a model identifier into a vendor."""')
-    lines.append('    if not model:')
+    lines.append("    if not model:")
     lines.append('        return "unknown"')
-    lines.append('    lower = model.lower()')
+    lines.append("    lower = model.lower()")
     for vm in vendor_map:
         patterns = vm["patterns"]
         vendor = vm["vendor"]
         # Build the condition string
         conds = [f'"{p}" in lower' for p in patterns]
-        lines.append(f'    if {" or ".join(conds)}:')
+        lines.append(f"    if {' or '.join(conds)}:")
         lines.append(f'        return "{vendor}"')
     lines.append('    return "unknown"')
     lines.append("")
@@ -224,7 +220,7 @@ def generate() -> str:
     lines.append('    if v != "unknown":')
     lines.append("        return v")
     lines.append("    if framework:")
-    lines.append("        return _VENDOR_BY_FRAMEWORK.get(framework, \"unknown\")")
+    lines.append('        return _VENDOR_BY_FRAMEWORK.get(framework, "unknown")')
     lines.append('    return "unknown"')
     lines.append("")
     lines.append("")
@@ -277,7 +273,7 @@ def generate() -> str:
     lines.append("    extras: Optional[dict[str, Any]] = None,")
     lines.append(") -> dict[str, Any]:")
     lines.append('    """Build the canonical data block for event_type."""')
-    lines.append('    out: dict[str, Any] = {')
+    lines.append("    out: dict[str, Any] = {")
     lines.append('        "action": action_for_event_type(event_type),')
     lines.append('        "vendor": vendor,')
     lines.append("    }")

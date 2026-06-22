@@ -38,7 +38,7 @@ from observra import create_plugin, initialize  # noqa: E402
 
 initialize(
     backend="jsonl",
-    path="telemetry.jsonl",      # where events are stored
+    path="telemetry.jsonl",  # where events are stored
 )
 plugin = create_plugin()
 
@@ -51,7 +51,7 @@ runner = Runner(
     agent=root_agent,
     app_name="my_app",
     session_service=session_service,
-    plugins=[plugin],            # <-- this is the only change to your Runner
+    plugins=[plugin],  # <-- this is the only change to your Runner
 )
 
 

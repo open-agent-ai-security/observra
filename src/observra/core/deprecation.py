@@ -3,6 +3,7 @@
 Provides a @deprecated decorator that emits DeprecationWarning at call time
 and attaches metadata attributes for CI introspection.
 """
+
 from __future__ import annotations
 
 import functools
@@ -27,11 +28,9 @@ def deprecated(
 
     The decorator preserves __wrapped__ and metadata for introspection by CI tooling.
     """
+
     def decorator(func: _F) -> _F:
-        msg = (
-            f"{func.__qualname__} is deprecated and will be removed in "
-            f"v{removal_version}. Use {alternative} instead."
-        )
+        msg = f"{func.__qualname__} is deprecated and will be removed in v{removal_version}. Use {alternative} instead."
         if reason:
             msg += f" Reason: {reason}"
 

@@ -5,6 +5,7 @@ Covers:
   - "sensor" body schema (short keys matching CLI JSONL writer / aba-sensor)
   - OTel attributes remain unchanged regardless of body_schema
 """
+
 import json
 from unittest.mock import MagicMock
 

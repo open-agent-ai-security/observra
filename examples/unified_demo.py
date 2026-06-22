@@ -44,14 +44,19 @@ _all_events: list[TelemetryEvent] = []
 
 FRAMEWORK_ORDER = ["adk", "claude", "openai", "langgraph", "pydantic-ai", "copilot"]
 FRAMEWORK_LABELS = {
-    "adk": "ADK", "claude": "Claude", "openai": "OpenAI",
-    "langgraph": "LangGraph", "pydantic-ai": "PydanticAI", "copilot": "Copilot",
+    "adk": "ADK",
+    "claude": "Claude",
+    "openai": "OpenAI",
+    "langgraph": "LangGraph",
+    "pydantic-ai": "PydanticAI",
+    "copilot": "Copilot",
 }
 
 
 # ========================================================================
 # 1. ADK — TelemetryPlugin (BasePlugin)
 # ========================================================================
+
 
 def run_adk_session(verbose: bool = False) -> list[TelemetryEvent]:
     """Run ADK session through the real TelemetryPlugin."""
@@ -68,8 +73,11 @@ def run_adk_session(verbose: bool = False) -> list[TelemetryEvent]:
 
     # Mock usage_metadata on response
     usage = types.SimpleNamespace(
-        prompt_token_count=1250, candidates_token_count=380, total_token_count=1630,
-        cached_content_token_count=200, thoughts_token_count=45,
+        prompt_token_count=1250,
+        candidates_token_count=380,
+        total_token_count=1630,
+        cached_content_token_count=200,
+        thoughts_token_count=45,
     )
     llm_resp = types.SimpleNamespace(usage_metadata=usage, model_version=None)
 
@@ -103,34 +111,51 @@ def run_adk_session(verbose: bool = False) -> list[TelemetryEvent]:
 # 2. OpenAI — OpenAIAdapter (TracingProcessor)
 # ========================================================================
 
+
 # Stub SDK modules for mock mode
 class _MockAgentSpanData:
     def __init__(self, **kw):
         self.__dict__.update(kw)
 
+
 class _MockGenerationSpanData:
     def __init__(self, **kw):
         self.__dict__.update(kw)
+
 
 class _MockFunctionSpanData:
     def __init__(self, **kw):
         self.__dict__.update(kw)
 
+
 class _MockHandoffSpanData:
     def __init__(self, **kw):
         self.__dict__.update(kw)
+
 
 def _ensure_openai_stubs():
     """Inject agents.tracing stubs if not installed."""
     if "agents.tracing" in sys.modules:
         return
+
     class _Stub:
-        def on_trace_start(self, t): pass
-        def on_trace_end(self, t): pass
-        def on_span_start(self, s): pass
-        def on_span_end(self, s): pass
-        def shutdown(self): pass
-        def force_flush(self): pass
+        def on_trace_start(self, t):
+            pass
+
+        def on_trace_end(self, t):
+            pass
+
+        def on_span_start(self, s):
+            pass
+
+        def on_span_end(self, s):
+            pass
+
+        def shutdown(self):
+            pass
+
+        def force_flush(self):
+            pass
 
     m = types.ModuleType("agents")
     mt = types.ModuleType("agents.tracing")
@@ -154,6 +179,7 @@ def run_openai_session(verbose: bool = False) -> list[TelemetryEvent]:
 
     import observra.adapters.openai.adapter as mod
     from observra.adapters.openai.adapter import OpenAIAdapter
+
     mod.AgentSpanData = _MockAgentSpanData
     mod.GenerationSpanData = _MockGenerationSpanData
     mod.FunctionSpanData = _MockFunctionSpanData
@@ -165,26 +191,52 @@ def run_openai_session(verbose: bool = False) -> list[TelemetryEvent]:
 
     # Agent span start -> session_start
     agent_data = _MockAgentSpanData(name="triage_agent", tools=["ticket_lookup"], handoffs=[], output_type="str")
-    agent_span = types.SimpleNamespace(span_id="s1", trace_id="t1", parent_id=None,
-        started_at="2026-03-03T10:00:00Z", ended_at="2026-03-03T10:00:10Z",
-        error=None, span_data=agent_data)
+    agent_span = types.SimpleNamespace(
+        span_id="s1",
+        trace_id="t1",
+        parent_id=None,
+        started_at="2026-03-03T10:00:00Z",
+        ended_at="2026-03-03T10:00:10Z",
+        error=None,
+        span_data=agent_data,
+    )
     adapter.on_span_start(agent_span)
 
     # Generation span -> model_response
-    gen_data = _MockGenerationSpanData(model="gpt-4o", output=None, input=None,
-        usage={"input_tokens": 800, "output_tokens": 250, "total_tokens": 1050,
-               "input_tokens_details": {"cached_tokens": 0},
-               "output_tokens_details": {"reasoning_tokens": 60}})
-    gen_span = types.SimpleNamespace(span_id="s2", trace_id="t1", parent_id="s1",
-        started_at="2026-03-03T10:00:01Z", ended_at="2026-03-03T10:00:02Z",
-        error=None, span_data=gen_data)
+    gen_data = _MockGenerationSpanData(
+        model="gpt-4o",
+        output=None,
+        input=None,
+        usage={
+            "input_tokens": 800,
+            "output_tokens": 250,
+            "total_tokens": 1050,
+            "input_tokens_details": {"cached_tokens": 0},
+            "output_tokens_details": {"reasoning_tokens": 60},
+        },
+    )
+    gen_span = types.SimpleNamespace(
+        span_id="s2",
+        trace_id="t1",
+        parent_id="s1",
+        started_at="2026-03-03T10:00:01Z",
+        ended_at="2026-03-03T10:00:02Z",
+        error=None,
+        span_data=gen_data,
+    )
     adapter.on_span_end(gen_span)
 
     # Function span -> tool_end
     func_data = _MockFunctionSpanData(name="ticket_lookup", input='{"id": 42}', output="Ticket #42: open")
-    func_span = types.SimpleNamespace(span_id="s3", trace_id="t1", parent_id="s1",
-        started_at="2026-03-03T10:00:02Z", ended_at="2026-03-03T10:00:02.500Z",
-        error=None, span_data=func_data)
+    func_span = types.SimpleNamespace(
+        span_id="s3",
+        trace_id="t1",
+        parent_id="s1",
+        started_at="2026-03-03T10:00:02Z",
+        ended_at="2026-03-03T10:00:02.500Z",
+        error=None,
+        span_data=func_data,
+    )
     adapter.on_span_end(func_span)
 
     # Agent span end -> session_end
@@ -202,28 +254,35 @@ def run_openai_session(verbose: bool = False) -> list[TelemetryEvent]:
 # 3. Claude — ClaudeAdapter (hooks + wrap_stream)
 # ========================================================================
 
+
 def run_claude_session(verbose: bool = False) -> list[TelemetryEvent]:
     """Run Claude session through the real ClaudeAdapter."""
     print("\n── Claude (Sonnet 4.6) ──")
     import observra.adapters.utils as utils_mod
+
     utils_mod.TIKTOKEN_DISABLED = True
 
     initialize_trace()
     initialize_session()
     from observra.adapters.claude.adapter import ClaudeAdapter
+
     adapter = ClaudeAdapter(queue=None)
 
     async def _run():
         # UserPromptSubmit
-        await adapter._on_user_prompt_submit(
-            {"prompt": "Review this code for vulnerabilities"}, None, None)
+        await adapter._on_user_prompt_submit({"prompt": "Review this code for vulnerabilities"}, None, None)
 
         # PreToolUse + PostToolUse
-        await adapter._on_pre_tool_use(
-            {"tool_name": "code_review", "tool_input": {"file": "main.py"}}, "tu-001", None)
+        await adapter._on_pre_tool_use({"tool_name": "code_review", "tool_input": {"file": "main.py"}}, "tu-001", None)
         await adapter._on_post_tool_use(
-            {"tool_name": "code_review", "tool_input": {"file": "main.py"},
-             "tool_response": "2 critical vulnerabilities found"}, "tu-001", None)
+            {
+                "tool_name": "code_review",
+                "tool_input": {"file": "main.py"},
+                "tool_response": "2 critical vulnerabilities found",
+            },
+            "tu-001",
+            None,
+        )
 
         # Stop hook
         await adapter._on_stop({"stop_hook_active": True}, None, None)
@@ -232,8 +291,8 @@ def run_claude_session(verbose: bool = False) -> list[TelemetryEvent]:
         text_block = types.SimpleNamespace(type="text", text="Found 2 critical vulns")
         assistant_msg = types.SimpleNamespace(content=[text_block])
         result_msg = types.SimpleNamespace(
-            total_cost_usd=0.0042, num_turns=3, is_error=False,
-            session_id="mock-001", usage=None)
+            total_cost_usd=0.0042, num_turns=3, is_error=False, session_id="mock-001", usage=None
+        )
 
         async def mock_stream():
             yield assistant_msg
@@ -254,21 +313,42 @@ def run_claude_session(verbose: bool = False) -> list[TelemetryEvent]:
 # 4. LangGraph — LangChainAdapter (BaseCallbackHandler)
 # ========================================================================
 
+
 def _ensure_langchain_stubs():
     """Inject langchain_core stubs if not installed."""
     if "langchain_core" in sys.modules:
         return
+
     class _BCH:
-        def on_llm_end(self, *a, **k): pass
-        def on_llm_start(self, *a, **k): pass
-        def on_llm_new_token(self, *a, **k): pass
-        def on_chat_model_start(self, *a, **k): pass
-        def on_tool_start(self, *a, **k): pass
-        def on_tool_end(self, *a, **k): pass
-        def on_tool_error(self, *a, **k): pass
-        def on_chain_start(self, *a, **k): pass
-        def on_chain_end(self, *a, **k): pass
-        def on_chain_error(self, *a, **k): pass
+        def on_llm_end(self, *a, **k):
+            pass
+
+        def on_llm_start(self, *a, **k):
+            pass
+
+        def on_llm_new_token(self, *a, **k):
+            pass
+
+        def on_chat_model_start(self, *a, **k):
+            pass
+
+        def on_tool_start(self, *a, **k):
+            pass
+
+        def on_tool_end(self, *a, **k):
+            pass
+
+        def on_tool_error(self, *a, **k):
+            pass
+
+        def on_chain_start(self, *a, **k):
+            pass
+
+        def on_chain_end(self, *a, **k):
+            pass
+
+        def on_chain_error(self, *a, **k):
+            pass
 
     lc = types.ModuleType("langchain_core")
     lcb = types.ModuleType("langchain_core.callbacks")
@@ -292,6 +372,7 @@ def run_langgraph_session(verbose: bool = False) -> list[TelemetryEvent]:
     initialize_trace()
     initialize_session()
     from observra.adapters.langchain.adapter import LangChainAdapter
+
     adapter = LangChainAdapter(queue=None, capture_tool_data=False)
 
     root_id = uuid.uuid4()
@@ -305,10 +386,10 @@ def run_langgraph_session(verbose: bool = False) -> list[TelemetryEvent]:
     adapter.on_chat_model_start({"kwargs": {"model_name": "gemini-2.5-pro"}}, [[]], run_id=llm_id)
     mock_msg = types.SimpleNamespace(
         usage_metadata={"input_tokens": 2000, "output_tokens": 600, "total_tokens": 2600},
-        response_metadata={"model_name": "gemini-2.5-pro"})
+        response_metadata={"model_name": "gemini-2.5-pro"},
+    )
     mock_gen = types.SimpleNamespace(message=mock_msg, text="Research summary")
-    llm_result = types.SimpleNamespace(
-        generations=[[mock_gen]], llm_output={"model_name": "gemini-2.5-pro"})
+    llm_result = types.SimpleNamespace(generations=[[mock_gen]], llm_output={"model_name": "gemini-2.5-pro"})
     adapter.on_llm_end(llm_result, run_id=llm_id)
 
     # Tool start + end
@@ -329,15 +410,24 @@ def run_langgraph_session(verbose: bool = False) -> list[TelemetryEvent]:
 # 5. Pydantic AI — PydanticAIAdapter (SpanProcessor)
 # ========================================================================
 
+
 def _ensure_otel_stubs():
     """Inject opentelemetry.sdk.trace stubs if not installed."""
     if "opentelemetry.sdk.trace" in sys.modules:
         return
+
     class _SP:
-        def on_start(self, s, parent_context=None): pass
-        def on_end(self, s): pass
-        def shutdown(self): pass
-        def force_flush(self, timeout_millis=None): return True
+        def on_start(self, s, parent_context=None):
+            pass
+
+        def on_end(self, s):
+            pass
+
+        def shutdown(self):
+            pass
+
+        def force_flush(self, timeout_millis=None):
+            return True
 
     o = types.ModuleType("opentelemetry")
     os_ = types.ModuleType("opentelemetry.sdk")
@@ -359,17 +449,25 @@ def run_pydantic_ai_session(verbose: bool = False) -> list[TelemetryEvent]:
     initialize_trace()
     initialize_session()
     from observra.adapters.pydantic_ai.adapter import PydanticAIAdapter
+
     adapter = PydanticAIAdapter(capture_tool_data=True)
 
     # Model span
-    model_span = types.SimpleNamespace(name="chat gpt-4o", attributes={
-        "gen_ai.request.model": "gpt-4o", "gen_ai.response.model": "gpt-4o",
-        "gen_ai.usage.input_tokens": 500, "gen_ai.usage.output_tokens": 200})
+    model_span = types.SimpleNamespace(
+        name="chat gpt-4o",
+        attributes={
+            "gen_ai.request.model": "gpt-4o",
+            "gen_ai.response.model": "gpt-4o",
+            "gen_ai.usage.input_tokens": 500,
+            "gen_ai.usage.output_tokens": 200,
+        },
+    )
     adapter.on_end(model_span)
 
     # Tool span
-    tool_span = types.SimpleNamespace(name="running tool", attributes={
-        "gen_ai.tool.name": "calculator", "gen_ai.tool.parameters": '{"a": 2, "b": 3}'})
+    tool_span = types.SimpleNamespace(
+        name="running tool", attributes={"gen_ai.tool.name": "calculator", "gen_ai.tool.parameters": '{"a": 2, "b": 3}'}
+    )
     adapter.on_end(tool_span)
 
     events = adapter._events.copy()
@@ -383,6 +481,7 @@ def run_pydantic_ai_session(verbose: bool = False) -> list[TelemetryEvent]:
 # 6. Copilot — CopilotAdapter (stub, emit via create_event)
 # ========================================================================
 
+
 def run_copilot_session(verbose: bool = False) -> list[TelemetryEvent]:
     """Run Copilot session through the real CopilotAdapter."""
     print("\n── Copilot (Azure GPT-4o) ──")
@@ -393,32 +492,75 @@ def run_copilot_session(verbose: bool = False) -> list[TelemetryEvent]:
     adapter = CopilotAdapter(queue=None)
 
     adapter.emit(create_event(EventType.SESSION_START, agent_name="customer_support_copilot", framework="copilot"))
-    adapter.emit(create_event(
-        EventType.USER_MESSAGE, agent_name="customer_support_copilot",
-        framework="copilot", has_injection_patterns=False))
+    adapter.emit(
+        create_event(
+            EventType.USER_MESSAGE,
+            agent_name="customer_support_copilot",
+            framework="copilot",
+            has_injection_patterns=False,
+        )
+    )
 
     new_span()
     adapter.emit(create_event(EventType.AGENT_START, agent_name="customer_support_copilot", framework="copilot"))
     adapter.emit(create_event(EventType.MODEL_REQUEST, model_name="gpt-4o", framework="copilot"))
-    adapter.emit(create_event(EventType.MODEL_RESPONSE, model_name="gpt-4o", framework="copilot",
-        input_tokens=420, output_tokens=180, total_tokens=600, cost_usd=0.00285))
+    adapter.emit(
+        create_event(
+            EventType.MODEL_RESPONSE,
+            model_name="gpt-4o",
+            framework="copilot",
+            input_tokens=420,
+            output_tokens=180,
+            total_tokens=600,
+            cost_usd=0.00285,
+        )
+    )
 
     new_span()
-    adapter.emit(create_event(
-        EventType.TOOL_START, tool_name="search_knowledge_base",
-        framework="copilot", tool_type="connector"))
-    adapter.emit(create_event(EventType.TOOL_END, tool_name="search_knowledge_base", framework="copilot",
-        tool_type="connector", duration_ms=890.3, tool_result="KB article: Reset password via SSO portal"))
+    adapter.emit(
+        create_event(
+            EventType.TOOL_START, tool_name="search_knowledge_base", framework="copilot", tool_type="connector"
+        )
+    )
+    adapter.emit(
+        create_event(
+            EventType.TOOL_END,
+            tool_name="search_knowledge_base",
+            framework="copilot",
+            tool_type="connector",
+            duration_ms=890.3,
+            tool_result="KB article: Reset password via SSO portal",
+        )
+    )
 
     new_span()
-    adapter.emit(create_event(
-        EventType.TOOL_START, tool_name="enrich_customer_context",
-        framework="copilot", tool_type="power-automate"))
-    adapter.emit(create_event(EventType.TOOL_END, tool_name="enrich_customer_context", framework="copilot",
-        tool_type="power-automate", duration_ms=1450.7))
+    adapter.emit(
+        create_event(
+            EventType.TOOL_START, tool_name="enrich_customer_context", framework="copilot", tool_type="power-automate"
+        )
+    )
+    adapter.emit(
+        create_event(
+            EventType.TOOL_END,
+            tool_name="enrich_customer_context",
+            framework="copilot",
+            tool_type="power-automate",
+            duration_ms=1450.7,
+        )
+    )
 
-    adapter.emit(create_event(EventType.MODEL_RESPONSE, model_name="gpt-4o", framework="copilot",
-        input_tokens=680, output_tokens=220, cached_tokens=50, total_tokens=900, cost_usd=0.00388))
+    adapter.emit(
+        create_event(
+            EventType.MODEL_RESPONSE,
+            model_name="gpt-4o",
+            framework="copilot",
+            input_tokens=680,
+            output_tokens=220,
+            cached_tokens=50,
+            total_tokens=900,
+            cost_usd=0.00388,
+        )
+    )
     adapter.emit(create_event(EventType.AGENT_END, agent_name="customer_support_copilot", framework="copilot"))
     adapter.emit(create_event(EventType.SESSION_END, agent_name="customer_support_copilot", framework="copilot"))
     adapter.emit(create_event(EventType.ADAPTER_CLOSE, framework="copilot"))
@@ -433,6 +575,7 @@ def run_copilot_session(verbose: bool = False) -> list[TelemetryEvent]:
 # ========================================================================
 # SIEM Schema Transform (same as PubSubBackend._transform_to_schema)
 # ========================================================================
+
 
 def _transform(event: TelemetryEvent) -> dict:
     raw = asdict(event)
@@ -455,7 +598,9 @@ def _transform(event: TelemetryEvent) -> dict:
         "model_name": raw.get("model_name"),
         "agent_name": raw.get("agent_name"),
         "tool_name": raw.get("tool_name"),
-        "duration_ms": dur, "success": success, "error_type": err_type,
+        "duration_ms": dur,
+        "success": success,
+        "error_type": err_type,
         "data": data if data else None,
     }
 
@@ -464,6 +609,7 @@ def _transform(event: TelemetryEvent) -> dict:
 # Cross-Framework Normalization Table
 # ========================================================================
 
+
 def _fmt(val) -> str:
     if val is None:
         return "-"
@@ -471,8 +617,10 @@ def _fmt(val) -> str:
         return f"{val:.6f}" if val < 0.01 else f"{val:.4f}"
     return str(val)
 
+
 def _trunc(s: str, n: int) -> str:
-    return s if len(s) <= n else s[:n-1] + "\u2026"
+    return s if len(s) <= n else s[: n - 1] + "\u2026"
+
 
 def _find(events, fw, et):
     for e in events:
@@ -480,26 +628,35 @@ def _find(events, fw, et):
             return e
     return None
 
+
 def print_normalization_table(events: list[TelemetryEvent]):
     for target_type, fields, tagline in [
-        (EventType.MODEL_RESPONSE, [
-            ("event_type",      lambda s: s.get("event_type")),
-            ("framework",       lambda s: s.get("framework")),
-            ("model_name",      lambda s: s.get("model_name")),
-            ("input_tokens",    lambda s: (s.get("data") or {}).get("input_tokens")),
-            ("output_tokens",   lambda s: (s.get("data") or {}).get("output_tokens")),
-            ("cached_tokens",   lambda s: (s.get("data") or {}).get("cached_tokens")),
-            ("reasoning_tokens",lambda s: (s.get("data") or {}).get("reasoning_tokens")),
-            ("cost_usd",        lambda s: (s.get("data") or {}).get("cost_usd")),
-            ("total_tokens",    lambda s: (s.get("data") or {}).get("total_tokens")),
-        ], "Same field names. Same structure. Any framework. One SIEM rule."),
-        (EventType.TOOL_END, [
-            ("event_type",  lambda s: s.get("event_type")),
-            ("framework",   lambda s: s.get("framework")),
-            ("tool_name",   lambda s: s.get("tool_name")),
-            ("duration_ms", lambda s: s.get("duration_ms")),
-            ("tool_type",   lambda s: (s.get("data") or {}).get("tool_type")),
-        ], "Connectors, Power Automate flows, MCP tools, functions \u2014 all normalized."),
+        (
+            EventType.MODEL_RESPONSE,
+            [
+                ("event_type", lambda s: s.get("event_type")),
+                ("framework", lambda s: s.get("framework")),
+                ("model_name", lambda s: s.get("model_name")),
+                ("input_tokens", lambda s: (s.get("data") or {}).get("input_tokens")),
+                ("output_tokens", lambda s: (s.get("data") or {}).get("output_tokens")),
+                ("cached_tokens", lambda s: (s.get("data") or {}).get("cached_tokens")),
+                ("reasoning_tokens", lambda s: (s.get("data") or {}).get("reasoning_tokens")),
+                ("cost_usd", lambda s: (s.get("data") or {}).get("cost_usd")),
+                ("total_tokens", lambda s: (s.get("data") or {}).get("total_tokens")),
+            ],
+            "Same field names. Same structure. Any framework. One SIEM rule.",
+        ),
+        (
+            EventType.TOOL_END,
+            [
+                ("event_type", lambda s: s.get("event_type")),
+                ("framework", lambda s: s.get("framework")),
+                ("tool_name", lambda s: s.get("tool_name")),
+                ("duration_ms", lambda s: s.get("duration_ms")),
+                ("tool_type", lambda s: (s.get("data") or {}).get("tool_type")),
+            ],
+            "Connectors, Power Automate flows, MCP tools, functions \u2014 all normalized.",
+        ),
     ]:
         print(f"\n{'═' * 3} CROSS-FRAMEWORK NORMALIZATION: {target_type} {'═' * 3}")
         schemas = {}
@@ -517,23 +674,24 @@ def print_normalization_table(events: list[TelemetryEvent]):
                     col_w[fw] = max(col_w[fw], min(len(_fmt(ext(schemas[fw]))), 12))
 
         # top
-        print("┌─" + "─"*label_w + "─" + "".join("┬─" + "─"*col_w[f] + "─" for f in FRAMEWORK_ORDER) + "┐")
+        print("┌─" + "─" * label_w + "─" + "".join("┬─" + "─" * col_w[f] + "─" for f in FRAMEWORK_ORDER) + "┐")
         hdr = "".join("│ " + FRAMEWORK_LABELS[f].ljust(col_w[f]) + " " for f in FRAMEWORK_ORDER)
         print("│ " + "Field".ljust(label_w) + " " + hdr + "│")
-        print("├─" + "─"*label_w + "─" + "".join("┼─" + "─"*col_w[f] + "─" for f in FRAMEWORK_ORDER) + "┤")
+        print("├─" + "─" * label_w + "─" + "".join("┼─" + "─" * col_w[f] + "─" for f in FRAMEWORK_ORDER) + "┤")
         for fname, ext in fields:
             row = "│ " + fname.ljust(label_w) + " "
             for fw in FRAMEWORK_ORDER:
                 v = _trunc(_fmt(ext(schemas[fw])), col_w[fw]) if fw in schemas else "-"
                 row += "│ " + v.ljust(col_w[fw]) + " "
             print(row + "│")
-        print("└─" + "─"*label_w + "─" + "".join("┴─" + "─"*col_w[f] + "─" for f in FRAMEWORK_ORDER) + "┘")
+        print("└─" + "─" * label_w + "─" + "".join("┴─" + "─" * col_w[f] + "─" for f in FRAMEWORK_ORDER) + "┘")
         print(tagline)
 
 
 # ========================================================================
 # Main
 # ========================================================================
+
 
 def main():
     parser = argparse.ArgumentParser(description="Unified 6-framework telemetry demo")
@@ -551,12 +709,12 @@ def main():
     _ensure_otel_stubs()
 
     runners = [
-        ("ADK",        run_adk_session),
-        ("OpenAI",     run_openai_session),
-        ("Claude",     run_claude_session),
-        ("LangGraph",  run_langgraph_session),
-        ("Pydantic AI",run_pydantic_ai_session),
-        ("Copilot",    run_copilot_session),
+        ("ADK", run_adk_session),
+        ("OpenAI", run_openai_session),
+        ("Claude", run_claude_session),
+        ("LangGraph", run_langgraph_session),
+        ("Pydantic AI", run_pydantic_ai_session),
+        ("Copilot", run_copilot_session),
     ]
 
     _all_events.clear()

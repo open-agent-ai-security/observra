@@ -8,6 +8,7 @@ Requires: pip install observra[otel]
   - opentelemetry-sdk>=1.0.0
   - opentelemetry-exporter-otlp-proto-http>=1.0.0
 """
+
 from __future__ import annotations
 
 import json
@@ -435,7 +436,4 @@ class OTelLogBackend:
         limit: int = 1000,
     ) -> Iterator[TelemetryEvent]:
         """Not supported: OTel log export is write-only."""
-        raise NotImplementedError(
-            "OTelLogBackend does not support query(). "
-            "Querying is not supported in v1."
-        )
+        raise NotImplementedError("OTelLogBackend does not support query(). Querying is not supported in v1.")

@@ -4,6 +4,7 @@ Release workflow YAML structure tests (REL-01, REL-02, REL-03).
 Verifies that .github/workflows/release.yml contains the structural requirements
 that guarantee correct release behaviour without actually running the CI pipeline.
 """
+
 import pathlib
 
 import yaml
@@ -50,9 +51,7 @@ class TestWorkflowTriggerAndConcurrency:
         """REL-01/REL-02: Workflow must fire on 'v*' tag push."""
         data = _load_workflow()
         tags = _workflow_on(data).get("push", {}).get("tags", [])
-        assert any(t.startswith("v") for t in tags), (
-            f"No 'v*' tag trigger found in workflow on.push.tags: {tags}"
-        )
+        assert any(t.startswith("v") for t in tags), f"No 'v*' tag trigger found in workflow on.push.tags: {tags}"
 
     def test_concurrency_block_exists_at_workflow_level(self):
         """REL-01/REL-02: Top-level concurrency block prevents duplicate release runs."""
@@ -72,9 +71,7 @@ class TestValidateVersionsJob:
     def test_validate_versions_job_exists(self):
         """REL-01/REL-02: validate-versions job must exist."""
         data = _load_workflow()
-        assert "validate-versions" in data.get("jobs", {}), (
-            "No 'validate-versions' job found in release.yml"
-        )
+        assert "validate-versions" in data.get("jobs", {}), "No 'validate-versions' job found in release.yml"
 
     def test_build_job_needs_validate_versions(self):
         """REL-01/REL-02: build job must declare a 'needs' dependency on validate-versions."""
@@ -83,9 +80,7 @@ class TestValidateVersionsJob:
         needs = build_job.get("needs", [])
         if isinstance(needs, str):
             needs = [needs]
-        assert "validate-versions" in needs, (
-            f"build job 'needs' does not include 'validate-versions': {needs}"
-        )
+        assert "validate-versions" in needs, f"build job 'needs' does not include 'validate-versions': {needs}"
 
     def test_validate_versions_checks_five_platform_packages(self):
         """REL-02: Version validation loop must reference all 5 platform packages."""
@@ -100,36 +95,28 @@ class TestValidateVersionsJob:
             "fwd-win32-x64",
         ]
         for pkg in expected_pkgs:
-            assert pkg in all_runs, (
-                f"Platform package '{pkg}' not referenced in validate-versions run steps"
-            )
+            assert pkg in all_runs, f"Platform package '{pkg}' not referenced in validate-versions run steps"
 
 
 class TestPublishPypiJob:
     def test_publish_pypi_job_exists(self):
         """REL-01: publish-pypi job must exist."""
         data = _load_workflow()
-        assert "publish-pypi" in data.get("jobs", {}), (
-            "No 'publish-pypi' job found in release.yml"
-        )
+        assert "publish-pypi" in data.get("jobs", {}), "No 'publish-pypi' job found in release.yml"
 
     def test_publish_pypi_has_environment_pypi(self):
         """REL-01: publish-pypi job must use 'environment: pypi' for OIDC trusted publishing."""
         data = _load_workflow()
         job = data["jobs"]["publish-pypi"]
         env = job.get("environment")
-        assert env == "pypi", (
-            f"publish-pypi job environment is {env!r}, expected 'pypi'"
-        )
+        assert env == "pypi", f"publish-pypi job environment is {env!r}, expected 'pypi'"
 
     def test_publish_pypi_has_twine_check_strict(self):
         """REL-01: Dist artifacts must be validated with 'twine check --strict' before publish."""
         data = _load_workflow()
         job = data["jobs"]["publish-pypi"]
         all_runs = "\n".join(_step_runs(job))
-        assert "twine check --strict" in all_runs, (
-            "No 'twine check --strict' command found in publish-pypi steps"
-        )
+        assert "twine check --strict" in all_runs, "No 'twine check --strict' command found in publish-pypi steps"
 
 
 class TestSbomSteps:
@@ -150,41 +137,31 @@ class TestSbomSteps:
         """REL-03: cyclonedx-cli download must be pinned to v0.31.0 for reproducibility."""
         job = self._publish_job()
         all_runs = "\n".join(_step_runs(job))
-        assert "v0.31.0" in all_runs, (
-            "cyclonedx-cli version pin v0.31.0 not found in publish-and-release run steps"
-        )
+        assert "v0.31.0" in all_runs, "cyclonedx-cli version pin v0.31.0 not found in publish-and-release run steps"
 
     def test_sha256sum_verification_for_cyclonedx_cli(self):
         """REL-03: cyclonedx-cli binary must be verified with sha256sum after download."""
         job = self._publish_job()
         all_runs = "\n".join(_step_runs(job))
-        assert "sha256sum" in all_runs, (
-            "No sha256sum verification found for cyclonedx-cli download"
-        )
+        assert "sha256sum" in all_runs, "No sha256sum verification found for cyclonedx-cli download"
 
     def test_generate_python_sbom_step_exists(self):
         """REL-03: Python SBOM generation step must be present."""
         job = self._publish_job()
         names = _step_names(job)
-        assert any("python sbom" in n.lower() for n in names), (
-            f"No 'Generate Python SBOM' step found. Steps: {names}"
-        )
+        assert any("python sbom" in n.lower() for n in names), f"No 'Generate Python SBOM' step found. Steps: {names}"
 
     def test_generate_npm_sbom_step_exists(self):
         """REL-03: npm SBOM generation step must be present."""
         job = self._publish_job()
         names = _step_names(job)
-        assert any("npm sbom" in n.lower() for n in names), (
-            f"No 'Generate npm SBOM' step found. Steps: {names}"
-        )
+        assert any("npm sbom" in n.lower() for n in names), f"No 'Generate npm SBOM' step found. Steps: {names}"
 
     def test_merge_sboms_step_exists(self):
         """REL-03: SBOM merge step must be present."""
         job = self._publish_job()
         names = _step_names(job)
-        assert any("merge" in n.lower() for n in names), (
-            f"No 'Merge SBOMs' step found. Steps: {names}"
-        )
+        assert any("merge" in n.lower() for n in names), f"No 'Merge SBOMs' step found. Steps: {names}"
 
     def test_sbom_merge_uses_output_version_v1_5(self):
         """REL-03: Merged SBOM must use CycloneDX 1.5 (--output-version v1_5)."""
@@ -200,6 +177,4 @@ class TestSbomSteps:
         # trap is in the sign-windows job
         sign_win_job = data["jobs"].get("sign-windows", {})
         all_runs = "\n".join(_step_runs(sign_win_job))
-        assert "trap" in all_runs, (
-            "No 'trap' command found in sign-windows job — cert.pfx cleanup is not guaranteed"
-        )
+        assert "trap" in all_runs, "No 'trap' command found in sign-windows job — cert.pfx cleanup is not guaranteed"

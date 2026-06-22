@@ -59,18 +59,18 @@ def test_new_span_changes_span_id():
 def test_session_cost_accumulation():
     """Test session cost accumulation."""
     reset_session_cost()
-    add_to_session_cost(Decimal('1.50'))
+    add_to_session_cost(Decimal("1.50"))
 
-    assert get_session_cost() == Decimal('1.50')
+    assert get_session_cost() == Decimal("1.50")
 
-    add_to_session_cost(Decimal('0.75'))
-    assert get_session_cost() == Decimal('2.25')
+    add_to_session_cost(Decimal("0.75"))
+    assert get_session_cost() == Decimal("2.25")
 
 
 def test_session_cost_reset():
     """Test that reset_session_cost clears accumulated cost."""
-    add_to_session_cost(Decimal('10.00'))
+    add_to_session_cost(Decimal("10.00"))
     assert get_session_cost() > 0
 
     reset_session_cost()
-    assert get_session_cost() == Decimal('0')
+    assert get_session_cost() == Decimal("0")

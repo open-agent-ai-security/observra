@@ -14,6 +14,7 @@ from observra.core.events import EventType
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 class FakeQueue:
     """Minimal queue stub that records put_nowait calls."""
 
@@ -52,8 +53,8 @@ def fake_queue():
 # set_framework
 # ---------------------------------------------------------------------------
 
-class TestSetFramework:
 
+class TestSetFramework:
     def test_sets_framework(self, fake_queue):
         log.set_framework("openai")
         log.model_request("gpt-4o")
@@ -68,8 +69,8 @@ class TestSetFramework:
 # session_start / session_end
 # ---------------------------------------------------------------------------
 
-class TestSessionLifecycle:
 
+class TestSessionLifecycle:
     def test_session_start_emits(self, fake_queue):
         log.session_start(agent_name="my-agent")
         assert len(fake_queue.events) == 1
@@ -97,8 +98,8 @@ class TestSessionLifecycle:
 # agent_start / agent_end
 # ---------------------------------------------------------------------------
 
-class TestAgentLifecycle:
 
+class TestAgentLifecycle:
     def test_agent_start_emits(self, fake_queue):
         log.session_start()
         log.agent_start("sub-agent")
@@ -127,8 +128,8 @@ class TestAgentLifecycle:
 # model_request / model_response
 # ---------------------------------------------------------------------------
 
-class TestModelLifecycle:
 
+class TestModelLifecycle:
     def test_model_request_emits(self, fake_queue):
         log.session_start()
         log.model_request("gpt-4o")
@@ -188,8 +189,8 @@ class TestModelLifecycle:
 # model_error
 # ---------------------------------------------------------------------------
 
-class TestModelError:
 
+class TestModelError:
     def test_model_error_classifies(self, fake_queue):
         log.session_start()
         log.model_error(model_name="gpt-4o", error=ConnectionError("timeout"))
@@ -210,8 +211,8 @@ class TestModelError:
 # tool_start / tool_end / tool_error
 # ---------------------------------------------------------------------------
 
-class TestToolLifecycle:
 
+class TestToolLifecycle:
     def test_tool_start_records_sequence(self, fake_queue):
         log.session_start()
         log.tool_start("calculator")
@@ -242,8 +243,8 @@ class TestToolLifecycle:
 # user_message
 # ---------------------------------------------------------------------------
 
-class TestUserMessage:
 
+class TestUserMessage:
     def test_user_message_emits(self, fake_queue):
         log.session_start()
         log.user_message("Hello, world!")
@@ -270,8 +271,8 @@ class TestUserMessage:
 # agent_handoff
 # ---------------------------------------------------------------------------
 
-class TestAgentHandoff:
 
+class TestAgentHandoff:
     def test_agent_handoff_emits(self, fake_queue):
         log.session_start()
         log.agent_handoff("router", "specialist")
@@ -283,8 +284,8 @@ class TestAgentHandoff:
 # Deduplication
 # ---------------------------------------------------------------------------
 
-class TestDedup:
 
+class TestDedup:
     def test_log_emits_first_adapter_skips(self, fake_queue):
         """When log.* emits first, a subsequent adapter emit with the same
         (event_type, span_id) should be skipped by register_emission()."""
@@ -351,8 +352,8 @@ class TestDedup:
 # Graceful degradation (no initialize)
 # ---------------------------------------------------------------------------
 
-class TestGracefulDegradation:
 
+class TestGracefulDegradation:
     def test_log_without_queue_does_not_crash(self):
         """log.* should never raise even if queue proxy has no target."""
         # _get_queue returns the real proxy which may have no target
@@ -375,8 +376,8 @@ class TestGracefulDegradation:
 # Framework propagation
 # ---------------------------------------------------------------------------
 
-class TestFrameworkPropagation:
 
+class TestFrameworkPropagation:
     def test_framework_propagated_to_all_event_types(self, fake_queue):
         log.set_framework("claude")
         log.session_start(agent_name="test")

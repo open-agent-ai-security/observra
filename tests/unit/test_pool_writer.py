@@ -46,6 +46,7 @@ class TestPooledWriterImport:
     def test_module_level_functions_exist(self):
         """Module-level worker functions exist for pickling."""
         from observra.core import pool_writer
+
         assert hasattr(pool_writer, "_init_worker")
         assert hasattr(pool_writer, "_write_batch_in_worker")
 
@@ -54,6 +55,7 @@ class TestPooledWriterImport:
         import inspect
 
         from observra.core import pool_writer
+
         source = inspect.getsource(pool_writer)
         assert "ProcessPoolExecutor" in source
 
@@ -64,6 +66,7 @@ class TestPooledWriterWithJSONL:
     def test_init_creates_pool_writer(self, tmp_path):
         """PooledWriter constructs without error."""
         from observra.core.pool_writer import PooledWriter
+
         pw = PooledWriter(
             backend_type="jsonl",
             backend_kwargs={"path": str(tmp_path / "telemetry.jsonl")},
@@ -73,6 +76,7 @@ class TestPooledWriterWithJSONL:
     def test_submit_batch_writes_all_events(self, tmp_path):
         """submit_batch() with a list of events writes all events to backend."""
         from observra.core.pool_writer import PooledWriter
+
         path = tmp_path / "telemetry.jsonl"
         pw = PooledWriter(
             backend_type="jsonl",
@@ -89,6 +93,7 @@ class TestPooledWriterWithJSONL:
     def test_submit_batch_empty_is_noop(self, tmp_path):
         """submit_batch() with an empty list is a no-op."""
         from observra.core.pool_writer import PooledWriter
+
         path = tmp_path / "telemetry.jsonl"
         pw = PooledWriter(
             backend_type="jsonl",
@@ -102,6 +107,7 @@ class TestPooledWriterWithJSONL:
     def test_write_single_event_delegates_to_submit_batch(self, tmp_path):
         """write() single-event call uses submit_batch([event]) uniform path."""
         from observra.core.pool_writer import PooledWriter
+
         path = tmp_path / "telemetry.jsonl"
         pw = PooledWriter(
             backend_type="jsonl",
@@ -116,6 +122,7 @@ class TestPooledWriterWithJSONL:
     def test_flush_delegates_to_backend(self, tmp_path):
         """flush() delegates to the underlying main-process backend."""
         from observra.core.pool_writer import PooledWriter
+
         path = tmp_path / "telemetry.jsonl"
         pw = PooledWriter(
             backend_type="jsonl",
@@ -127,6 +134,7 @@ class TestPooledWriterWithJSONL:
     def test_close_shuts_down_executor_and_backend(self, tmp_path):
         """close() shuts down executor and closes backend without error."""
         from observra.core.pool_writer import PooledWriter
+
         path = tmp_path / "telemetry.jsonl"
         pw = PooledWriter(
             backend_type="jsonl",
@@ -137,6 +145,7 @@ class TestPooledWriterWithJSONL:
     def test_get_stats_delegates_to_backend(self, tmp_path):
         """get_stats() returns a BackendStats dict from the underlying backend."""
         from observra.core.pool_writer import PooledWriter
+
         path = tmp_path / "telemetry.jsonl"
         pw = PooledWriter(
             backend_type="jsonl",
@@ -150,6 +159,7 @@ class TestPooledWriterWithJSONL:
     def test_worker_count_capped_at_four(self, tmp_path):
         """Worker pool size is capped at min(4, cpu_count)."""
         from observra.core.pool_writer import PooledWriter
+
         pw = PooledWriter(
             backend_type="jsonl",
             backend_kwargs={"path": str(tmp_path / "telemetry.jsonl")},
@@ -273,6 +283,7 @@ class TestPooledWriterTimeout:
         import inspect
 
         from observra.core.pool_writer import PooledWriter
+
         source = inspect.getsource(PooledWriter.submit_batch)
         # The implementation should call future.result(timeout=...)
         assert "timeout=" in source or "result(" in source

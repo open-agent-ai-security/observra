@@ -209,10 +209,7 @@ def _compile_with_re_fallback(pattern_str: str) -> re.Pattern:
     # Check for compilation errors
     if not compile_exception.empty():
         exc = compile_exception.get_nowait()
-        reason = (
-            f"invalid regex: {exc}. "
-            f"Consider simplifying the pattern or using a non-backtracking construct."
-        )
+        reason = f"invalid regex: {exc}. Consider simplifying the pattern or using a non-backtracking construct."
         raise SafeRegexError(reason)
 
     compiled_pattern: re.Pattern = compile_result.get_nowait()

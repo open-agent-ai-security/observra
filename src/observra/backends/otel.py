@@ -9,6 +9,7 @@ Requires: pip install observra[otel]
   - opentelemetry-sdk>=1.0.0
   - opentelemetry-exporter-otlp-proto-http>=1.0.0
 """
+
 from __future__ import annotations
 
 import logging
@@ -359,7 +360,4 @@ class OTelExportBackend:
             NotImplementedError: Always. Use JSONLBackend for querying,
                 or wrap both in a MultiBackend.
         """
-        raise NotImplementedError(
-            "OTelExportBackend does not support query(). "
-            "Querying is not supported in v1."
-        )
+        raise NotImplementedError("OTelExportBackend does not support query(). Querying is not supported in v1.")

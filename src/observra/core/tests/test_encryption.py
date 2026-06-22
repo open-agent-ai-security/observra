@@ -17,9 +17,11 @@ from observra.core.events import TelemetryEvent
 
 # ─── Helper ──────────────────────────────────────────────────────────────────
 
+
 def _make_key(passphrase: str = "test-passphrase") -> bytes:
     """Derive a key from a passphrase (matches get_encryption_key with env var set)."""
     from observra.core.encryption import _derive_key_from_passphrase
+
     return _derive_key_from_passphrase(passphrase)
 
 
@@ -38,6 +40,7 @@ def _make_event() -> TelemetryEvent:
 
 # ─── Test 1: encrypt_line returns non-JSON ────────────────────────────────────
 
+
 def test_encrypt_line_returns_non_json_output():
     """encrypt_line output must not be valid JSON."""
     key = _make_key()
@@ -55,6 +58,7 @@ def test_encrypt_line_returns_non_json_output():
 
 # ─── Test 2: decrypt_line returns original plaintext ─────────────────────────
 
+
 def test_decrypt_line_returns_original_plaintext():
     """decrypt_line(key, encrypt_line(key, text)) == text."""
     key = _make_key()
@@ -65,6 +69,7 @@ def test_decrypt_line_returns_original_plaintext():
 
 
 # ─── Test 3: wrong key raises on decrypt ─────────────────────────────────────
+
 
 def test_decrypt_with_wrong_key_raises():
     """Decrypting with wrong key raises an exception (InvalidToken or similar)."""
@@ -78,6 +83,7 @@ def test_decrypt_with_wrong_key_raises():
 
 # ─── Test 4: get_encryption_key reads from env var ───────────────────────────
 
+
 def test_get_encryption_key_from_env_var(monkeypatch):
     """get_encryption_key() returns bytes when ABA_TELEMETRY_KEY is set."""
     monkeypatch.setenv("ABA_TELEMETRY_KEY", "test-passphrase")
@@ -89,6 +95,7 @@ def test_get_encryption_key_from_env_var(monkeypatch):
 
 # ─── Test 5: get_encryption_key returns None when no source available ─────────
 
+
 def test_get_encryption_key_returns_none_when_unavailable(monkeypatch):
     """get_encryption_key() returns None when env var absent and keyring unavailable."""
     monkeypatch.delenv("ABA_TELEMETRY_KEY", raising=False)
@@ -96,6 +103,7 @@ def test_get_encryption_key_returns_none_when_unavailable(monkeypatch):
     # Ensure keyring fails gracefully — either missing or returning None
     try:
         import keyring
+
         monkeypatch.setattr(keyring, "get_password", lambda *args: None)
     except ImportError:
         pass  # keyring not installed, which also means None is returned
@@ -105,6 +113,7 @@ def test_get_encryption_key_returns_none_when_unavailable(monkeypatch):
 
 
 # ─── Test 6: JSONLBackend with encryption writes non-JSON lines ───────────────
+
 
 def test_jsonl_backend_encrypted_writes_non_json(monkeypatch, tmp_path):
     """JSONLBackend with encryption_key writes lines that are not valid JSON."""
@@ -140,6 +149,7 @@ def test_jsonl_backend_encrypted_writes_non_json(monkeypatch, tmp_path):
 
 # ─── Test 7: Backends with encryption=False are unchanged ────────────────────
 
+
 def test_backends_without_encryption_behave_normally(tmp_path):
     """Backends without encryption_key write normal JSON/SQL."""
     from observra.backends.jsonl import JSONLBackend
@@ -158,9 +168,8 @@ def test_backends_without_encryption_behave_normally(tmp_path):
     assert parsed["event_type"] == event.event_type
 
 
-
-
 # ─── Test: EncryptionProvider round-trip ─────────────────────────────────────
+
 
 def test_encryption_provider_round_trip():
     """EncryptionProvider.encrypt_line / decrypt_line round-trip."""

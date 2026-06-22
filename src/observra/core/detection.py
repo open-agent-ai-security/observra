@@ -5,7 +5,7 @@ import re
 from contextvars import ContextVar
 from typing import Literal
 
-_HTTP_CODE_RE = re.compile(r'(?<!\d)(\d{3})(?!\d)')
+_HTTP_CODE_RE = re.compile(r"(?<!\d)(\d{3})(?!\d)")
 
 logger = logging.getLogger(__name__)
 
@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 ErrorType = Literal["network", "auth", "rate_limit", "model_error", "tool_error", "unknown"]
 
 # Delegation depth tracking
-_delegation_depth_var: ContextVar[int] = ContextVar('delegation_depth', default=0)
+_delegation_depth_var: ContextVar[int] = ContextVar("delegation_depth", default=0)
 MAX_DELEGATION_DEPTH = 5
 
 

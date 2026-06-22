@@ -43,7 +43,7 @@ from observra.adapters.pydantic_ai import PydanticAIAdapter
 
 initialize(
     backend="jsonl",
-    path="telemetry.jsonl",        # where events are stored
+    path="telemetry.jsonl",  # where events are stored
 )
 adapter = PydanticAIAdapter()
 
@@ -51,9 +51,9 @@ adapter = PydanticAIAdapter()
 # ── Step 2: Wire into OpenTelemetry (order matters!) ────────────
 
 provider = TracerProvider()
-provider.add_span_processor(adapter)    # must happen BEFORE set_tracer_provider
+provider.add_span_processor(adapter)  # must happen BEFORE set_tracer_provider
 set_tracer_provider(provider)
-Agent.instrument_all()                  # must call BEFORE any agent runs
+Agent.instrument_all()  # must call BEFORE any agent runs
 
 
 # ── Step 3: Run your agent normally ─────────────────────────────

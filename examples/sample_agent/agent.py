@@ -26,6 +26,7 @@ from observra import create_plugin, initialize
 
 # ── Tools ──────────────────────────────────────────────────────────
 
+
 def lookup_topic(topic: str) -> dict:
     """Look up information about a topic.
 

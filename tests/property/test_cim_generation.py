@@ -20,65 +20,75 @@ from observra.core.events import TelemetryEvent, create_event
 # Hypothesis strategies
 # ---------------------------------------------------------------------------
 
-cim_event_types = st.sampled_from([
-    "session_start",
-    "session_end",
-    "user",
-    "user_message",
-    "model_request",
-    "model_response",
-    "model_error",
-    "turn",
-    "turn_duration",
-    "compact_boundary",
-    "tool_start",
-    "tool_end",
-    "tool_error",
-    "agent_start",
-    "agent_end",
-    "agent_handoff",
-    "agent_handoff_error",
-    "stream_event",
-    "adapter_close",
-    "forwarder_update_available",
-    "forwarder_updated",
-    "forwarder_update_failed",
-])
+cim_event_types = st.sampled_from(
+    [
+        "session_start",
+        "session_end",
+        "user",
+        "user_message",
+        "model_request",
+        "model_response",
+        "model_error",
+        "turn",
+        "turn_duration",
+        "compact_boundary",
+        "tool_start",
+        "tool_end",
+        "tool_error",
+        "agent_start",
+        "agent_end",
+        "agent_handoff",
+        "agent_handoff_error",
+        "stream_event",
+        "adapter_close",
+        "forwarder_update_available",
+        "forwarder_updated",
+        "forwarder_update_failed",
+    ]
+)
 
-cim_frameworks = st.sampled_from([
-    "claude_code",
-    "openai",
-    "gemini_cli",
-    "langchain",
-    "pydantic-ai",
-    "adk",
-    None,
-])
+cim_frameworks = st.sampled_from(
+    [
+        "claude_code",
+        "openai",
+        "gemini_cli",
+        "langchain",
+        "pydantic-ai",
+        "adk",
+        None,
+    ]
+)
 
-cim_model_names = st.sampled_from([
-    "claude-opus-4-5",
-    "claude-sonnet-4-5",
-    "gpt-4o",
-    "gemini-2.5-pro",
-    "o3-mini",
-    None,
-])
+cim_model_names = st.sampled_from(
+    [
+        "claude-opus-4-5",
+        "claude-sonnet-4-5",
+        "gpt-4o",
+        "gemini-2.5-pro",
+        "o3-mini",
+        None,
+    ]
+)
 
-cim_tool_names = st.sampled_from([
-    "read_file",
-    "write_file",
-    "bash",
-    "delete_file",
-    "list_files",
-    None,
-])
+cim_tool_names = st.sampled_from(
+    [
+        "read_file",
+        "write_file",
+        "bash",
+        "delete_file",
+        "list_files",
+        None,
+    ]
+)
 
-cim_agent_names = st.sampled_from([
-    "main-agent",
-    "code-reviewer",
-    "planner",
-    None,
-])
+cim_agent_names = st.sampled_from(
+    [
+        "main-agent",
+        "code-reviewer",
+        "planner",
+        None,
+    ]
+)
 
 token_counts = st.integers(min_value=0, max_value=100000) | st.none()
 
@@ -86,6 +96,7 @@ token_counts = st.integers(min_value=0, max_value=100000) | st.none()
 # ---------------------------------------------------------------------------
 # Property test 1: create_event always returns a TelemetryEvent
 # ---------------------------------------------------------------------------
+
 
 @given(
     event_type=cim_event_types,
@@ -95,9 +106,7 @@ token_counts = st.integers(min_value=0, max_value=100000) | st.none()
     agent_name=cim_agent_names,
 )
 @settings(max_examples=10000, suppress_health_check=[HealthCheck.too_slow])
-def test_create_event_always_returns_telemetry_event(
-    event_type, framework, model_name, tool_name, agent_name
-):
+def test_create_event_always_returns_telemetry_event(event_type, framework, model_name, tool_name, agent_name):
     """For any combination of event type and optional fields, create_event must return
     a valid TelemetryEvent with all required fields populated."""
     kwargs = {}
@@ -123,6 +132,7 @@ def test_create_event_always_returns_telemetry_event(
 # ---------------------------------------------------------------------------
 # Property test 2: event serializes to valid JSON with required keys
 # ---------------------------------------------------------------------------
+
 
 @given(
     event_type=cim_event_types,
@@ -153,6 +163,7 @@ def test_event_serializes_to_valid_json(event_type, framework, model_name):
 # Property test 3: data field contains CIM action and vendor
 # ---------------------------------------------------------------------------
 
+
 @given(
     event_type=cim_event_types,
     framework=cim_frameworks,
@@ -170,9 +181,5 @@ def test_data_field_contains_cim_action(event_type, framework):
     assert isinstance(event.data, dict), (
         f"event.data must be a dict, got {type(event.data)} for event_type={event_type}"
     )
-    assert "action" in event.data, (
-        f"CIM requires 'action' in event.data; got keys: {list(event.data.keys())}"
-    )
-    assert "vendor" in event.data, (
-        f"CIM requires 'vendor' in event.data; got keys: {list(event.data.keys())}"
-    )
+    assert "action" in event.data, f"CIM requires 'action' in event.data; got keys: {list(event.data.keys())}"
+    assert "vendor" in event.data, f"CIM requires 'vendor' in event.data; got keys: {list(event.data.keys())}"

@@ -54,13 +54,13 @@ class TelemetryLoggingHandler(logging.Handler):
 
             # Create telemetry event
             event = create_event(
-                event_type='log_message',
+                event_type="log_message",
                 message=msg,
                 level=record.levelname,
                 logger_name=record.name,
                 module=record.module,
                 function=record.funcName,
-                line=record.lineno
+                line=record.lineno,
             )
 
             # Route to queue if available

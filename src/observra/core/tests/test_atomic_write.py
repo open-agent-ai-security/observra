@@ -11,7 +11,6 @@ from observra.core.atomic_write import (
 
 
 class TestAtomicWriteJson:
-
     def test_atomic_write_json_creates_file(self, tmp_path):
         path = tmp_path / "test.json"
         data = {"key": "value", "number": 42}
@@ -46,10 +45,7 @@ class TestAtomicWriteJson:
             barrier.wait(timeout=10)
             atomic_write_json(path, {"writer": n})
 
-        threads = [
-            threading.Thread(target=writer, args=(i,))
-            for i in range(10)
-        ]
+        threads = [threading.Thread(target=writer, args=(i,)) for i in range(10)]
         for t in threads:
             t.start()
         for t in threads:

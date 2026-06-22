@@ -21,6 +21,7 @@ import pytest
 # Mock LLMResult factories
 # ---------------------------------------------------------------------------
 
+
 def _make_llm_result_with_usage_metadata(input_tokens=500, output_tokens=200, model="gpt-4o"):
     """Mock LLMResult with modern usage_metadata path (provider-agnostic)."""
     mock_message = types.SimpleNamespace(
@@ -79,10 +80,12 @@ def _make_run_id():
 # Fixtures: initialize context for every test
 # ---------------------------------------------------------------------------
 
+
 @pytest.fixture(autouse=True)
 def _init_context():
     """Initialize valid trace/session context for every test."""
     from observra.core.context import initialize_session, initialize_trace
+
     initialize_trace()
     initialize_session()
 
@@ -91,21 +94,21 @@ def _init_context():
 # 1. Protocol conformance
 # ---------------------------------------------------------------------------
 
+
 def test_langchain_adapter_satisfies_protocol():
     """LangChainAdapter must satisfy FrameworkAdapter Protocol with framework_name='langgraph'."""
     from observra.adapters.langchain.adapter import LangChainAdapter
     from observra.core.adapter import FrameworkAdapter
 
     adapter = LangChainAdapter()
-    assert isinstance(adapter, FrameworkAdapter), (
-        "LangChainAdapter does not satisfy FrameworkAdapter Protocol"
-    )
+    assert isinstance(adapter, FrameworkAdapter), "LangChainAdapter does not satisfy FrameworkAdapter Protocol"
     assert adapter.framework_name == "langgraph"
 
 
 # ---------------------------------------------------------------------------
 # 2. on_llm_end — usage_metadata path (modern, provider-agnostic)
 # ---------------------------------------------------------------------------
+
 
 def test_on_llm_end_emits_model_response_with_usage_metadata():
     """on_llm_end with usage_metadata must emit model_response with correct tokens and cost."""
@@ -133,6 +136,7 @@ def test_on_llm_end_emits_model_response_with_usage_metadata():
 # 3. on_llm_end — OpenAI legacy llm_output["token_usage"] path
 # ---------------------------------------------------------------------------
 
+
 def test_on_llm_end_with_openai_legacy_llm_output():
     """on_llm_end with llm_output['token_usage'] must map prompt_tokens/completion_tokens correctly."""
     from observra.adapters.langchain.adapter import LangChainAdapter
@@ -155,6 +159,7 @@ def test_on_llm_end_with_openai_legacy_llm_output():
 # ---------------------------------------------------------------------------
 # 4. on_llm_end — Anthropic llm_output["usage"] path
 # ---------------------------------------------------------------------------
+
 
 def test_on_llm_end_with_anthropic_llm_output():
     """on_llm_end with llm_output['usage'] must map input_tokens/output_tokens correctly."""
@@ -179,6 +184,7 @@ def test_on_llm_end_with_anthropic_llm_output():
 # 5. on_llm_new_token — streaming dedup no-op
 # ---------------------------------------------------------------------------
 
+
 def test_on_llm_new_token_is_noop():
     """on_llm_new_token must not emit any events (streaming deduplication)."""
     from observra.adapters.langchain.adapter import LangChainAdapter
@@ -190,14 +196,13 @@ def test_on_llm_new_token_is_noop():
     adapter.on_llm_new_token(" world", run_id=run_id)
     adapter.on_llm_new_token("!", run_id=run_id)
 
-    assert len(adapter._events) == 0, (
-        f"on_llm_new_token must not emit events; got {len(adapter._events)}"
-    )
+    assert len(adapter._events) == 0, f"on_llm_new_token must not emit events; got {len(adapter._events)}"
 
 
 # ---------------------------------------------------------------------------
 # 6. on_llm_end — no token data
 # ---------------------------------------------------------------------------
+
 
 def test_on_llm_end_without_tokens():
     """on_llm_end with empty llm_output must emit model_response without token/cost fields."""
@@ -226,6 +231,7 @@ def test_on_llm_end_without_tokens():
 # 7. on_chat_model_start — model name capture
 # ---------------------------------------------------------------------------
 
+
 def test_on_chat_model_start_captures_model_name():
     """on_chat_model_start must store model name so on_llm_end uses it."""
     from observra.adapters.langchain.adapter import LangChainAdapter
@@ -245,6 +251,7 @@ def test_on_chat_model_start_captures_model_name():
 # 8. on_llm_start — model name capture for legacy LLMs
 # ---------------------------------------------------------------------------
 
+
 def test_on_llm_start_captures_model_name_for_legacy():
     """on_llm_start must capture model name by run_id for on_llm_end retrieval."""
     from observra.adapters.langchain.adapter import LangChainAdapter
@@ -263,6 +270,7 @@ def test_on_llm_start_captures_model_name_for_legacy():
 # ---------------------------------------------------------------------------
 # 9. Tool start/end — events with duration
 # ---------------------------------------------------------------------------
+
 
 def test_tool_start_end_emits_events_with_duration():
     """on_tool_start then on_tool_end must emit tool_start and tool_end with duration_ms > 0."""
@@ -288,6 +296,7 @@ def test_tool_start_end_emits_events_with_duration():
 # 10. Tool data captured when enabled
 # ---------------------------------------------------------------------------
 
+
 def test_tool_data_captured_when_enabled():
     """capture_tool_data=True must include tool_args in tool_start and tool_result in tool_end."""
     from observra.adapters.langchain.adapter import LangChainAdapter
@@ -312,6 +321,7 @@ def test_tool_data_captured_when_enabled():
 # 11. Tool data not captured by default
 # ---------------------------------------------------------------------------
 
+
 def test_tool_data_not_captured_by_default():
     """capture_tool_data=False (default) must NOT include tool_args or tool_result."""
     from observra.adapters.langchain.adapter import LangChainAdapter
@@ -335,6 +345,7 @@ def test_tool_data_not_captured_by_default():
 # ---------------------------------------------------------------------------
 # 12. Chain start emits chain_start event
 # ---------------------------------------------------------------------------
+
 
 def test_chain_start_emits_agent_start_event():
     """on_chain_start with parent_run_id (nested) must emit agent_start event with framework='langgraph'."""
@@ -361,6 +372,7 @@ def test_chain_start_emits_agent_start_event():
 # 13. Top-level chain initializes context
 # ---------------------------------------------------------------------------
 
+
 def test_top_level_chain_initializes_context():
     """on_chain_start with parent_run_id=None must initialize trace context."""
     from observra.adapters.langchain.adapter import LangChainAdapter
@@ -386,6 +398,7 @@ def test_top_level_chain_initializes_context():
 # ---------------------------------------------------------------------------
 # 14. Error resilience in callbacks
 # ---------------------------------------------------------------------------
+
 
 def test_error_resilience_in_callbacks():
     """Callbacks that raise internally must not propagate; _error_count must increment."""
@@ -417,6 +430,7 @@ def test_error_resilience_in_callbacks():
 # 15. on_tool_error — emits tool_error event
 # ---------------------------------------------------------------------------
 
+
 def test_on_tool_error_emits_tool_error_event():
     """on_tool_start then on_tool_error must emit tool_error event with error string."""
     from observra.adapters.langchain.adapter import LangChainAdapter
@@ -441,6 +455,7 @@ def test_on_tool_error_emits_tool_error_event():
 # 16. cost_threshold_exceeded — emitted once (only-once guard)
 # ---------------------------------------------------------------------------
 
+
 def test_cost_threshold_exceeded_emitted_once():
     """cost_threshold_exceeded must fire exactly once even with multiple expensive calls."""
     from observra.adapters.langchain.adapter import LangChainAdapter
@@ -450,17 +465,13 @@ def test_cost_threshold_exceeded_emitted_once():
     run_id_1 = _make_run_id()
     run_id_2 = _make_run_id()
 
-    large_response = _make_llm_result_with_usage_metadata(
-        input_tokens=100000, output_tokens=50000, model="gpt-4o"
-    )
+    large_response = _make_llm_result_with_usage_metadata(input_tokens=100000, output_tokens=50000, model="gpt-4o")
 
     # First call — should emit cost_threshold_exceeded
     adapter.on_llm_end(large_response, run_id=run_id_1)
 
     event_types_1 = [e.event_type for e in adapter._events]
-    assert "cost_threshold_exceeded" in event_types_1, (
-        f"Expected cost_threshold_exceeded; got: {event_types_1}"
-    )
+    assert "cost_threshold_exceeded" in event_types_1, f"Expected cost_threshold_exceeded; got: {event_types_1}"
     assert event_types_1.count("cost_threshold_exceeded") == 1
 
     # Second call — guard must prevent second emission
@@ -475,6 +486,7 @@ def test_cost_threshold_exceeded_emitted_once():
 # ---------------------------------------------------------------------------
 # 17. emit() routes to queue
 # ---------------------------------------------------------------------------
+
 
 def test_emit_routes_to_queue():
     """emit() with a queue must call queue.put_nowait with the event."""
@@ -493,6 +505,7 @@ def test_emit_routes_to_queue():
 # ---------------------------------------------------------------------------
 # 18. Pricing config loads and computes non-zero cost
 # ---------------------------------------------------------------------------
+
 
 def test_pricing_config_loads_models():
     """CostCalculator must load LangChain pricing.json and compute non-zero cost for gpt-4o."""
@@ -515,32 +528,27 @@ def test_pricing_config_loads_models():
 # 19. normalize_langchain_tokens — all paths
 # ---------------------------------------------------------------------------
 
+
 def test_normalize_langchain_tokens_all_paths():
     """normalize_langchain_tokens must handle all 3 extraction paths, None, and empty response."""
     from observra.adapters.utils import NormalizedTokens, normalize_langchain_tokens
 
     # (a) usage_metadata path
-    result_a = normalize_langchain_tokens(
-        _make_llm_result_with_usage_metadata(input_tokens=500, output_tokens=200)
-    )
+    result_a = normalize_langchain_tokens(_make_llm_result_with_usage_metadata(input_tokens=500, output_tokens=200))
     assert result_a is not None
     assert isinstance(result_a, NormalizedTokens)
     assert result_a.input_tokens == 500
     assert result_a.output_tokens == 200
 
     # (b) llm_output["token_usage"] path (ChatOpenAI legacy)
-    result_b = normalize_langchain_tokens(
-        _make_llm_result_openai_legacy(input_tokens=300, output_tokens=100)
-    )
+    result_b = normalize_langchain_tokens(_make_llm_result_openai_legacy(input_tokens=300, output_tokens=100))
     assert result_b is not None
     assert isinstance(result_b, NormalizedTokens)
     assert result_b.input_tokens == 300
     assert result_b.output_tokens == 100
 
     # (c) llm_output["usage"] path (ChatAnthropic)
-    result_c = normalize_langchain_tokens(
-        _make_llm_result_anthropic(input_tokens=600, output_tokens=250)
-    )
+    result_c = normalize_langchain_tokens(_make_llm_result_anthropic(input_tokens=600, output_tokens=250))
     assert result_c is not None
     assert isinstance(result_c, NormalizedTokens)
     assert result_c.input_tokens == 600

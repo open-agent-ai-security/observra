@@ -8,7 +8,7 @@ from typing import Optional
 logger = logging.getLogger(__name__)
 
 # Session-scoped tool sequence
-_tool_sequence_var: ContextVar[Optional[list]] = ContextVar('tool_sequence', default=None)
+_tool_sequence_var: ContextVar[Optional[list]] = ContextVar("tool_sequence", default=None)
 
 
 def initialize_tool_sequence() -> list:

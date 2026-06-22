@@ -48,6 +48,7 @@ def _init_worker(backend_type: str, backend_kwargs: dict) -> None:
     global _worker_backend
     # Import here to avoid circular imports in the subprocess
     from observra.core.storage import create_backend  # noqa: PLC0415
+
     _worker_backend = create_backend(backend_type, **backend_kwargs)
 
 
@@ -254,12 +255,14 @@ class PooledWriter:
             # invariant by incrementing it above its bound (CR-02).
             if acquired:
                 future.add_done_callback(self._on_batch_done)
+
             # Register latency callback: records elapsed wall time if no exception.
             # Always register this regardless of semaphore acquisition.
             def _record_latency(fut: Future, t0: float = _t0) -> None:
                 if fut.exception() is None:
                     elapsed = time.perf_counter() - t0
                     _registry.get_histogram("observra_write_latency_seconds").push(elapsed)
+
             future.add_done_callback(_record_latency)
             with self._stats_lock:
                 self._batches_submitted += 1
@@ -271,8 +274,7 @@ class PooledWriter:
             )
         except BrokenProcessPool:
             logger.warning(
-                "ProcessPool broken, recreating pool and retrying batch once "
-                "(batch size: %d)",
+                "ProcessPool broken, recreating pool and retrying batch once (batch size: %d)",
                 len(batch),
             )
             # Release semaphore -- no callback will fire for the failed submit
@@ -303,9 +305,7 @@ class PooledWriter:
                     except ValueError:
                         pass
         except Exception as e:
-            logger.warning(
-                "Pool submit failed: %s (batch size: %d)", e, len(batch)
-            )
+            logger.warning("Pool submit failed: %s (batch size: %d)", e, len(batch))
             with self._stats_lock:
                 self._errors += 1
             if acquired:

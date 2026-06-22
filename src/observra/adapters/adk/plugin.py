@@ -36,9 +36,9 @@ from observra.core.velocity import initialize_velocity_tracker, record_token_usa
 logger = logging.getLogger(__name__)
 
 # Per-request state via ContextVars (safe for concurrent requests sharing one plugin instance)
-_last_model_name_var: ContextVar[str | None] = ContextVar('last_model_name', default=None)
-_threshold_exceeded_var: ContextVar[bool] = ContextVar('threshold_exceeded', default=False)
-_turn_start_var: ContextVar[float | None] = ContextVar('turn_start', default=None)
+_last_model_name_var: ContextVar[str | None] = ContextVar("last_model_name", default=None)
+_threshold_exceeded_var: ContextVar[bool] = ContextVar("threshold_exceeded", default=False)
+_turn_start_var: ContextVar[float | None] = ContextVar("turn_start", default=None)
 
 # Lazy-loaded MCP tool class for isinstance checks
 _McpTool = None
@@ -54,6 +54,7 @@ def _get_tool_type(tool) -> str:
     if _McpTool is None:
         try:
             from google.adk.tools.mcp_tool import McpTool
+
             _McpTool = McpTool
         except ImportError:
             _McpTool = type(None)  # Sentinel: never matches isinstance
@@ -61,7 +62,6 @@ def _get_tool_type(tool) -> str:
         return "mcp" if isinstance(tool, _McpTool) else "function"
     except Exception:
         return "function"
-
 
 
 class TelemetryPlugin(BasePlugin):
@@ -199,12 +199,12 @@ class TelemetryPlugin(BasePlugin):
         total_length = len(raw_sequence)
         # Tail-truncation: keep most recent N entries (not head — context leading to current call matters)
         if total_length > self._max_sequence_length:
-            raw_sequence = raw_sequence[-self._max_sequence_length:]
+            raw_sequence = raw_sequence[-self._max_sequence_length :]
         tool_sequence = [{"tool": t, "ts": ts} for t, ts in raw_sequence]
         return {
             "tool_sequence": tool_sequence,
-            "sequence_length": total_length,       # unchanged: cheap filter field, reflects TRUE session length
-            "sequence_total_length": total_length, # always emit for query consistency
+            "sequence_length": total_length,  # unchanged: cheap filter field, reflects TRUE session length
+            "sequence_total_length": total_length,  # always emit for query consistency
         }
 
     # ========================================================================
@@ -222,20 +222,17 @@ class TelemetryPlugin(BasePlugin):
             None (observation mode)
         """
         try:
-            agent_name = getattr(invocation_context, 'agent_name', None)
+            agent_name = getattr(invocation_context, "agent_name", None)
 
             # Extract message text for injection detection
             # user_message can be: str, Content (with .parts[].text), or object with .text
             message_text = ""
             if isinstance(user_message, str):
                 message_text = user_message
-            elif hasattr(user_message, 'parts'):
+            elif hasattr(user_message, "parts"):
                 # google.genai.types.Content — concatenate text from all parts
-                message_text = " ".join(
-                    getattr(part, 'text', '') or ''
-                    for part in (user_message.parts or [])
-                )
-            elif hasattr(user_message, 'text'):
+                message_text = " ".join(getattr(part, "text", "") or "" for part in (user_message.parts or []))
+            elif hasattr(user_message, "text"):
                 message_text = user_message.text
 
             # Detect injection patterns
@@ -244,7 +241,7 @@ class TelemetryPlugin(BasePlugin):
                 injection_patterns = detect_injection_patterns(message_text)
 
             # Extract user_id from invocation context
-            user_id = getattr(invocation_context, 'user_id', None)
+            user_id = getattr(invocation_context, "user_id", None)
 
             event = create_event(
                 event_type="user_message",
@@ -291,7 +288,7 @@ class TelemetryPlugin(BasePlugin):
             initialize_tool_sequence()
             initialize_delegation_depth()
 
-            agent_name = getattr(invocation_context, 'agent_name', None)
+            agent_name = getattr(invocation_context, "agent_name", None)
             event = create_event(
                 event_type="session_start",
                 agent_name=agent_name,
@@ -328,7 +325,7 @@ class TelemetryPlugin(BasePlugin):
             raw_sequence = get_tool_sequence()
             seq_payload = self._get_sequence_payload(raw_sequence)
 
-            agent_name = getattr(invocation_context, 'agent_name', None)
+            agent_name = getattr(invocation_context, "agent_name", None)
             event = create_event(
                 event_type="session_end",
                 agent_name=agent_name,
@@ -357,7 +354,7 @@ class TelemetryPlugin(BasePlugin):
             # Create new span for agent-level operation
             new_span()
 
-            agent_name = getattr(agent, 'name', None)
+            agent_name = getattr(agent, "name", None)
 
             # Track delegation depth
             current_depth, depth_exceeded = increment_delegation_depth()
@@ -371,7 +368,7 @@ class TelemetryPlugin(BasePlugin):
                     framework="adk",
                     current_depth=current_depth,
                     max_depth=max_depth,
-                    message=f"Agent {agent_name} exceeded max delegation depth ({current_depth} > {max_depth})"
+                    message=f"Agent {agent_name} exceeded max delegation depth ({current_depth} > {max_depth})",
                 )
                 self._emit_event(depth_event)
 
@@ -397,7 +394,7 @@ class TelemetryPlugin(BasePlugin):
             None (observation mode)
         """
         try:
-            agent_name = getattr(agent, 'name', None)
+            agent_name = getattr(agent, "name", None)
 
             # Decrement delegation depth as agent completes
             current_depth = decrement_delegation_depth()
@@ -429,7 +426,7 @@ class TelemetryPlugin(BasePlugin):
             # Extract model name from llm_request and store for after_model
             model_name = None
             if llm_request is not None:
-                model_name = getattr(llm_request, 'model', None)
+                model_name = getattr(llm_request, "model", None)
             _last_model_name_var.set(model_name)
 
             event = create_event(
@@ -460,10 +457,10 @@ class TelemetryPlugin(BasePlugin):
             # Extract model name: prefer request model (from before_model), fall back to response
             model_name = _last_model_name_var.get()
             if model_name is None and llm_response is not None:
-                model_name = getattr(llm_response, 'model_version', None) or getattr(llm_response, 'model', None)
+                model_name = getattr(llm_response, "model_version", None) or getattr(llm_response, "model", None)
 
             # Extract usage_metadata if available
-            usage_metadata = getattr(llm_response, 'usage_metadata', None) if llm_response else None
+            usage_metadata = getattr(llm_response, "usage_metadata", None) if llm_response else None
             tokens = normalize_adk_tokens(usage_metadata)
 
             if tokens is not None:
@@ -474,10 +471,7 @@ class TelemetryPlugin(BasePlugin):
                 # Calculate cost for this call
                 # CostCalculator expects int for cached_tokens, not Optional[int]
                 cost = self._cost_calculator.calculate_cost(
-                    model_name or 'unknown',
-                    input_tokens,
-                    output_tokens,
-                    tokens.cached_tokens or 0
+                    model_name or "unknown", input_tokens, output_tokens, tokens.cached_tokens or 0
                 )
 
                 # Accumulate session cost
@@ -487,9 +481,11 @@ class TelemetryPlugin(BasePlugin):
                 tokens_per_minute = record_token_usage(total_tokens)
 
                 # Check threshold and emit alert (once per session)
-                if (self._cost_threshold is not None and
-                    not _threshold_exceeded_var.get() and
-                    session_total >= self._cost_threshold):
+                if (
+                    self._cost_threshold is not None
+                    and not _threshold_exceeded_var.get()
+                    and session_total >= self._cost_threshold
+                ):
                     _threshold_exceeded_var.set(True)
                     threshold_event = create_event(
                         event_type="cost_threshold_exceeded",
@@ -497,7 +493,7 @@ class TelemetryPlugin(BasePlugin):
                         session_cost_usd=float(session_total),
                         threshold_usd=float(self._cost_threshold),
                         exceeded=True,
-                        message=f"Session cost ${session_total:.6f} exceeded threshold ${self._cost_threshold:.2f}"
+                        message=f"Session cost ${session_total:.6f} exceeded threshold ${self._cost_threshold:.2f}",
                     )
                     self._emit_event(threshold_event)
 
@@ -605,7 +601,7 @@ class TelemetryPlugin(BasePlugin):
             # Create new span for tool-level operation
             new_span()
 
-            tool_name = getattr(tool, 'name', None)
+            tool_name = getattr(tool, "name", None)
             tool_type = _get_tool_type(tool)
 
             # Record tool call — returns full sequence INCLUDING this call (tuples of (name, ts))
@@ -649,7 +645,7 @@ class TelemetryPlugin(BasePlugin):
             None (observation mode)
         """
         try:
-            tool_name = getattr(tool, 'name', None)
+            tool_name = getattr(tool, "name", None)
             tool_type = _get_tool_type(tool)
 
             # Read sequence without recording (tool already recorded in before_tool_callback)
@@ -693,7 +689,7 @@ class TelemetryPlugin(BasePlugin):
             None (observation mode)
         """
         try:
-            tool_name = getattr(tool, 'name', None)
+            tool_name = getattr(tool, "name", None)
             tool_type = _get_tool_type(tool)
 
             # Read sequence at error time — diagnose which pattern led to failure
@@ -743,7 +739,7 @@ class TelemetryPlugin(BasePlugin):
         try:
             # Skip partial streaming chunks — these fire for every SSE fragment
             # and would flood telemetry storage with noise
-            if getattr(event, 'partial', None) is True:
+            if getattr(event, "partial", None) is True:
                 return None
 
             event_data = None
@@ -777,10 +773,7 @@ class TelemetryPlugin(BasePlugin):
             # Log summary
             if self._queue is not None:
                 stats = self._queue.get_stats()
-                logger.info(
-                    f"TelemetryPlugin closing. "
-                    f"Enqueued: {stats['enqueued']}, Dropped: {stats['dropped']}"
-                )
+                logger.info(f"TelemetryPlugin closing. Enqueued: {stats['enqueued']}, Dropped: {stats['dropped']}")
             else:
                 event_count = len(self._events)
                 logger.info(f"TelemetryPlugin closing. Captured {event_count} events.")

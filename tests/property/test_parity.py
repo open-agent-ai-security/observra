@@ -11,14 +11,15 @@ from observra.core.events import TelemetryEvent, create_event
 # Canonical JSON helpers
 # ---------------------------------------------------------------------------
 
+
 def canonical_json(obj: dict) -> bytes:
     """Serialize dict to canonical JSON bytes matching Rust serde_json output."""
     # Python 3.7+ preserves dict insertion order; Rust serde_json preserves struct field order.
     return json.dumps(
         strip_none_values(obj),
-        separators=(',', ':'),
+        separators=(",", ":"),
         ensure_ascii=False,
-    ).encode('utf-8')
+    ).encode("utf-8")
 
 
 def strip_none_values(d: dict) -> dict:
@@ -32,11 +33,7 @@ def strip_none_values(d: dict) -> dict:
             if nested:
                 out[k] = nested
         elif isinstance(v, list):
-            out[k] = [
-                strip_none_values(i) if isinstance(i, dict) else i
-                for i in v
-                if i is not None
-            ]
+            out[k] = [strip_none_values(i) if isinstance(i, dict) else i for i in v if i is not None]
         else:
             out[k] = v
     return out
@@ -49,10 +46,7 @@ def _sort_nested_keys(d: dict) -> dict:
         if isinstance(v, dict):
             out[k] = _sort_nested_keys(v)
         elif isinstance(v, list):
-            out[k] = [
-                _sort_nested_keys(i) if isinstance(i, dict) else i
-                for i in v
-            ]
+            out[k] = [_sort_nested_keys(i) if isinstance(i, dict) else i for i in v]
         else:
             out[k] = v
     return out
@@ -142,7 +136,7 @@ def _find_oracle() -> str:
 def _rust_json_for_event(event_dict: dict) -> bytes:
     """Pipe a dict through the Rust parity-oracle binary and return canonical JSON bytes."""
     oracle = _find_oracle()
-    payload = json.dumps(event_dict, separators=(',', ':'), ensure_ascii=False)
+    payload = json.dumps(event_dict, separators=(",", ":"), ensure_ascii=False)
     result = subprocess.run(
         [oracle],
         input=payload + "\n",
@@ -150,12 +144,13 @@ def _rust_json_for_event(event_dict: dict) -> bytes:
         text=True,
         check=True,
     )
-    return result.stdout.strip().encode('utf-8')
+    return result.stdout.strip().encode("utf-8")
 
 
 # ---------------------------------------------------------------------------
 # Parity tests
 # ---------------------------------------------------------------------------
+
 
 def test_canonical_json_strip_none():
     assert canonical_json({"a": 1, "b": None}) == b'{"a":1}'
@@ -191,8 +186,14 @@ def test_parity_agent_end():
 
 
 def test_parity_model_response():
-    event = _make_event("model_response", model_name="claude-opus-4-7", framework="claude_code",
-                        input_tokens=100, output_tokens=50, cost_usd="0.003")
+    event = _make_event(
+        "model_response",
+        model_name="claude-opus-4-7",
+        framework="claude_code",
+        input_tokens=100,
+        output_tokens=50,
+        cost_usd="0.003",
+    )
     python_bytes = canonical_json(strip_none_values(_to_dict(event)))
     rust_bytes = _rust_json_for_event(strip_none_values(_to_dict(event)))
     assert python_bytes == rust_bytes, f"Mismatch:\nPython: {python_bytes}\nRust:  {rust_bytes}"

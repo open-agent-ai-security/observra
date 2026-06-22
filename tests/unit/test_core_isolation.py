@@ -1,4 +1,5 @@
 """Tests verifying core/ has zero framework SDK imports and ContextVar isolation."""
+
 import sys
 from decimal import Decimal
 
@@ -18,15 +19,20 @@ class TestCoreIsolation:
         new_modules = after - before
 
         framework_modules = [
-            m for m in new_modules
-            if any(fw in m for fw in [
-                'google.adk', 'anthropic', 'openai',
-                'langchain', 'pydantic_ai',
-            ])
+            m
+            for m in new_modules
+            if any(
+                fw in m
+                for fw in [
+                    "google.adk",
+                    "anthropic",
+                    "openai",
+                    "langchain",
+                    "pydantic_ai",
+                ]
+            )
         ]
-        assert framework_modules == [], (
-            f"Framework modules leaked into core: {framework_modules}"
-        )
+        assert framework_modules == [], f"Framework modules leaked into core: {framework_modules}"
 
     def test_base_install_no_framework_imports(self):
         """Top-level observra import loads no framework SDKs (CORE-06 guard)."""
@@ -39,15 +45,20 @@ class TestCoreIsolation:
 
         # Filter out adk_telemetry compat shim (that's expected on sys.path)
         framework_modules = [
-            m for m in new_modules
-            if any(fw in m for fw in [
-                'google.adk', 'anthropic', 'openai',
-                'langchain', 'pydantic_ai',
-            ])
+            m
+            for m in new_modules
+            if any(
+                fw in m
+                for fw in [
+                    "google.adk",
+                    "anthropic",
+                    "openai",
+                    "langchain",
+                    "pydantic_ai",
+                ]
+            )
         ]
-        assert framework_modules == [], (
-            f"Framework modules imported by base install: {framework_modules}"
-        )
+        assert framework_modules == [], f"Framework modules imported by base install: {framework_modules}"
 
 
 class TestContextVarIsolation:
@@ -57,15 +68,15 @@ class TestContextVarIsolation:
         """Two framework-scoped contexts cannot read each other's values."""
         from observra.core.context import create_scoped_context
 
-        adk_ctx = create_scoped_context('adk')
-        claude_ctx = create_scoped_context('claude')
+        adk_ctx = create_scoped_context("adk")
+        claude_ctx = create_scoped_context("claude")
 
         # Set trace_id in ADK context
-        adk_ctx['trace_id'].set('adk-trace-123')
+        adk_ctx["trace_id"].set("adk-trace-123")
 
         # Claude context must NOT see ADK's value
         try:
-            val = claude_ctx['trace_id'].get()
+            val = claude_ctx["trace_id"].get()
             # If we get here, the vars are shared — fail
             assert False, f"Claude context read ADK's trace_id: {val}"
         except LookupError:
@@ -75,20 +86,20 @@ class TestContextVarIsolation:
         """Two framework-scoped session_cost vars accumulate independently."""
         from observra.core.context import create_scoped_context
 
-        adk_ctx = create_scoped_context('adk')
-        claude_ctx = create_scoped_context('claude')
+        adk_ctx = create_scoped_context("adk")
+        claude_ctx = create_scoped_context("claude")
 
-        adk_ctx['session_cost'].set(Decimal('1.50'))
-        claude_ctx['session_cost'].set(Decimal('0.25'))
+        adk_ctx["session_cost"].set(Decimal("1.50"))
+        claude_ctx["session_cost"].set(Decimal("0.25"))
 
-        assert adk_ctx['session_cost'].get() == Decimal('1.50')
-        assert claude_ctx['session_cost'].get() == Decimal('0.25')
+        assert adk_ctx["session_cost"].get() == Decimal("1.50")
+        assert claude_ctx["session_cost"].get() == Decimal("0.25")
 
     def test_scoped_context_names_are_prefixed(self):
         """ContextVar debug names include framework prefix for observability."""
         from observra.core.context import create_scoped_context
 
-        ctx = create_scoped_context('myfw')
+        ctx = create_scoped_context("myfw")
         # ContextVar.__repr__ includes the name
-        assert 'myfw.trace_id' in repr(ctx['trace_id'])
-        assert 'myfw.session_cost' in repr(ctx['session_cost'])
+        assert "myfw.trace_id" in repr(ctx["trace_id"])
+        assert "myfw.session_cost" in repr(ctx["session_cost"])

@@ -42,11 +42,9 @@ def test_catastrophic_backtracking_rejected():
         compile_safe_pattern("(a+)+$")
     msg = str(exc_info.value)
     # Either RE2 rejects it as a backtracking pattern, or the re fallback catches it
-    assert (
-        "backtracking" in msg.lower()
-        or "timeout" in msg.lower()
-        or "timed out" in msg.lower()
-    ), f"Expected backtracking/timeout message, got: {msg}"
+    assert "backtracking" in msg.lower() or "timeout" in msg.lower() or "timed out" in msg.lower(), (
+        f"Expected backtracking/timeout message, got: {msg}"
+    )
 
 
 # ── Test 3: pattern exceeding 1024 chars is rejected with length error ─────────
@@ -58,9 +56,7 @@ def test_pattern_too_long_default_limit():
     with pytest.raises(SafeRegexError) as exc_info:
         compile_safe_pattern(long_pattern)
     msg = str(exc_info.value)
-    assert "exceeds maximum length" in msg.lower() or "too long" in msg.lower(), (
-        f"Expected length error, got: {msg}"
-    )
+    assert "exceeds maximum length" in msg.lower() or "too long" in msg.lower(), f"Expected length error, got: {msg}"
     # Should mention the actual length or limit
     assert str(MAX_PATTERN_LENGTH) in msg or str(MAX_PATTERN_LENGTH + 1) in msg, (
         f"Expected length details in message, got: {msg}"
@@ -76,9 +72,7 @@ def test_custom_max_length_rejects_pattern():
     with pytest.raises(SafeRegexError) as exc_info:
         compile_safe_pattern(slightly_too_long, max_length=50)
     msg = str(exc_info.value)
-    assert "exceeds maximum length" in msg.lower() or "too long" in msg.lower(), (
-        f"Expected length error, got: {msg}"
-    )
+    assert "exceeds maximum length" in msg.lower() or "too long" in msg.lower(), f"Expected length error, got: {msg}"
 
 
 def test_custom_max_length_accepts_at_boundary():
@@ -125,13 +119,9 @@ def test_return_type_is_correct():
 
     result = compile_safe_pattern(r"\d+")
     if _re2_available:
-        assert isinstance(result, re2.Pattern), (
-            f"Expected re2.Pattern when re2 is installed, got {type(result)}"
-        )
+        assert isinstance(result, re2.Pattern), f"Expected re2.Pattern when re2 is installed, got {type(result)}"
     else:
-        assert isinstance(result, re.Pattern), (
-            f"Expected re.Pattern when re2 is absent, got {type(result)}"
-        )
+        assert isinstance(result, re.Pattern), f"Expected re.Pattern when re2 is absent, got {type(result)}"
 
 
 # ── Test 8: error messages include specific reason and suggest simplification ──
@@ -142,9 +132,7 @@ def test_error_message_includes_reason_and_suggestion_for_length():
     with pytest.raises(SafeRegexError) as exc_info:
         compile_safe_pattern("x" * (MAX_PATTERN_LENGTH + 1))
     msg = str(exc_info.value)
-    assert "simplif" in msg.lower() or "consider" in msg.lower(), (
-        f"Expected suggestion to simplify, got: {msg}"
-    )
+    assert "simplif" in msg.lower() or "consider" in msg.lower(), f"Expected suggestion to simplify, got: {msg}"
 
 
 def test_error_message_includes_reason_and_suggestion_for_backtracking():
@@ -152,9 +140,7 @@ def test_error_message_includes_reason_and_suggestion_for_backtracking():
     with pytest.raises(SafeRegexError) as exc_info:
         compile_safe_pattern("(a+)+$")
     msg = str(exc_info.value)
-    assert "simplif" in msg.lower() or "consider" in msg.lower(), (
-        f"Expected suggestion to simplify, got: {msg}"
-    )
+    assert "simplif" in msg.lower() or "consider" in msg.lower(), f"Expected suggestion to simplify, got: {msg}"
 
 
 # ── Additional: error includes SafeRegexError.reason field ──────────────────

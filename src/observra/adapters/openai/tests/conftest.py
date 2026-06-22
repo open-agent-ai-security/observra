@@ -15,6 +15,7 @@ import types as _types
 # Create stub agents.tracing module hierarchy
 # ---------------------------------------------------------------------------
 
+
 class _StubTracingProcessor:
     """Stub base class for TracingProcessor — no-op implementations of all 6 methods."""
 

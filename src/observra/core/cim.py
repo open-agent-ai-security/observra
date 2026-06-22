@@ -13,38 +13,43 @@ PRODUCT_ID = "observra"
 # Enumerations — canonical values for SIEM-friendly fields.
 # ---------------------------------------------------------------------------
 
+
 class Action(str, Enum):
-    ACCESS_FILE    = "access_file"
-    CALL_LLM       = "call_llm"
-    EXECUTE_CODE   = "execute_code"
-    INVOKE_AGENT   = "invoke_agent"
-    READ_MEMORY    = "read_memory"
-    SEND_EXTERNAL  = "send_external"
-    WRITE_MEMORY   = "write_memory"
-    INVOKE_TOOL    = "invoke_tool"
-    UNKNOWN        = "unknown"
+    ACCESS_FILE = "access_file"
+    CALL_LLM = "call_llm"
+    EXECUTE_CODE = "execute_code"
+    INVOKE_AGENT = "invoke_agent"
+    READ_MEMORY = "read_memory"
+    SEND_EXTERNAL = "send_external"
+    WRITE_MEMORY = "write_memory"
+    INVOKE_TOOL = "invoke_tool"
+    UNKNOWN = "unknown"
+
 
 class Vendor(str, Enum):
-    ANTHROPIC      = "anthropic"
-    GOOGLE         = "google"
-    MICROSOFT      = "microsoft"
-    OPENAI         = "openai"
-    UNKNOWN        = "unknown"
+    ANTHROPIC = "anthropic"
+    GOOGLE = "google"
+    MICROSOFT = "microsoft"
+    OPENAI = "openai"
+    UNKNOWN = "unknown"
+
 
 class ActionResult(str, Enum):
-    SUCCESS        = "success"
-    FAILURE        = "failure"
-    BLOCKED        = "blocked"
-    TIMEOUT        = "timeout"
+    SUCCESS = "success"
+    FAILURE = "failure"
+    BLOCKED = "blocked"
+    TIMEOUT = "timeout"
+
 
 class FinishReason(str, Enum):
     CONTENT_FILTER = "content_filter"
-    MAX_TOKENS     = "max_tokens"
-    STOP           = "stop"
-    TOOL_CALL      = "tool_call"
-    ERROR          = "error"
-    TIMEOUT        = "timeout"
-    UNKNOWN        = "unknown"
+    MAX_TOKENS = "max_tokens"
+    STOP = "stop"
+    TOOL_CALL = "tool_call"
+    ERROR = "error"
+    TIMEOUT = "timeout"
+    UNKNOWN = "unknown"
+
 
 _FINISH_REASON_MAP: dict[str, FinishReason] = {
     "stop": FinishReason.STOP,
@@ -66,6 +71,7 @@ _FINISH_REASON_MAP: dict[str, FinishReason] = {
     "filtered": FinishReason.CONTENT_FILTER,
 }
 
+
 def normalize_finish_reason(raw: Optional[str]) -> FinishReason:
     """Map platform finish_reason string to canonical FinishReason."""
     if not raw:
@@ -78,35 +84,36 @@ def normalize_finish_reason(raw: Optional[str]) -> FinishReason:
 # ---------------------------------------------------------------------------
 
 _ACTION_PATTERNS: list[tuple[str, Action]] = [
-    ("bash",          Action.EXECUTE_CODE),
-    ("call_llm",      Action.CALL_LLM),
-    ("handoff",       Action.INVOKE_AGENT),
-    ("http",          Action.SEND_EXTERNAL),
-    ("memory_read",   Action.READ_MEMORY),
-    ("read_file",     Action.ACCESS_FILE),
-    ("memory_write",  Action.WRITE_MEMORY),
+    ("bash", Action.EXECUTE_CODE),
+    ("call_llm", Action.CALL_LLM),
+    ("handoff", Action.INVOKE_AGENT),
+    ("http", Action.SEND_EXTERNAL),
+    ("memory_read", Action.READ_MEMORY),
+    ("read_file", Action.ACCESS_FILE),
+    ("memory_write", Action.WRITE_MEMORY),
     ("model_request", Action.CALL_LLM),
-    ("shell",         Action.EXECUTE_CODE),
-    ("transfer",      Action.INVOKE_AGENT),
-    ("webhook",       Action.SEND_EXTERNAL),
-    ("write_file",    Action.ACCESS_FILE),
-    ("delegate",      Action.INVOKE_AGENT),
-    ("email",         Action.SEND_EXTERNAL),
-    ("execute",       Action.EXECUTE_CODE),
-    ("file_read",     Action.ACCESS_FILE),
-    ("inference",     Action.CALL_LLM),
-    ("remember",      Action.WRITE_MEMORY),
-    ("file_write",    Action.ACCESS_FILE),
-    ("recall",        Action.READ_MEMORY),
-    ("run_code",      Action.EXECUTE_CODE),
-    ("send_email",    Action.SEND_EXTERNAL),
-    ("api_call",      Action.SEND_EXTERNAL),
-    ("computer",      Action.EXECUTE_CODE),
-    ("file_editor",   Action.ACCESS_FILE),
-    ("web_fetch",     Action.SEND_EXTERNAL),
-    ("browse",        Action.SEND_EXTERNAL),
-    ("search",        Action.SEND_EXTERNAL),
+    ("shell", Action.EXECUTE_CODE),
+    ("transfer", Action.INVOKE_AGENT),
+    ("webhook", Action.SEND_EXTERNAL),
+    ("write_file", Action.ACCESS_FILE),
+    ("delegate", Action.INVOKE_AGENT),
+    ("email", Action.SEND_EXTERNAL),
+    ("execute", Action.EXECUTE_CODE),
+    ("file_read", Action.ACCESS_FILE),
+    ("inference", Action.CALL_LLM),
+    ("remember", Action.WRITE_MEMORY),
+    ("file_write", Action.ACCESS_FILE),
+    ("recall", Action.READ_MEMORY),
+    ("run_code", Action.EXECUTE_CODE),
+    ("send_email", Action.SEND_EXTERNAL),
+    ("api_call", Action.SEND_EXTERNAL),
+    ("computer", Action.EXECUTE_CODE),
+    ("file_editor", Action.ACCESS_FILE),
+    ("web_fetch", Action.SEND_EXTERNAL),
+    ("browse", Action.SEND_EXTERNAL),
+    ("search", Action.SEND_EXTERNAL),
 ]
+
 
 def normalize_action(tool_name: Optional[str]) -> Action:
     """Infer the canonical CIM action enum from a free-form tool name."""
@@ -153,6 +160,7 @@ _ACTION_FOR_EVENT_TYPE: dict[str, str] = {
     "user_message": "prompt_submit",
 }
 
+
 def action_for_event_type(event_type: str) -> str:
     """Map a canonical event_type to its CIM action verb."""
     return _ACTION_FOR_EVENT_TYPE.get(event_type, "unknown")
@@ -172,6 +180,7 @@ _DEFAULT_RESULT_FOR_EVENT_TYPE: dict[str, str] = {
     "turn": "success",
 }
 
+
 def default_result_for_event_type(event_type: str) -> Optional[str]:
     """Return the default data.result for terminal event types."""
     return _DEFAULT_RESULT_FOR_EVENT_TYPE.get(event_type)
@@ -180,6 +189,7 @@ def default_result_for_event_type(event_type: str) -> Optional[str]:
 # ---------------------------------------------------------------------------
 # Vendor derivation from model name.
 # ---------------------------------------------------------------------------
+
 
 def vendor_from_model(model: Optional[str]) -> str:
     """Classify a model identifier into a vendor."""
@@ -196,6 +206,7 @@ def vendor_from_model(model: Optional[str]) -> str:
         return "microsoft"
     return "unknown"
 
+
 _VENDOR_BY_FRAMEWORK: dict[str, str] = {
     "claude": "anthropic",
     "claude_code": "anthropic",
@@ -206,9 +217,8 @@ _VENDOR_BY_FRAMEWORK: dict[str, str] = {
     "copilot": "microsoft",
 }
 
-def vendor_from_model_or_framework(
-    model: Optional[str], framework: Optional[str]
-) -> str:
+
+def vendor_from_model_or_framework(model: Optional[str], framework: Optional[str]) -> str:
     """Vendor classification with a framework-name fallback."""
     v = vendor_from_model(model)
     if v != "unknown":
@@ -254,6 +264,7 @@ _REVERSIBLE_TOOL_PATTERNS: list[str] = [
     "summarize",
 ]
 
+
 def classify_reversibility(tool_name: Optional[str]) -> Optional[bool]:
     """Classify a tool name as reversible / irreversible / unknown."""
     if not tool_name:
@@ -271,6 +282,7 @@ def classify_reversibility(tool_name: Optional[str]) -> Optional[bool]:
 # ---------------------------------------------------------------------------
 # Builder
 # ---------------------------------------------------------------------------
+
 
 def build_data_for_event(
     event_type: str,

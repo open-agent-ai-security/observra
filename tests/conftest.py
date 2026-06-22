@@ -17,12 +17,10 @@ def reset_context():
 @pytest.fixture
 def sample_event():
     """Create a sample telemetry event for testing."""
-    return create_event('test', data={'key': 'value'})
+    return create_event("test", data={"key": "value"})
 
 
 @pytest.fixture
 def tmp_jsonl_path(tmp_path):
     """Return path for temporary JSONL file."""
     return str(tmp_path / "test.jsonl")
-
-

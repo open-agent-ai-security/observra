@@ -14,7 +14,7 @@ VELOCITY_WINDOW_SECONDS = 60
 VELOCITY_MAX_SAMPLES = 100
 
 # Session-scoped token window
-_token_window_var: ContextVar[Optional[deque]] = ContextVar('token_window', default=None)
+_token_window_var: ContextVar[Optional[deque]] = ContextVar("token_window", default=None)
 
 
 def initialize_velocity_tracker() -> deque:
@@ -73,16 +73,16 @@ def record_token_usage(total_tokens: int) -> Decimal:
 
     # Calculate velocity
     if not valid_entries:
-        return Decimal('0')
+        return Decimal("0")
 
     oldest_ts = valid_entries[0][0]
     time_span = now - oldest_ts
 
     if time_span == 0:
-        return Decimal('0')
+        return Decimal("0")
 
     total_tokens_in_window = sum(tokens for _, tokens in valid_entries)
-    tokens_per_minute = Decimal(str(total_tokens_in_window)) / Decimal(str(time_span)) * Decimal('60')
+    tokens_per_minute = Decimal(str(total_tokens_in_window)) / Decimal(str(time_span)) * Decimal("60")
 
     logger.debug(
         "Token velocity: %.2f tokens/min (%d samples)",

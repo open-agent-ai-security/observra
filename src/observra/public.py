@@ -7,6 +7,7 @@ provisional (in observra.__all__ but not here) or internal.
 Usage:
     from observra.public import initialize, TelemetryEvent, ADKAdapter
 """
+
 from observra import (
     TelemetryEvent,
     create_logging_handler,

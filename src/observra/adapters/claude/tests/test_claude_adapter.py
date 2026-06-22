@@ -34,6 +34,7 @@ from observra.core.events import create_event
 # Global session fixture — valid context required for create_event()
 # ---------------------------------------------------------------------------
 
+
 @pytest.fixture(autouse=True)
 def session_context():
     """Initialize valid trace/session/span context for every test."""
@@ -44,6 +45,7 @@ def session_context():
 # ---------------------------------------------------------------------------
 # Helper: suppress the startup warning that fires on every ClaudeAdapter()
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture(autouse=True)
 def suppress_startup_warning():
@@ -56,6 +58,7 @@ def suppress_startup_warning():
 # ---------------------------------------------------------------------------
 # Helper: mock tokenizer that avoids loading tiktoken C extension
 # ---------------------------------------------------------------------------
+
 
 class _MockTokenizer:
     """Minimal stand-in for tiktoken encoder for test isolation."""
@@ -84,19 +87,20 @@ def mock_tiktoken():
 # 1. Protocol conformance
 # ---------------------------------------------------------------------------
 
+
 def test_claude_adapter_satisfies_protocol():
     """ClaudeAdapter must satisfy the FrameworkAdapter Protocol."""
     from observra.core.adapter import FrameworkAdapter
+
     adapter = ClaudeAdapter(queue=None)
-    assert isinstance(adapter, FrameworkAdapter), (
-        "ClaudeAdapter does not satisfy FrameworkAdapter Protocol"
-    )
+    assert isinstance(adapter, FrameworkAdapter), "ClaudeAdapter does not satisfy FrameworkAdapter Protocol"
     assert adapter.framework_name == "claude"
 
 
 # ---------------------------------------------------------------------------
 # 2. PreToolUse hook returns {} and emits before_tool event
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.asyncio
 async def test_pre_tool_use_returns_empty_dict():
@@ -120,6 +124,7 @@ async def test_pre_tool_use_returns_empty_dict():
 # 3. PostToolUse hook returns {} with duration
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.asyncio
 async def test_post_tool_use_returns_empty_dict_with_duration():
     """_on_post_tool_use must return {} and emit after_tool with duration_ms."""
@@ -141,14 +146,13 @@ async def test_post_tool_use_returns_empty_dict_with_duration():
     assert event.data is not None
     assert "duration_ms" in event.data
     # Allow 200ms tolerance (500ms simulated, events have overhead)
-    assert 300 <= event.data["duration_ms"] <= 700, (
-        f"Expected ~500ms duration, got {event.data['duration_ms']:.1f}ms"
-    )
+    assert 300 <= event.data["duration_ms"] <= 700, f"Expected ~500ms duration, got {event.data['duration_ms']:.1f}ms"
 
 
 # ---------------------------------------------------------------------------
 # 4. UserPromptSubmit hook
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.asyncio
 async def test_user_prompt_submit_returns_empty_dict():
@@ -173,6 +177,7 @@ async def test_user_prompt_submit_returns_empty_dict():
 # 5. Stop hook
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.asyncio
 async def test_stop_returns_empty_dict():
     """_on_stop must return {} and emit agent_stop event."""
@@ -188,6 +193,7 @@ async def test_stop_returns_empty_dict():
 # ---------------------------------------------------------------------------
 # 6. SubagentStop hook
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.asyncio
 async def test_subagent_stop_returns_empty_dict():
@@ -209,6 +215,7 @@ async def test_subagent_stop_returns_empty_dict():
 # 7. estimate_tokens uses tiktoken or fallback
 # ---------------------------------------------------------------------------
 
+
 def test_estimate_tokens_uses_tiktoken_or_fallback():
     """estimate_tokens() must return positive integers for valid text.
 
@@ -228,14 +235,13 @@ def test_estimate_tokens_uses_tiktoken_or_fallback():
     # For a long repetitive string, we expect a meaningful count
     long_text = " ".join(["word"] * 200)  # 200 tokens via word-split mock
     long_result = estimate_tokens(long_text)
-    assert long_result > 10, (
-        f"estimate_tokens for 200-word text should be > 10, got {long_result}"
-    )
+    assert long_result > 10, f"estimate_tokens for 200-word text should be > 10, got {long_result}"
 
 
 # ---------------------------------------------------------------------------
 # 8. safe_serialize shared utility
 # ---------------------------------------------------------------------------
+
 
 def test_safe_serialize_shared_utility():
     """safe_serialize() must handle dicts, strings, and truncate long text."""
@@ -249,14 +255,13 @@ def test_safe_serialize_shared_utility():
     long_text = "x" * 10000
     long_result = safe_serialize(long_text)
     # Default max_length=4096, truncation suffix adds a few dozen chars
-    assert len(long_result) <= 4096 + 50, (
-        f"Truncated safe_serialize should be <= 4146 chars, got {len(long_result)}"
-    )
+    assert len(long_result) <= 4096 + 50, f"Truncated safe_serialize should be <= 4146 chars, got {len(long_result)}"
 
 
 # ---------------------------------------------------------------------------
 # 9. Error stats increment on emit() failure
 # ---------------------------------------------------------------------------
+
 
 def test_adapter_error_stats_increment():
     """emit() failure must increment error_count; get_adapter_stats() reflects it."""
@@ -281,6 +286,7 @@ def test_adapter_error_stats_increment():
 # 10. Dropped events when disabled
 # ---------------------------------------------------------------------------
 
+
 def test_adapter_dropped_events_when_disabled():
     """emit() with _enabled=False must increment _dropped_events."""
     adapter = ClaudeAdapter(queue=None)
@@ -296,6 +302,7 @@ def test_adapter_dropped_events_when_disabled():
 # 11. emit() routes to queue
 # ---------------------------------------------------------------------------
 
+
 def test_emit_routes_to_queue():
     """emit() with a queue must call queue.put_nowait with the event."""
     mock_queue = MagicMock()
@@ -310,6 +317,7 @@ def test_emit_routes_to_queue():
 # ---------------------------------------------------------------------------
 # 12. Pricing config loads Claude models
 # ---------------------------------------------------------------------------
+
 
 def test_pricing_config_loads_claude_models():
     """CostCalculator must load Claude pricing and compute non-zero costs."""
@@ -336,12 +344,11 @@ def test_pricing_config_loads_claude_models():
 # 13. _extract_tokens_or_estimate — native detection
 # ---------------------------------------------------------------------------
 
+
 def test_extract_tokens_or_estimate_native_detection():
     """Native token fields must be returned with is_estimated=False."""
     adapter = ClaudeAdapter(queue=None)
-    count, is_estimated = adapter._extract_tokens_or_estimate(
-        {"input_tokens": 42}, "some text"
-    )
+    count, is_estimated = adapter._extract_tokens_or_estimate({"input_tokens": 42}, "some text")
     assert count == 42, f"Expected 42 native tokens, got {count}"
     assert is_estimated is False, "Native tokens should set is_estimated=False"
 
@@ -349,6 +356,7 @@ def test_extract_tokens_or_estimate_native_detection():
 # ---------------------------------------------------------------------------
 # 14. _extract_tokens_or_estimate — fallback estimation
 # ---------------------------------------------------------------------------
+
 
 def test_extract_tokens_or_estimate_fallback():
     """Empty input_data must fall back to estimation with is_estimated=True."""
@@ -361,6 +369,7 @@ def test_extract_tokens_or_estimate_fallback():
 # ---------------------------------------------------------------------------
 # 15. Hook exception still returns {}
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.asyncio
 async def test_hook_exception_still_returns_empty_dict():
@@ -376,6 +385,7 @@ async def test_hook_exception_still_returns_empty_dict():
 # ---------------------------------------------------------------------------
 # 16. wrap_stream() emits model_response and session_end
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.asyncio
 async def test_wrap_stream_emits_model_response_for_text_blocks():
@@ -424,9 +434,7 @@ async def test_wrap_stream_emits_model_response_for_text_blocks():
     assert "Hello from Claude" in mr_event.data.get("response_text", ""), (
         f"Expected 'Hello from Claude' in response_text, got: {mr_event.data}"
     )
-    assert mr_event.data.get("estimated") is True, (
-        "model_response estimated flag must be True (no native token counts)"
-    )
+    assert mr_event.data.get("estimated") is True, "model_response estimated flag must be True (no native token counts)"
 
     # Verify session_end event content
     session_end_events = [e for e in adapter._events if e.event_type == "session_end"]
@@ -444,6 +452,7 @@ async def test_wrap_stream_emits_model_response_for_text_blocks():
 # ---------------------------------------------------------------------------
 # 17. wrap_stream() exception does not interrupt stream
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.asyncio
 async def test_wrap_stream_exception_does_not_interrupt_stream():
@@ -471,6 +480,7 @@ async def test_wrap_stream_exception_does_not_interrupt_stream():
 # 18. cost_threshold_exceeded emitted once, only-once guard verified
 # ---------------------------------------------------------------------------
 
+
 def test_cost_threshold_exceeded_emitted_when_session_cost_exceeds_threshold():
     """cost_threshold_exceeded must fire once when cost >= threshold; not twice."""
     adapter = ClaudeAdapter(queue=None, cost_threshold_usd=Decimal("0.001"))
@@ -487,9 +497,7 @@ def test_cost_threshold_exceeded_emitted_when_session_cost_exceeds_threshold():
 
     event_types_1 = [e.event_type for e in adapter._events]
     assert "session_end" in event_types_1, "session_end must be emitted"
-    assert "cost_threshold_exceeded" in event_types_1, (
-        "cost_threshold_exceeded must be emitted when cost >= threshold"
-    )
+    assert "cost_threshold_exceeded" in event_types_1, "cost_threshold_exceeded must be emitted when cost >= threshold"
 
     # Verify cost_threshold_exceeded event data (hot path: strings stripped, but numerics preserved)
     threshold_events = [e for e in adapter._events if e.event_type == "cost_threshold_exceeded"]
@@ -499,12 +507,8 @@ def test_cost_threshold_exceeded_emitted_when_session_cost_exceeds_threshold():
     assert te.data.get("session_cost_usd") == 0.005, (
         f"Expected session_cost_usd=0.005, got {te.data.get('session_cost_usd')}"
     )
-    assert te.data.get("threshold_usd") == 0.001, (
-        f"Expected threshold_usd=0.001, got {te.data.get('threshold_usd')}"
-    )
-    assert te.data.get("estimated") is False, (
-        "cost_threshold_exceeded estimated flag must be False"
-    )
+    assert te.data.get("threshold_usd") == 0.001, f"Expected threshold_usd=0.001, got {te.data.get('threshold_usd')}"
+    assert te.data.get("estimated") is False, "cost_threshold_exceeded estimated flag must be False"
     # Note: 'message' field is stripped by hot-path processing (cost_threshold_exceeded is HOT_PATH)
 
     _event_count_after_first = len(adapter._events)  # noqa: F841
@@ -521,10 +525,6 @@ def test_cost_threshold_exceeded_emitted_when_session_cost_exceeds_threshold():
 
     event_types_2 = [e.event_type for e in adapter._events]
     new_threshold_events = [e for e in adapter._events if e.event_type == "cost_threshold_exceeded"]
-    assert len(new_threshold_events) == 1, (
-        "cost_threshold_exceeded must only fire once (only-once guard)"
-    )
+    assert len(new_threshold_events) == 1, "cost_threshold_exceeded must only fire once (only-once guard)"
     # session_end should fire again on second call
-    assert event_types_2.count("session_end") == 2, (
-        "session_end must fire for each ResultMessage"
-    )
+    assert event_types_2.count("session_end") == 2, "session_end must fire for each ResultMessage"

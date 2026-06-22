@@ -6,6 +6,7 @@ still receive the call.
 
 No external dependencies — always importable without extras.
 """
+
 from __future__ import annotations
 
 import logging
@@ -67,8 +68,7 @@ class MultiBackend:
         """
         if not backends:
             raise ValueError(
-                "MultiBackend requires at least one backend. "
-                "Provide a non-empty list of StorageBackend instances."
+                "MultiBackend requires at least one backend. Provide a non-empty list of StorageBackend instances."
             )
         self._backends = list(backends)
         self._errors: int = 0
@@ -212,7 +212,4 @@ class MultiBackend:
                 )
             except NotImplementedError:
                 continue
-        raise NotImplementedError(
-            "No backend in MultiBackend supports query(). "
-            "Querying is not supported in v1."
-        )
+        raise NotImplementedError("No backend in MultiBackend supports query(). Querying is not supported in v1.")

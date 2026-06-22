@@ -20,6 +20,7 @@ import pytest
 # Mock span factories
 # ---------------------------------------------------------------------------
 
+
 def _make_model_span(model="gpt-4o", input_tokens=500, output_tokens=200):
     """Mock 'chat {model}' span with token usage attributes."""
     return types.SimpleNamespace(
@@ -67,10 +68,12 @@ def _make_agent_span(agent_name="test_agent"):
 # Fixtures: initialize context for every test
 # ---------------------------------------------------------------------------
 
+
 @pytest.fixture(autouse=True)
 def _init_context():
     """Initialize valid trace/session context for every test."""
     from observra.core.context import initialize_session, initialize_trace
+
     initialize_trace()
     initialize_session()
 
@@ -79,21 +82,21 @@ def _init_context():
 # 1. Protocol conformance
 # ---------------------------------------------------------------------------
 
+
 def test_protocol_conformance():
     """PydanticAIAdapter must satisfy FrameworkAdapter Protocol with framework_name='pydantic-ai'."""
     from observra.adapters.pydantic_ai.adapter import PydanticAIAdapter
     from observra.core.adapter import FrameworkAdapter
 
     adapter = PydanticAIAdapter()
-    assert isinstance(adapter, FrameworkAdapter), (
-        "PydanticAIAdapter does not satisfy FrameworkAdapter Protocol"
-    )
+    assert isinstance(adapter, FrameworkAdapter), "PydanticAIAdapter does not satisfy FrameworkAdapter Protocol"
     assert adapter.framework_name == "pydantic-ai"
 
 
 # ---------------------------------------------------------------------------
 # 2. Model span — OpenAI with tokens and cost
 # ---------------------------------------------------------------------------
+
 
 def test_model_span_emits_model_response():
     """'chat gpt-4o' span with gen_ai.usage.* attrs emits model_response with correct tokens and cost."""
@@ -118,6 +121,7 @@ def test_model_span_emits_model_response():
 # 3. Model span — Anthropic pricing
 # ---------------------------------------------------------------------------
 
+
 def test_model_span_with_anthropic():
     """'chat claude-3-5-sonnet-20241022' span emits model_response with Anthropic pricing applied."""
     from observra.adapters.pydantic_ai.adapter import PydanticAIAdapter
@@ -139,6 +143,7 @@ def test_model_span_with_anthropic():
 # ---------------------------------------------------------------------------
 # 4. Model span without tokens
 # ---------------------------------------------------------------------------
+
 
 def test_model_span_without_tokens():
     """'chat unknown' span with no gen_ai.usage.* attrs emits model_response without token/cost fields."""
@@ -166,6 +171,7 @@ def test_model_span_without_tokens():
 # ---------------------------------------------------------------------------
 # 5. Model span with cached tokens
 # ---------------------------------------------------------------------------
+
 
 def test_model_span_with_cached_tokens():
     """Span with gen_ai.usage.details.cache_read_tokens attr must include cached_tokens in event."""
@@ -196,6 +202,7 @@ def test_model_span_with_cached_tokens():
 # 6. Tool span v2 — "running tool"
 # ---------------------------------------------------------------------------
 
+
 def test_tool_span_v2_running_tool():
     """'running tool' span with gen_ai.tool.name attr emits tool_call event."""
     from observra.adapters.pydantic_ai.adapter import PydanticAIAdapter
@@ -214,6 +221,7 @@ def test_tool_span_v2_running_tool():
 # ---------------------------------------------------------------------------
 # 7. Tool span v3 — "execute_tool {name}"
 # ---------------------------------------------------------------------------
+
 
 def test_tool_span_v3_execute_tool():
     """'execute_tool calculator' span emits tool_call event with tool name extracted from attr and name."""
@@ -234,6 +242,7 @@ def test_tool_span_v3_execute_tool():
 # 8. Tool data captured when enabled
 # ---------------------------------------------------------------------------
 
+
 def test_tool_data_captured_when_enabled():
     """capture_tool_data=True must serialize gen_ai.tool.parameters into tool_args."""
     from observra.adapters.pydantic_ai.adapter import PydanticAIAdapter
@@ -252,6 +261,7 @@ def test_tool_data_captured_when_enabled():
 # ---------------------------------------------------------------------------
 # 9. Tool data not captured by default
 # ---------------------------------------------------------------------------
+
 
 def test_tool_data_not_captured_by_default():
     """capture_tool_data=False (default) must NOT include tool_args in tool_call event."""
@@ -273,6 +283,7 @@ def test_tool_data_not_captured_by_default():
 # 10. Agent run span skipped
 # ---------------------------------------------------------------------------
 
+
 def test_agent_run_span_skipped():
     """'agent run' span must produce no events (silently skipped)."""
     from observra.adapters.pydantic_ai.adapter import PydanticAIAdapter
@@ -284,14 +295,13 @@ def test_agent_run_span_skipped():
     )
     adapter.on_end(span)
 
-    assert len(adapter._events) == 0, (
-        f"'agent run' span must produce no events; got {len(adapter._events)}"
-    )
+    assert len(adapter._events) == 0, f"'agent run' span must produce no events; got {len(adapter._events)}"
 
 
 # ---------------------------------------------------------------------------
 # 11. Invoke_agent span skipped
 # ---------------------------------------------------------------------------
+
 
 def test_invoke_agent_span_skipped():
     """'invoke_agent test_agent' span must produce no events (silently skipped)."""
@@ -301,14 +311,13 @@ def test_invoke_agent_span_skipped():
     span = _make_agent_span("test_agent")
     adapter.on_end(span)
 
-    assert len(adapter._events) == 0, (
-        f"'invoke_agent *' span must produce no events; got {len(adapter._events)}"
-    )
+    assert len(adapter._events) == 0, f"'invoke_agent *' span must produce no events; got {len(adapter._events)}"
 
 
 # ---------------------------------------------------------------------------
 # 12. Model name prefix stripping
 # ---------------------------------------------------------------------------
+
 
 def test_model_name_prefix_stripping():
     """'chat openai:gpt-4o' span must strip provider prefix so model_name == 'gpt-4o'."""
@@ -337,6 +346,7 @@ def test_model_name_prefix_stripping():
 # ---------------------------------------------------------------------------
 # 13. Error resilience
 # ---------------------------------------------------------------------------
+
 
 def test_error_resilience():
     """Span with .attributes that raises on access must increment _error_count without propagating."""
@@ -369,6 +379,7 @@ def test_error_resilience():
 # ---------------------------------------------------------------------------
 # 14. cost_threshold_exceeded — emitted exactly once
 # ---------------------------------------------------------------------------
+
 
 def test_cost_threshold_exceeded_once():
     """Large token span triggers cost_threshold_exceeded exactly once across multiple calls."""
@@ -409,6 +420,7 @@ def test_cost_threshold_exceeded_once():
 # 15. emit() routes to queue
 # ---------------------------------------------------------------------------
 
+
 def test_emit_routes_to_queue():
     """emit() with a queue must call queue.put_nowait with the event."""
     from observra.adapters.pydantic_ai.adapter import PydanticAIAdapter
@@ -426,6 +438,7 @@ def test_emit_routes_to_queue():
 # ---------------------------------------------------------------------------
 # 16. Pricing config loads
 # ---------------------------------------------------------------------------
+
 
 def test_pricing_config_loads():
     """CostCalculator must load co-located pricing.json and compute non-zero cost for gpt-4o."""
@@ -447,6 +460,7 @@ def test_pricing_config_loads():
 # 17. on_start is a no-op
 # ---------------------------------------------------------------------------
 
+
 def test_on_start_is_noop():
     """on_start() called with mock span must produce no events and no error."""
     from observra.adapters.pydantic_ai.adapter import PydanticAIAdapter
@@ -457,15 +471,14 @@ def test_on_start_is_noop():
     # Must not raise and must produce no events
     adapter.on_start(mock_span)
 
-    assert len(adapter._events) == 0, (
-        f"on_start must not emit events; got {len(adapter._events)}"
-    )
+    assert len(adapter._events) == 0, f"on_start must not emit events; got {len(adapter._events)}"
     assert adapter._error_count == 0
 
 
 # ---------------------------------------------------------------------------
 # 18. get_adapter_stats returns correct counters
 # ---------------------------------------------------------------------------
+
 
 def test_get_adapter_stats():
     """After emitting events and triggering errors, stats dict has correct counters."""

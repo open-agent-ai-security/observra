@@ -39,9 +39,7 @@ def test_action_mapping_is_complete_for_known_event_types() -> None:
         "agent_handoff",
         "skill_invocation",
     ):
-        assert action_for_event_type(et) != "unknown", (
-            f"event_type {et} must have a mapped action"
-        )
+        assert action_for_event_type(et) != "unknown", f"event_type {et} must have a mapped action"
 
 
 def test_default_result_only_set_for_terminals() -> None:
@@ -108,20 +106,20 @@ def test_extras_can_override_default_result() -> None:
     "model,framework,expected",
     [
         # Model wins when present.
-        ("claude-opus-4-7", "openai",  "anthropic"),
-        ("gpt-5",            None,      "openai"),
+        ("claude-opus-4-7", "openai", "anthropic"),
+        ("gpt-5", None, "openai"),
         # Framework fallback when model is None or not classifiable.
-        (None,  "claude_code", "anthropic"),
-        (None,  "codex_cli",   "openai"),
-        (None,  "gemini_cli",  "google"),
-        (None,  "copilot",     "microsoft"),
+        (None, "claude_code", "anthropic"),
+        (None, "codex_cli", "openai"),
+        (None, "gemini_cli", "google"),
+        (None, "copilot", "microsoft"),
         # Multi-vendor wrappers stay unknown.
-        (None,  "openclaw",    "unknown"),
-        (None,  "langgraph",   "unknown"),
-        (None,  "pydantic-ai", "unknown"),
+        (None, "openclaw", "unknown"),
+        (None, "langgraph", "unknown"),
+        (None, "pydantic-ai", "unknown"),
         # No model + no framework + unknown framework.
-        (None,  None,          "unknown"),
-        (None,  "weird",       "unknown"),
+        (None, None, "unknown"),
+        (None, "weird", "unknown"),
         # Model that's already classifiable beats a multi-vendor wrapper.
         ("claude-3-5-sonnet", "openclaw", "anthropic"),
     ],

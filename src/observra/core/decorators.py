@@ -42,6 +42,7 @@ logger = logging.getLogger(__name__)
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
+
 def _extract_prompt(args: tuple, kwargs: dict, prompt_arg: str | int | None) -> str:
     """Extract prompt text from function arguments.
 
@@ -92,11 +93,7 @@ def _extract_response_text(result: Any) -> str:
     if isinstance(content, str):
         return content
     if isinstance(content, list):
-        return " ".join(
-            getattr(block, "text", "") or ""
-            for block in content
-            if hasattr(block, "text")
-        )
+        return " ".join(getattr(block, "text", "") or "" for block in content if hasattr(block, "text"))
 
     # Generic: result.text
     text = getattr(result, "text", None)
@@ -107,6 +104,7 @@ def _extract_response_text(result: Any) -> str:
 
 
 # ── @tool ─────────────────────────────────────────────────────────────────────
+
 
 def tool(
     func: Callable | None = None,
@@ -148,6 +146,7 @@ def tool(
         ``tool_end``   — on success, includes ``duration_ms``
         ``tool_error`` — on exception, includes ``error_message``, ``error_type_name``, ``is_retryable``
     """
+
     def decorator(fn: Callable) -> Callable:
         tool_name = name or fn.__name__
 
@@ -195,6 +194,7 @@ def tool(
 
 # ── @model_call ───────────────────────────────────────────────────────────────
 
+
 def model_call(
     func: Callable | None = None,
     *,
@@ -240,6 +240,7 @@ def model_call(
                              ``output_tokens``, ``total_tokens``, ``cost_usd``
         ``model_error``    — on exception, with ``error_message``, ``error_type_name``
     """
+
     def decorator(fn: Callable) -> Callable:
 
         @functools.wraps(fn)
@@ -287,10 +288,12 @@ def model_call(
 
 # ── Private helpers ───────────────────────────────────────────────────────────
 
+
 def _lazy_imports():
     """Late-bind log module and safe_serialize to avoid circular imports."""
     import observra.log as _log
     from observra.adapters.utils import safe_serialize
+
     return _log, safe_serialize
 
 

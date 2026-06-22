@@ -36,10 +36,12 @@ class _RecordingHandler(BaseHTTPRequestHandler):
     def do_POST(self):
         length = int(self.headers.get("Content-Length", 0))
         body = self.rfile.read(length)
-        _RecordingHandler.received.append({
-            "body": json.loads(body),
-            "headers": dict(self.headers),
-        })
+        _RecordingHandler.received.append(
+            {
+                "body": json.loads(body),
+                "headers": dict(self.headers),
+            }
+        )
         self.send_response(200)
         self.end_headers()
 

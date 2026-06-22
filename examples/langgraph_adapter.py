@@ -55,7 +55,7 @@ from observra.adapters.langchain import LangChainAdapter  # noqa: E402
 
 initialize(
     backend="jsonl",
-    path="telemetry.jsonl",        # where events are stored
+    path="telemetry.jsonl",  # where events are stored
 )
 adapter = LangChainAdapter()
 

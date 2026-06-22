@@ -268,9 +268,7 @@ class ClaudeAdapter:
             if self._capture_tool_data:
                 raw_input = input_data.get("tool_input")
                 if raw_input is not None:
-                    event_kwargs["tool_args"] = safe_serialize(
-                        raw_input, self._payload_max_bytes
-                    )
+                    event_kwargs["tool_args"] = safe_serialize(raw_input, self._payload_max_bytes)
 
             event = create_event(**event_kwargs)
             self.emit(event)
@@ -311,9 +309,7 @@ class ClaudeAdapter:
                 + " "
                 + safe_serialize(raw_response, self._payload_max_bytes)
             )
-            token_count, is_estimated = self._extract_tokens_or_estimate(
-                input_data, combined_text
-            )
+            token_count, is_estimated = self._extract_tokens_or_estimate(input_data, combined_text)
 
             event_kwargs: dict[str, Any] = dict(
                 event_type="tool_end",
@@ -330,13 +326,9 @@ class ClaudeAdapter:
 
             if self._capture_tool_data:
                 if raw_input is not None:
-                    event_kwargs["tool_args"] = safe_serialize(
-                        raw_input, self._payload_max_bytes
-                    )
+                    event_kwargs["tool_args"] = safe_serialize(raw_input, self._payload_max_bytes)
                 if raw_response is not None:
-                    event_kwargs["tool_result"] = safe_serialize(
-                        raw_response, self._payload_max_bytes
-                    )
+                    event_kwargs["tool_result"] = safe_serialize(raw_response, self._payload_max_bytes)
 
             event = create_event(**event_kwargs)
             self.emit(event)
@@ -362,9 +354,7 @@ class ClaudeAdapter:
         """
         try:
             prompt = input_data.get("prompt", "")
-            token_count, is_estimated = self._extract_tokens_or_estimate(
-                input_data, prompt
-            )
+            token_count, is_estimated = self._extract_tokens_or_estimate(input_data, prompt)
 
             event = create_event(
                 event_type="user_message",
@@ -375,9 +365,7 @@ class ClaudeAdapter:
             )
             self.emit(event)
         except Exception as e:
-            logger.error(
-                f"ClaudeAdapter error in _on_user_prompt_submit: {e}", exc_info=True
-            )
+            logger.error(f"ClaudeAdapter error in _on_user_prompt_submit: {e}", exc_info=True)
         return {}
 
     async def _on_stop(
@@ -551,9 +539,7 @@ class ClaudeAdapter:
                                     text_parts.append(block_text)
                         if text_parts:
                             response_text = " ".join(text_parts)
-                            truncated_text = safe_serialize(
-                                response_text, self._payload_max_bytes
-                            )
+                            truncated_text = safe_serialize(response_text, self._payload_max_bytes)
                             event = create_event(
                                 event_type="model_response",
                                 framework="claude",

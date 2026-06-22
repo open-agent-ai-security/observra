@@ -1,0 +1,30 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(.venv/bin/pip install *)",
+      "Bash(/Users/nevillemascarenhas/Exabeam/exa-advisor-agent-svc/.venv/bin/python *)",
+      "Bash(uv --version)",
+      "Bash(uv pip *)",
+      "Bash(python3 *)",
+      "Read(//Users/nevillemascarenhas/.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/bin/**)",
+      "Bash(/Users/nevillemascarenhas/Exabeam/observra/.venv/bin/python -c ' *)",
+      "Bash(.venv/bin/python -m pytest tests/unit/test_log_api.py -q --tb=short)",
+      "Bash(.venv/bin/python -m pytest tests/ -q --tb=line --ignore=tests/integration --ignore=tests/test_release)",
+      "mcp__atlassian__jira_get_issue",
+      "mcp__atlassian__jira_add_comment",
+      "Bash(gh pr *)",
+      "Bash(gh run *)",
+      "Bash(grep -v \"^--$\")",
+      "Bash(git checkout *)",
+      "Bash(git pull *)",
+      "Bash(uvx ruff *)",
+      "Bash(awk 'length > 120' src/observra/core/detection.py)",
+      "Bash(awk length > 120 *)",
+      "Bash(python -m pytest tests/unit/ src/observra/ -x -q --no-header)",
+      "Bash(uvx --with pytest --with pytest-asyncio --with hypothesis pytest tests/unit/ src/observra/ -x -q --no-header)",
+      "Bash(uv run *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)"
+    ]
+  }
+}

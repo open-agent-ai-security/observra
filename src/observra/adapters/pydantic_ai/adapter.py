@@ -277,11 +277,7 @@ class PydanticAIAdapter(SpanProcessor):
         """
         try:
             # Model name: prefer response model (actual) over request model (requested)
-            model_name = (
-                attrs.get("gen_ai.response.model")
-                or attrs.get("gen_ai.request.model")
-                or "unknown"
-            )
+            model_name = attrs.get("gen_ai.response.model") or attrs.get("gen_ai.request.model") or "unknown"
 
             # Strip provider prefix if present: "openai:gpt-4o" -> "gpt-4o"
             # Handles pydantic-ai provider string format where model is "provider:name"
@@ -391,10 +387,7 @@ class PydanticAIAdapter(SpanProcessor):
             if self._capture_tool_data:
                 # v3+: gen_ai.tool.call.arguments (preferred, OTel GenAI convention)
                 # v2:  gen_ai.tool.parameters (older attribute name)
-                params = (
-                    attrs.get("gen_ai.tool.call.arguments")
-                    or attrs.get("gen_ai.tool.parameters")
-                )
+                params = attrs.get("gen_ai.tool.call.arguments") or attrs.get("gen_ai.tool.parameters")
                 if params:
                     event_kwargs["tool_args"] = safe_serialize(params, self._payload_max_bytes)
 

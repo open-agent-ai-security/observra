@@ -7,6 +7,7 @@ stubs the entire OTel module hierarchy.
 Spans are captured via the `captured_spans` fixture which patches _StubProvider.get_tracer()
 to accumulate every span created by write() for assertion.
 """
+
 import pytest
 
 # conftest.py has already injected stubs before this import
@@ -16,6 +17,7 @@ from observra.core.events import create_event
 # ---------------------------------------------------------------------------
 # Helper to create common TelemetryEvent instances
 # ---------------------------------------------------------------------------
+
 
 def _model_event(model_name="gpt-4o", framework="openai", **kwargs):
     """Create a model_response event with the given model/framework."""
@@ -40,6 +42,7 @@ def _session_event(agent_name="my_agent", **kwargs):
 # ---------------------------------------------------------------------------
 # Tests
 # ---------------------------------------------------------------------------
+
 
 class TestOTelBackendInstantiation:
     """Construction and basic protocol conformance."""

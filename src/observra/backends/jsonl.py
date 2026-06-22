@@ -14,6 +14,7 @@ logger = logging.getLogger(__name__)
 # Optional encryption support (observra[encryption])
 try:
     from observra.core.encryption import EncryptionProvider as _EncryptionProvider
+
     _ENCRYPTION_AVAILABLE = True
 except ImportError:
     _EncryptionProvider = None  # type: ignore[assignment,misc]
@@ -46,16 +47,13 @@ class JSONLBackend:
         self._encryption: Optional[_EncryptionProvider] = None
         if encryption_key is not None:
             if not _ENCRYPTION_AVAILABLE:
-                raise RuntimeError(
-                    "cryptography package not installed. "
-                    "Run: pip install observra[encryption]"
-                )
+                raise RuntimeError("cryptography package not installed. Run: pip install observra[encryption]")
             self._encryption = _EncryptionProvider(encryption_key)
 
         # Encrypted files get .enc extension to signal they require decryption.
         base_path = Path(path)
-        if self._encryption is not None and not str(base_path).endswith('.enc'):
-            base_path = base_path.parent / (base_path.name + '.enc')
+        if self._encryption is not None and not str(base_path).endswith(".enc"):
+            base_path = base_path.parent / (base_path.name + ".enc")
 
         self._path = base_path
         self.max_bytes = max_bytes
@@ -65,15 +63,10 @@ class JSONLBackend:
         self._path.parent.mkdir(parents=True, exist_ok=True)
 
         # Open file handle in append mode
-        self._file: Optional[TextIO] = open(self._path, 'a', encoding='utf-8')
+        self._file: Optional[TextIO] = open(self._path, "a", encoding="utf-8")
 
         # Initialize stats counters
-        self._stats = {
-            'events_written': 0,
-            'errors': 0,
-            'bytes_written': 0,
-            'rotations': 0
-        }
+        self._stats = {"events_written": 0, "errors": 0, "bytes_written": 0, "rotations": 0}
 
         # Track oldest/newest timestamps in-memory (O(1) per write, resets on restart)
         self._oldest_ts: float | None = None
@@ -92,7 +85,7 @@ class JSONLBackend:
         """
         if not self._file:
             logger.warning("Cannot write to closed backend")
-            self._stats['errors'] += 1
+            self._stats["errors"] += 1
             return
 
         try:
@@ -100,22 +93,22 @@ class JSONLBackend:
             data = asdict(event)
 
             # Serialize to JSON (compact format, handle non-serializable types)
-            line = json.dumps(data, separators=(',', ':'), default=str)
+            line = json.dumps(data, separators=(",", ":"), default=str)
 
             # Encrypt if encryption provider is configured (encrypt-then-append)
             if self._encryption is not None:
                 line = self._encryption.encrypt_line(line)
 
             # Write line with newline and flush immediately
-            self._file.write(line + '\n')
+            self._file.write(line + "\n")
             self._file.flush()
 
             # Update stats
-            self._stats['events_written'] += 1
-            self._stats['bytes_written'] += len(line) + 1
+            self._stats["events_written"] += 1
+            self._stats["bytes_written"] += len(line) + 1
 
             # Track timestamp range for get_stats()
-            ts = data.get('timestamp')
+            ts = data.get("timestamp")
             if ts is not None:
                 if self._oldest_ts is None:
                     self._oldest_ts = float(ts)
@@ -127,7 +120,7 @@ class JSONLBackend:
 
         except Exception as e:
             logger.warning(f"Failed to write event: {e}")
-            self._stats['errors'] += 1
+            self._stats["errors"] += 1
 
     def _should_rollover(self) -> bool:
         """Check if file rotation is needed.
@@ -177,19 +170,19 @@ class JSONLBackend:
                 self._path.rename(dst)
 
             # Open fresh file handle
-            self._file = open(self._path, 'a', encoding='utf-8')
+            self._file = open(self._path, "a", encoding="utf-8")
 
             # Update rotation counter
-            self._stats['rotations'] += 1
+            self._stats["rotations"] += 1
 
             logger.info(f"Rotated log file: {self._path} (rotation #{self._stats['rotations']})")
 
         except Exception as e:
             logger.error(f"Failed to rotate file: {e}")
-            self._stats['errors'] += 1
+            self._stats["errors"] += 1
             # Try to reopen current file
             try:
-                self._file = open(self._path, 'a', encoding='utf-8')
+                self._file = open(self._path, "a", encoding="utf-8")
             except Exception:
                 self._file = None
 
@@ -200,7 +193,7 @@ class JSONLBackend:
                 self._file.flush()
             except Exception as e:
                 logger.warning(f"Failed to flush: {e}")
-                self._stats['errors'] += 1
+                self._stats["errors"] += 1
 
     def close(self) -> None:
         """Close the backend and release resources."""
@@ -210,7 +203,7 @@ class JSONLBackend:
                 self._file.close()
             except Exception as e:
                 logger.warning(f"Failed to close cleanly: {e}")
-                self._stats['errors'] += 1
+                self._stats["errors"] += 1
             finally:
                 self._file = None
             logger.debug(f"Closed JSONLBackend: {self._path}")
@@ -226,8 +219,8 @@ class JSONLBackend:
         in the current process session. They reset to None on restart.
         """
         return BackendStats(
-            bytes_written=self._stats['bytes_written'],
-            event_count=self._stats['events_written'],
+            bytes_written=self._stats["bytes_written"],
+            event_count=self._stats["events_written"],
             backend_type="jsonl",
             oldest_event_ts=self._oldest_ts,
             newest_event_ts=self._newest_ts,
@@ -243,6 +236,4 @@ class JSONLBackend:
         limit: int = 1000,
     ) -> Iterator:
         """Not supported — raises NotImplementedError."""
-        raise NotImplementedError(
-            "JSONLBackend does not support query()."
-        )
+        raise NotImplementedError("JSONLBackend does not support query().")

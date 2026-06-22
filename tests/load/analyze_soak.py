@@ -29,6 +29,7 @@ from pathlib import Path
 # RSS analysis
 # ---------------------------------------------------------------------------
 
+
 def analyze_rss(rss_log_path: str, max_rss_mb: int) -> dict:
     """
     Read `timestamp_s,rss_kb` CSV rows, compute peak RSS (MB), and check
@@ -107,6 +108,7 @@ def analyze_rss(rss_log_path: str, max_rss_mb: int) -> dict:
 # ---------------------------------------------------------------------------
 # Event count + p99 latency analysis
 # ---------------------------------------------------------------------------
+
 
 def analyze_events(
     events_file_path: str,
@@ -203,6 +205,7 @@ def analyze_events(
 # Report printer
 # ---------------------------------------------------------------------------
 
+
 def print_report(rss: dict, events: dict, max_rss_mb: int, max_p99_ms: float) -> bool:
     """Print structured PASS/FAIL report. Returns True if all checks pass."""
 
@@ -242,10 +245,7 @@ def print_report(rss: dict, events: dict, max_rss_mb: int, max_p99_ms: float) ->
     expected = events.get("expected_events", 0)
     loss_pct = events.get("loss_pct")
     loss_str = f"{loss_pct:.4f}%" if loss_pct is not None else "N/A"
-    print(
-        f"[{status}] Event Count: {actual}/{expected} events "
-        f"(loss: {loss_str}, limit: 0.1%)"
-    )
+    print(f"[{status}] Event Count: {actual}/{expected} events (loss: {loss_str}, limit: 0.1%)")
     if events.get("error"):
         print(f"       Error: {events['error']}")
 
@@ -270,16 +270,13 @@ def print_report(rss: dict, events: dict, max_rss_mb: int, max_p99_ms: float) ->
 # Main
 # ---------------------------------------------------------------------------
 
+
 def main() -> None:
-    parser = argparse.ArgumentParser(
-        description="Post-soak analysis: RSS, monotonicity, event count, p99 latency"
-    )
+    parser = argparse.ArgumentParser(description="Post-soak analysis: RSS, monotonicity, event count, p99 latency")
     parser.add_argument("--rss-log", required=True, help="Path to RSS samples CSV")
     parser.add_argument("--events-file", required=True, help="Path to sink output JSONL")
     parser.add_argument("--expected-events", type=int, required=True, help="Expected event count")
-    parser.add_argument(
-        "--max-rss-mb", type=int, default=200, help="Peak RSS limit in MB (default: 200)"
-    )
+    parser.add_argument("--max-rss-mb", type=int, default=200, help="Peak RSS limit in MB (default: 200)")
     parser.add_argument(
         "--max-p99-latency-ms",
         type=float,

@@ -90,9 +90,7 @@ def generate_events(rate: float, duration: float, output_path: str) -> None:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(
-        description="Sustained synthetic event generator for soak tests"
-    )
+    parser = argparse.ArgumentParser(description="Sustained synthetic event generator for soak tests")
     parser.add_argument(
         "--rate",
         type=float,
@@ -120,8 +118,7 @@ def main() -> None:
         sys.exit(1)
 
     print(
-        f"Starting generator: rate={args.rate}/s duration={args.duration}s "
-        f"output={args.output}",
+        f"Starting generator: rate={args.rate}/s duration={args.duration}s output={args.output}",
         flush=True,
     )
     generate_events(rate=args.rate, duration=args.duration, output_path=args.output)

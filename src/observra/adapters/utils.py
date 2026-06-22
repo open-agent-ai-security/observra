@@ -74,15 +74,15 @@ def normalize_adk_tokens(usage_metadata) -> Optional[NormalizedTokens]:
     if usage_metadata is None:
         return None
 
-    input_tokens = getattr(usage_metadata, 'prompt_token_count', 0) or 0
-    output_tokens = getattr(usage_metadata, 'candidates_token_count', 0) or 0
-    total_tokens = getattr(usage_metadata, 'total_token_count', 0) or 0
+    input_tokens = getattr(usage_metadata, "prompt_token_count", 0) or 0
+    output_tokens = getattr(usage_metadata, "candidates_token_count", 0) or 0
+    total_tokens = getattr(usage_metadata, "total_token_count", 0) or 0
 
     # Extended fields: keep None sentinel for "not reported" vs "zero usage"
-    cached_raw = getattr(usage_metadata, 'cached_content_token_count', None)
+    cached_raw = getattr(usage_metadata, "cached_content_token_count", None)
     cached_tokens = cached_raw if cached_raw else None
 
-    reasoning_raw = getattr(usage_metadata, 'thoughts_token_count', None)
+    reasoning_raw = getattr(usage_metadata, "thoughts_token_count", None)
     reasoning_tokens = reasoning_raw if reasoning_raw else None
 
     return NormalizedTokens(
@@ -278,6 +278,7 @@ def estimate_tokens(text: str) -> int:
     try:
         if _TOKENIZER is None:
             import tiktoken
+
             _TOKENIZER = tiktoken.get_encoding("cl100k_base")
         return len(_TOKENIZER.encode(text))
     except Exception:

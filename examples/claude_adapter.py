@@ -37,7 +37,7 @@ from observra.adapters.claude import ClaudeAdapter
 
 initialize(
     backend="jsonl",
-    path="telemetry.jsonl",        # where events are stored
+    path="telemetry.jsonl",  # where events are stored
 )
 adapter = ClaudeAdapter()
 

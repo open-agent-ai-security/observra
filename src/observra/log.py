@@ -59,38 +59,42 @@ logger = logging.getLogger(__name__)
 _framework: str = "unknown"
 
 # Cost threshold once-per-session flag (ContextVar for concurrent safety).
-_threshold_emitted_var: ContextVar[bool] = ContextVar(
-    "log_threshold_emitted", default=False
-)
+_threshold_emitted_var: ContextVar[bool] = ContextVar("log_threshold_emitted", default=False)
 
 
 # ── Late-binding helpers (read module state at call time) ─────────────────────
 
+
 def _get_queue():
     """Return the module-level ``_queue_proxy`` from ``observra``."""
     import observra as _at
+
     return _at._queue_proxy
 
 
 def _get_cost_calculator():
     """Return the module-level ``_cost_calculator`` from ``observra``."""
     import observra as _at
+
     return _at._cost_calculator
 
 
 def _get_cost_threshold():
     """Return the module-level ``_cost_threshold`` from ``observra``."""
     import observra as _at
+
     return _at._cost_threshold
 
 
 def _get_max_sequence_length() -> int:
     """Return the module-level ``_max_sequence_length`` from ``observra``."""
     import observra as _at
+
     return _at._max_sequence_length
 
 
 # ── Internal helpers ──────────────────────────────────────────────────────────
+
 
 def _emit(event) -> None:
     """Push *event* to the queue proxy.  Never raises."""
@@ -116,6 +120,7 @@ def _get_sequence_payload(raw_sequence: list) -> dict:
 
 
 # ── Public API ────────────────────────────────────────────────────────────────
+
 
 def set_framework(name: str) -> None:
     """Set the framework name used for all subsequent ``log.*()`` calls.
@@ -181,6 +186,7 @@ def agent_start(agent_name: str) -> None:
 
         if depth_exceeded:
             from .core.detection import MAX_DELEGATION_DEPTH
+
             depth_event = create_event(
                 event_type=EventType.DEPTH_EXCEEDED,
                 agent_name=agent_name,
@@ -263,19 +269,13 @@ def model_response(
 
         calculator = _get_cost_calculator()
         if calculator is not None:
-            cost = calculator.calculate_cost(
-                model_name, input_tokens, output_tokens, cached_tokens
-            )
+            cost = calculator.calculate_cost(model_name, input_tokens, output_tokens, cached_tokens)
             session_total = add_to_session_cost(cost)
             tokens_per_minute = record_token_usage(total_tokens)
 
             # Check cost threshold (once per session)
             threshold = _get_cost_threshold()
-            if (
-                threshold is not None
-                and not _threshold_emitted_var.get()
-                and session_total >= threshold
-            ):
+            if threshold is not None and not _threshold_emitted_var.get() and session_total >= threshold:
                 _threshold_emitted_var.set(True)
                 threshold_event = create_event(
                     event_type=EventType.COST_THRESHOLD_EXCEEDED,

@@ -70,20 +70,14 @@ def test_explicit_data_kwargs_override_canonical_defaults() -> None:
 
 
 def test_tool_call_auto_classifies_reversibility() -> None:
-    e_send = create_event(
-        "tool_start", framework="unknown", model_name="claude-opus-4-7", tool_name="send_email"
-    )
+    e_send = create_event("tool_start", framework="unknown", model_name="claude-opus-4-7", tool_name="send_email")
     assert e_send.data["reversible"] is False
 
-    e_read = create_event(
-        "tool_start", framework="unknown", model_name="claude-opus-4-7", tool_name="read_file"
-    )
+    e_read = create_event("tool_start", framework="unknown", model_name="claude-opus-4-7", tool_name="read_file")
     assert e_read.data["reversible"] is True
 
     # Unknown tool → no reversible key (rather than False/True/null guess).
-    e_bash = create_event(
-        "tool_start", framework="unknown", model_name="claude-opus-4-7", tool_name="Bash"
-    )
+    e_bash = create_event("tool_start", framework="unknown", model_name="claude-opus-4-7", tool_name="Bash")
     assert "reversible" not in e_bash.data
 
 

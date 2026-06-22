@@ -11,6 +11,7 @@ Covers:
 Uses simple inline mock classes (MockBackend, QueryableBackend, FailingBackend)
 to avoid external mock dependencies.
 """
+
 import pytest
 
 from observra.backends.multi import MultiBackend
@@ -20,6 +21,7 @@ from observra.core.types import BackendStats
 # ---------------------------------------------------------------------------
 # Inline mock backend helpers
 # ---------------------------------------------------------------------------
+
 
 class MockBackend:
     """Minimal backend that records calls for assertion."""
@@ -81,6 +83,7 @@ class FailingBackend:
 # Helper
 # ---------------------------------------------------------------------------
 
+
 def _event():
     """Create a minimal TelemetryEvent for testing."""
     return create_event("model_response", model_name="gpt-4o", framework="openai")
@@ -89,6 +92,7 @@ def _event():
 # ---------------------------------------------------------------------------
 # Tests
 # ---------------------------------------------------------------------------
+
 
 class TestConstruction:
     """MultiBackend construction validation."""

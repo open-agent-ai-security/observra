@@ -13,7 +13,7 @@ import sys
 import time
 
 # Add project root to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
 import tempfile
 
@@ -90,27 +90,27 @@ def main():
         if mode == "direct":
             print("Running DIRECT path (no pool, GIL held during writes)...")
             elapsed = run_direct(events, tmpdir)
-            print(f"Direct: {elapsed:.3f}s for {n_events} events ({n_events/elapsed:.0f} events/s)")
+            print(f"Direct: {elapsed:.3f}s for {n_events} events ({n_events / elapsed:.0f} events/s)")
 
         elif mode == "pooled":
             print("Running POOLED path (ProcessPoolExecutor, GIL released)...")
             elapsed = run_pooled(events, tmpdir)
-            print(f"Pooled: {elapsed:.3f}s for {n_events} events ({n_events/elapsed:.0f} events/s)")
+            print(f"Pooled: {elapsed:.3f}s for {n_events} events ({n_events / elapsed:.0f} events/s)")
 
         elif mode == "compare":
             print("--- Direct path (GIL held) ---")
             t_direct = run_direct(events, tmpdir)
-            print(f"Direct: {t_direct:.3f}s ({n_events/t_direct:.0f} events/s)")
+            print(f"Direct: {t_direct:.3f}s ({n_events / t_direct:.0f} events/s)")
 
             print("\n--- Pooled path (GIL released) ---")
             t_pooled = run_pooled(events, tmpdir)
-            print(f"Pooled: {t_pooled:.3f}s ({n_events/t_pooled:.0f} events/s)")
+            print(f"Pooled: {t_pooled:.3f}s ({n_events / t_pooled:.0f} events/s)")
 
             print("\n--- Summary ---")
             print(f"Direct: {t_direct:.3f}s")
             print(f"Pooled: {t_pooled:.3f}s")
             if t_direct > 0:
-                ratio = t_direct / t_pooled if t_pooled > 0 else float('inf')
+                ratio = t_direct / t_pooled if t_pooled > 0 else float("inf")
                 print(f"Speedup: {ratio:.2f}x")
             print("\nGIL analysis: ProcessPoolExecutor uses separate processes.")
             print("By definition, child processes have their own GIL.")

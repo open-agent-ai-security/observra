@@ -30,30 +30,29 @@ def get_compiled_patterns() -> list[tuple[re.Pattern, RedactionMarker]]:
     """
     return [
         # 1. AWS Access Keys (very specific format)
-        (re.compile(r'\b(AKIA[0-9A-Z]{16})\b'), RedactionMarker.AWS_KEY),
-
+        (re.compile(r"\b(AKIA[0-9A-Z]{16})\b"), RedactionMarker.AWS_KEY),
         # 2. Bearer tokens (RFC 6750 - contextual with "Bearer" keyword)
-        (re.compile(r'\bBearer\s+([A-Za-z0-9\-._~+/]+=*)', re.IGNORECASE), RedactionMarker.BEARER_TOKEN),
-
+        (re.compile(r"\bBearer\s+([A-Za-z0-9\-._~+/]+=*)", re.IGNORECASE), RedactionMarker.BEARER_TOKEN),
         # 3. JWT tokens (3-part base64 structure)
-        (re.compile(r'\b([A-Za-z0-9\-_]{20,})\.([A-Za-z0-9\-_]{3,})\.([A-Za-z0-9\-_]+)\b'), RedactionMarker.JWT),
-
+        (re.compile(r"\b([A-Za-z0-9\-_]{20,})\.([A-Za-z0-9\-_]{3,})\.([A-Za-z0-9\-_]+)\b"), RedactionMarker.JWT),
         # 4. Generic API keys (contextual with keyword prefix to avoid ULIDs/hashes)
-        (re.compile(
-            r'\b(api[_-]?key|apikey|api[_-]?token|secret[_-]?key|access[_-]?token)'
-            r'[\s:=]+[\'"]?([A-Za-z0-9\-_]{20,})[\'"]?', re.IGNORECASE
-        ), RedactionMarker.API_KEY),
-
+        (
+            re.compile(
+                r"\b(api[_-]?key|apikey|api[_-]?token|secret[_-]?key|access[_-]?token)"
+                r'[\s:=]+[\'"]?([A-Za-z0-9\-_]{20,})[\'"]?',
+                re.IGNORECASE,
+            ),
+            RedactionMarker.API_KEY,
+        ),
         # 5. Password assignments (contextual with keyword prefix)
-        (re.compile(
-            r'\b(password|passwd|pwd|pass)[\s:=]+[\'"]?([^\s\'"]{8,})[\'"]?', re.IGNORECASE
-        ), RedactionMarker.PASSWORD),
-
+        (
+            re.compile(r'\b(password|passwd|pwd|pass)[\s:=]+[\'"]?([^\s\'"]{8,})[\'"]?', re.IGNORECASE),
+            RedactionMarker.PASSWORD,
+        ),
         # 6. Email addresses (RFC 5322 simplified)
-        (re.compile(r'\b([A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,})\b'), RedactionMarker.EMAIL),
-
+        (re.compile(r"\b([A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,})\b"), RedactionMarker.EMAIL),
         # 7. IPv4 addresses
-        (re.compile(r'\b(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\b'), RedactionMarker.IP_ADDRESS),
+        (re.compile(r"\b(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\b"), RedactionMarker.IP_ADDRESS),
     ]
 
 

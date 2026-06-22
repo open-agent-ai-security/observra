@@ -10,10 +10,10 @@ from .utils import generate_ulid
 logger = logging.getLogger(__name__)
 
 # Module-level ContextVar declarations (prefixed with 'default.' for clarity)
-trace_id_var: ContextVar[str] = ContextVar('default.trace_id')
-session_id_var: ContextVar[str] = ContextVar('default.session_id')
-span_id_var: ContextVar[str] = ContextVar('default.span_id')
-session_cost_var: ContextVar[Decimal] = ContextVar('default.session_cost', default=Decimal('0'))
+trace_id_var: ContextVar[str] = ContextVar("default.trace_id")
+session_id_var: ContextVar[str] = ContextVar("default.session_id")
+span_id_var: ContextVar[str] = ContextVar("default.span_id")
+session_cost_var: ContextVar[Decimal] = ContextVar("default.session_cost", default=Decimal("0"))
 
 
 def create_scoped_context(framework: str) -> dict:
@@ -32,10 +32,10 @@ def create_scoped_context(framework: str) -> dict:
         Dict mapping var names to fresh ContextVar instances.
     """
     return {
-        'trace_id': ContextVar(f'{framework}.trace_id'),
-        'session_id': ContextVar(f'{framework}.session_id'),
-        'span_id': ContextVar(f'{framework}.span_id'),
-        'session_cost': ContextVar(f'{framework}.session_cost', default=Decimal('0')),
+        "trace_id": ContextVar(f"{framework}.trace_id"),
+        "session_id": ContextVar(f"{framework}.session_id"),
+        "span_id": ContextVar(f"{framework}.span_id"),
+        "session_cost": ContextVar(f"{framework}.session_cost", default=Decimal("0")),
     }
 
 
@@ -150,5 +150,5 @@ def reset_session_cost() -> None:
 
     Called at the start of a new session or run to clear accumulated costs.
     """
-    session_cost_var.set(Decimal('0'))
+    session_cost_var.set(Decimal("0"))
     logger.debug("Session cost reset to $0")

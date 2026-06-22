@@ -18,9 +18,7 @@ def test_host_context_resolves_or_stays_none() -> None:
 def test_host_context_arch_normalized_to_rust_naming() -> None:
     ctx = get_host_context()
     # macOS reports arm64 via uname; Rust calls it aarch64. We must match Rust.
-    assert ctx.arch != "arm64", (
-        "arch should be normalized to aarch64, not arm64, to match the Rust forwarder"
-    )
+    assert ctx.arch != "arm64", "arch should be normalized to aarch64, not arm64, to match the Rust forwarder"
     # Common values we should produce: aarch64, x86_64, x86, riscv64, etc.
     # Just assert no spaces.
     assert " " not in ctx.arch

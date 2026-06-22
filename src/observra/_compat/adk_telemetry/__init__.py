@@ -3,6 +3,7 @@
 This module allows `from adk_telemetry import X` to continue working
 with a DeprecationWarning. Will be removed in 2.0.
 """
+
 import warnings
 
 warnings.warn(

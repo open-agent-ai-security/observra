@@ -126,7 +126,10 @@ class WebhookBackend:
                 err_body = ""
             logger.warning(
                 "WebhookBackend POST failed with HTTP %d (%s): %s. Response: %s",
-                e.code, self._url, e.reason, err_body,
+                e.code,
+                self._url,
+                e.reason,
+                err_body,
             )
             with self._lock:
                 self._stats["events_failed"] += len(batch)

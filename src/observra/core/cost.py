@@ -26,6 +26,7 @@ class ModelPricing:
         output_price_per_1m: Output token price per 1M tokens
         cached_input_price_per_1m: Cached input token price (typically 10% of input)
     """
+
     model_key: str
     input_price_per_1m: Decimal
     output_price_per_1m: Decimal
@@ -51,7 +52,7 @@ class CostCalculator:
         try:
             if pricing_config_path:
                 # Load custom pricing config
-                with open(pricing_config_path, 'r') as f:
+                with open(pricing_config_path, "r") as f:
                     config = json.load(f)
                 logger.info(f"Loaded custom pricing from {pricing_config_path}")
             else:
@@ -61,14 +62,14 @@ class CostCalculator:
 
             # Parse config into ModelPricing objects
             for model_key, prices in config.items():
-                if model_key.startswith('_'):
+                if model_key.startswith("_"):
                     continue  # skip metadata/comment keys (e.g., _metadata)
                 try:
                     self._pricing[model_key] = ModelPricing(
                         model_key=model_key,
-                        input_price_per_1m=Decimal(str(prices['input_price_per_1m'])),
-                        output_price_per_1m=Decimal(str(prices['output_price_per_1m'])),
-                        cached_input_price_per_1m=Decimal(str(prices['cached_input_price_per_1m'])),
+                        input_price_per_1m=Decimal(str(prices["input_price_per_1m"])),
+                        output_price_per_1m=Decimal(str(prices["output_price_per_1m"])),
+                        cached_input_price_per_1m=Decimal(str(prices["cached_input_price_per_1m"])),
                     )
                 except (KeyError, ValueError) as e:
                     logger.warning(f"Invalid pricing for model {model_key}: {e}")
@@ -103,14 +104,14 @@ class CostCalculator:
         pricing = self._pricing.get(model_key)
         if not pricing:
             # Try fallback to unknown key
-            pricing = self._pricing.get('unknown')
+            pricing = self._pricing.get("unknown")
             if not pricing:
                 # No pricing available, return zero
                 logger.warning(f"No pricing available for model {model_name} (normalized: {model_key})")
-                return Decimal('0')
+                return Decimal("0")
 
         # Calculate cost: (tokens / 1M) * price_per_1M
-        one_million = Decimal('1_000_000')
+        one_million = Decimal("1_000_000")
         input_cost = (Decimal(input_tokens) / one_million) * pricing.input_price_per_1m
         output_cost = (Decimal(output_tokens) / one_million) * pricing.output_price_per_1m
         cached_cost = (Decimal(cached_tokens) / one_million) * pricing.cached_input_price_per_1m
@@ -118,7 +119,7 @@ class CostCalculator:
         total_cost = input_cost + output_cost + cached_cost
 
         # Round to 6 decimal places (sub-cent precision)
-        return total_cost.quantize(Decimal('0.000001'), rounding=ROUND_HALF_UP)
+        return total_cost.quantize(Decimal("0.000001"), rounding=ROUND_HALF_UP)
 
     def _normalize_model_name(self, model_name: str) -> str:
         """Normalize model name to pricing key.
@@ -137,13 +138,13 @@ class CostCalculator:
             "models/gemini-3-flash" -> "gemini-3-flash"
         """
         # Strip 'models/' prefix if present (Vertex API format)
-        if model_name.startswith('models/'):
+        if model_name.startswith("models/"):
             model_name = model_name[7:]  # len('models/') = 7
 
         # Strip version suffixes
-        for suffix in ['-002', '-001', '-latest', '-preview']:
+        for suffix in ["-002", "-001", "-latest", "-preview"]:
             if model_name.endswith(suffix):
-                return model_name[:-len(suffix)]
+                return model_name[: -len(suffix)]
 
         return model_name
 
@@ -155,7 +156,7 @@ class CostCalculator:
         """
         try:
             default_path = Path(__file__).parent.parent / "pricing" / "default.json"
-            with open(default_path, 'r') as f:
+            with open(default_path, "r") as f:
                 return json.load(f)
         except FileNotFoundError:
             logger.warning(f"Default pricing file not found: {default_path}")

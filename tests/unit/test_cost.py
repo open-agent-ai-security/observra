@@ -20,7 +20,7 @@ def test_cost_calculator_known_model():
     cost = calculator.calculate_cost("gemini-2.5-flash", 1000, 500)
 
     # Cost should be positive for known model
-    assert cost > Decimal('0')
+    assert cost > Decimal("0")
     assert isinstance(cost, Decimal)
 
 
@@ -31,7 +31,7 @@ def test_cost_calculator_unknown_model():
     cost = calculator.calculate_cost("unknown-model-xyz", 100, 50)
 
     # Unknown model should return zero cost
-    assert cost == Decimal('0')
+    assert cost == Decimal("0")
 
 
 def test_model_name_normalization():
@@ -67,6 +67,6 @@ def test_cost_decimal_precision():
 
     # Check that result has 6 decimal places (sub-cent precision)
     cost_str = str(cost)
-    if '.' in cost_str:
-        decimal_places = len(cost_str.split('.')[1])
+    if "." in cost_str:
+        decimal_places = len(cost_str.split(".")[1])
         assert decimal_places <= 6

@@ -18,7 +18,7 @@ def test_handler_creates_event():
         lineno=10,
         msg="Test message",
         args=(),
-        exc_info=None
+        exc_info=None,
     )
 
     # Should not raise error (event created but not routed since no queue)
@@ -54,7 +54,7 @@ def test_handler_with_formatter():
     handler = TelemetryLoggingHandler(queue=queue)
 
     # Set formatter
-    formatter = logging.Formatter('%(levelname)s - %(message)s')
+    formatter = logging.Formatter("%(levelname)s - %(message)s")
     handler.setFormatter(formatter)
 
     # Create log record
@@ -65,7 +65,7 @@ def test_handler_with_formatter():
         lineno=10,
         msg="Test message",
         args=(),
-        exc_info=None
+        exc_info=None,
     )
 
     # Emit with formatter
@@ -77,6 +77,7 @@ def test_handler_with_formatter():
 
 def test_handler_error_handling():
     """Test handler error handling with broken queue."""
+
     # Create mock queue that raises on put_nowait
     class BrokenQueue:
         def put_nowait(self, item):
@@ -92,7 +93,7 @@ def test_handler_error_handling():
         lineno=10,
         msg="Test message",
         args=(),
-        exc_info=None
+        exc_info=None,
     )
 
     # Should not crash despite broken queue

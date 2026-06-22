@@ -75,10 +75,7 @@ def _derive_key_from_passphrase(passphrase: str) -> bytes:
         RuntimeError: If cryptography package is not installed.
     """
     if not _CRYPTO_AVAILABLE:
-        raise RuntimeError(
-            "cryptography package not installed. "
-            "Run: pip install observra[encryption]"
-        )
+        raise RuntimeError("cryptography package not installed. Run: pip install observra[encryption]")
 
     passphrase_bytes = passphrase.encode("utf-8")
     # Salt = pepper + SHA-256(passphrase) — deterministic, no stored salt needed.
@@ -108,10 +105,7 @@ class EncryptionProvider:
 
     def __init__(self, key: bytes) -> None:
         if not _CRYPTO_AVAILABLE:
-            raise RuntimeError(
-                "cryptography package not installed. "
-                "Run: pip install observra[encryption]"
-            )
+            raise RuntimeError("cryptography package not installed. Run: pip install observra[encryption]")
         if len(key) != 32:
             raise ValueError(f"Key must be 32 bytes, got {len(key)}")
         # Fernet expects a 32-byte key base64url-encoded with no padding stripped.
@@ -165,8 +159,7 @@ def get_encryption_key() -> Optional[bytes]:
     """
     if not _CRYPTO_AVAILABLE:
         logger.debug(
-            "cryptography package not available; encryption disabled. "
-            "Install: pip install observra[encryption]"
+            "cryptography package not available; encryption disabled. Install: pip install observra[encryption]"
         )
         return None
 

@@ -23,18 +23,18 @@ from observra.core.events import create_event
 # 1. Protocol conformance
 # ---------------------------------------------------------------------------
 
+
 def test_adk_adapter_satisfies_protocol():
     """TelemetryPlugin must satisfy the FrameworkAdapter Protocol."""
     plugin = TelemetryPlugin(queue=None)
-    assert isinstance(plugin, FrameworkAdapter), (
-        "TelemetryPlugin does not satisfy FrameworkAdapter Protocol"
-    )
+    assert isinstance(plugin, FrameworkAdapter), "TelemetryPlugin does not satisfy FrameworkAdapter Protocol"
     assert plugin.framework_name == "adk"
 
 
 # ---------------------------------------------------------------------------
 # 2. Token normalization — full metadata
 # ---------------------------------------------------------------------------
+
 
 def test_normalize_adk_tokens_full():
     """All fields present — all NormalizedTokens fields must be populated."""
@@ -58,6 +58,7 @@ def test_normalize_adk_tokens_full():
 # 3. Token normalization — None input
 # ---------------------------------------------------------------------------
 
+
 def test_normalize_adk_tokens_no_metadata():
     """None input must return None (no-op)."""
     result = normalize_adk_tokens(None)
@@ -67,6 +68,7 @@ def test_normalize_adk_tokens_no_metadata():
 # ---------------------------------------------------------------------------
 # 4. Token normalization — optional fields absent
 # ---------------------------------------------------------------------------
+
 
 def test_normalize_adk_tokens_optional_fields_none():
     """Required fields only — optional fields must be None, not 0."""
@@ -84,6 +86,7 @@ def test_normalize_adk_tokens_optional_fields_none():
 # ---------------------------------------------------------------------------
 # 5. Error stats increment on emit() failure
 # ---------------------------------------------------------------------------
+
 
 def test_adapter_error_stats_increment():
     """emit() failure must increment error_count; get_adapter_stats() reflects it."""
@@ -108,6 +111,7 @@ def test_adapter_error_stats_increment():
 # 6. Dropped events when disabled
 # ---------------------------------------------------------------------------
 
+
 def test_adapter_dropped_events_when_disabled():
     """emit() with _enabled=False must increment _dropped_events."""
     plugin = TelemetryPlugin(queue=None)
@@ -122,6 +126,7 @@ def test_adapter_dropped_events_when_disabled():
 # ---------------------------------------------------------------------------
 # 7. after_model_callback uses normalized tokens
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.asyncio
 async def test_after_model_uses_normalized_tokens():
@@ -163,6 +168,7 @@ async def test_after_model_uses_normalized_tokens():
 # ---------------------------------------------------------------------------
 # 7b. turn_duration emitted after model response
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.asyncio
 async def test_turn_duration_emitted():
@@ -221,6 +227,7 @@ async def test_turn_duration_not_emitted_without_before_model():
 # 7c. turn_duration emitted on model error path
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.asyncio
 async def test_turn_duration_emitted_on_error():
     """on_model_error_callback must emit turn_duration with duration_ms even on error."""
@@ -251,6 +258,7 @@ async def test_turn_duration_emitted_on_error():
 # ---------------------------------------------------------------------------
 # 8. emit() routes events to queue (ADPT-07 storage routing)
 # ---------------------------------------------------------------------------
+
 
 def test_emit_routes_to_queue():
     """emit() with a queue must call queue.put_nowait with the event."""

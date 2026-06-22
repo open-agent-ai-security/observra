@@ -1,4 +1,5 @@
 """Tests verifying all deprecated symbols carry required metadata for CI and docs tooling."""
+
 import importlib
 import inspect
 import pkgutil

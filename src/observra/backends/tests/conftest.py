@@ -32,6 +32,7 @@ import pytest
 # Stub classes (used as fallback when real OTel SDK is NOT installed)
 # ---------------------------------------------------------------------------
 
+
 class _StubSpan:
     """Stub OTel Span — context manager that collects attributes."""
 
@@ -210,10 +211,12 @@ sys.modules.setdefault("opentelemetry.exporter.otlp.proto.http.trace_exporter", 
 # Fixtures
 # ---------------------------------------------------------------------------
 
+
 @pytest.fixture(autouse=True)
 def init_context():
     """Initialize trace/session context before each test so create_event() works."""
     from observra.core.context import initialize_session, initialize_trace
+
     initialize_trace()
     initialize_session()
 
@@ -233,6 +236,7 @@ def patch_otlp_exporter(monkeypatch):
 
         class _NoOpExporter:
             """Null exporter — discards all spans without network calls."""
+
             def __init__(self, endpoint=None, headers=None, timeout=None):
                 pass
 
@@ -280,6 +284,7 @@ def captured_spans(monkeypatch):
 
         class _CapturingExporter(SpanExporter):
             """Synchronous in-memory exporter: appends finished spans to the shared list."""
+
             def export(self, finished_spans):
                 for span in finished_spans:
                     spans.append(span)
@@ -295,11 +300,15 @@ def captured_spans(monkeypatch):
         monkeypatch.setattr(
             otel_module,
             "OTLPSpanExporter",
-            type("_NullExporterFactory", (), {
-                "__init__": lambda self, endpoint=None, headers=None, timeout=None: None,
-                "export": lambda self, spans: SpanExportResult.SUCCESS,
-                "shutdown": lambda self: None,
-            }),
+            type(
+                "_NullExporterFactory",
+                (),
+                {
+                    "__init__": lambda self, endpoint=None, headers=None, timeout=None: None,
+                    "export": lambda self, spans: SpanExportResult.SUCCESS,
+                    "shutdown": lambda self: None,
+                },
+            ),
         )
         # Replace BatchSpanProcessor with SimpleSpanProcessor wrapping our capturing exporter
         monkeypatch.setattr(

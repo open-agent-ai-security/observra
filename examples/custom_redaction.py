@@ -16,7 +16,7 @@ initialize(
     backend="jsonl",
     path="redaction_demo.jsonl",
     custom_patterns=[
-        (r"ACME_TOKEN_\w+", "ACME_TOKEN"),      # Internal tokens
+        (r"ACME_TOKEN_\w+", "ACME_TOKEN"),  # Internal tokens
         (r"proj_[a-z0-9]{20,}", "PROJECT_KEY"),  # Project keys
     ],
 )

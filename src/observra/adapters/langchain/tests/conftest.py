@@ -15,6 +15,7 @@ import types as _types
 # Create stub langchain_core module hierarchy
 # ---------------------------------------------------------------------------
 
+
 class _StubBaseCallbackHandler:
     """Stub base class for BaseCallbackHandler — no-op implementations of all callbacks."""
 
@@ -51,6 +52,7 @@ class _StubBaseCallbackHandler:
 
 class _StubLLMResult:
     """Stub LLMResult class for type hints."""
+
     pass
 
 
