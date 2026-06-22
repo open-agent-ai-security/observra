@@ -1312,7 +1312,7 @@ footer {
 <section id="install">
   <div class="inner">
     <p class="eyebrow">Installation &amp; quick start</p>
-    <h2 class="section-h2">Up and running in three lines.</h2>
+    <h2 class="section-h2">Up and running in three steps.</h2>
     <p class="section-lead">Install the base package, add the extras for your frameworks and backends, and initialize once at app startup.</p>
 
     <div class="qs-layout reveal">
@@ -1329,22 +1329,15 @@ footer {
           <div class="i-step">
             <div class="i-num">2</div>
             <div class="i-body">
-              <h4>Add framework extras</h4>
-              <p>Only install what you need: <code>[adk]</code>, <code>[claude]</code>, <code>[openai-agents]</code>, <code>[langchain]</code>, or <code>[pydantic-ai]</code>.</p>
+              <h4>Add the extras you need</h4>
+              <p>Frameworks — <code>[adk]</code>, <code>[claude]</code>, <code>[openai-agents]</code>, <code>[langchain]</code>, <code>[pydantic-ai]</code>; backends — <code>[otel]</code>, <code>[exabeam]</code>; or grab <code>[all]</code>.</p>
             </div>
           </div>
           <div class="i-step">
             <div class="i-num">3</div>
             <div class="i-body">
-              <h4>Add backend extras</h4>
-              <p>For OTel export: <code>[otel]</code>. For Exabeam integration: <code>[exabeam]</code>. Install everything: <code>[all]</code>.</p>
-            </div>
-          </div>
-          <div class="i-step">
-            <div class="i-num">4</div>
-            <div class="i-body">
               <h4>Initialize once at startup</h4>
-              <p>Call <code>observra.initialize()</code> once. The library auto-detects your framework and begins capturing events.</p>
+              <p>Call <code>observra.initialize()</code> once, then record events — the rest of the pipeline runs in the background.</p>
             </div>
           </div>
         </div>
@@ -1360,7 +1353,7 @@ footer {
 <span class="c-comment"># 1. Install with your framework extra</span>
 <span class="c-prompt">$</span> pip install observra[adk]
 
-<span class="c-comment"># 2. Initialize and instrument</span>
+<span class="c-comment"># 2. Initialize at startup</span>
 <span class="c-keyword">import</span> observra
 <span class="c-keyword">from</span> observra <span class="c-keyword">import</span> log
 
@@ -1369,7 +1362,7 @@ observra.initialize(
     path=<span class="c-string">"telemetry.jsonl"</span>
 )
 
-<span class="c-comment"># Manual events (any framework)</span>
+<span class="c-comment"># 3. Record events (any framework)</span>
 log.session_start(agent_name=<span class="c-string">"my-agent"</span>)
 log.model_response(
     <span class="c-string">"gpt-4o"</span>,
@@ -1377,18 +1370,6 @@ log.model_response(
     output_tokens=<span class="c-num">200</span>
 )
 log.session_end(agent_name=<span class="c-string">"my-agent"</span>)
-
-<span class="c-comment"># For production: OTel export</span>
-observra.initialize(
-    backend=<span class="c-string">"otel_log"</span>,
-    endpoint=<span class="c-string">"https://your-platform/v1/logs"</span>,
-    headers={<span class="c-string">"Authorization"</span>: <span class="c-string">"Api-Token ..."</span>},
-    service_name=<span class="c-string">"my-agent-svc"</span>,
-)
-
-<span class="c-comment"># Graceful shutdown (Cloud Run / K8s)</span>
-<span class="c-keyword">import</span> atexit
-atexit.register(observra.shutdown)
         </div>
       </div>
     </div>
