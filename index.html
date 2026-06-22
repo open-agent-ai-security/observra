@@ -476,50 +476,6 @@ section { padding: 88px 40px; }
 ════════════════════════════════════════════════ */
 #how { background: var(--bg-mid); }
 
-.pipeline {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 2px;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  overflow: hidden;
-}
-.p-step {
-  background: var(--bg-card);
-  padding: 32px 28px;
-  transition: background 0.2s;
-  position: relative;
-}
-.p-step:hover { background: var(--bg-card-alt); }
-.p-num {
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-  margin-bottom: 6px;
-  display: block;
-}
-.p-icon {
-  width: 40px; height: 40px;
-  border-radius: 10px;
-  background: var(--pill-bg);
-  border: 1px solid var(--blue-dim);
-  display: inline-flex; align-items: center; justify-content: center;
-  margin-bottom: 16px;
-}
-.p-icon svg {
-  width: 20px; height: 20px;
-  stroke: var(--pill-text); fill: none;
-  stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
-}
-.p-step h3 {
-  font-family: 'Space Grotesk', sans-serif;
-  font-size: 17px;
-  font-weight: 600;
-  margin-bottom: 8px;
-}
-.p-step p { font-size: 13px; color: var(--text-sub); line-height: 1.6; }
 
 /* Architecture diagram */
 /* window dots — shared with the live-event terminal panel below */
@@ -554,7 +510,7 @@ section { padding: 88px 40px; }
   pointer-events: none;
 }
 .arch-node > * { position: relative; }
-.arch-row { display: flex; align-items: center; gap: 20px; }
+.arch-row { display: flex; align-items: flex-start; gap: 20px; }
 .arch-ic {
   flex-shrink: 0;
   width: 52px; height: 52px;
@@ -1171,59 +1127,32 @@ footer {
     <h2 class="section-h2">Four layers. One clean pipeline.</h2>
     <p class="section-lead">Observra instruments your agent framework through a four-stage pipeline. Each stage is independent, testable, and pluggable.</p>
 
-    <div class="pipeline reveal">
-      <div class="p-step">
-        <span class="p-icon"><svg viewBox="0 0 24 24"><polyline points="8 6 3 12 8 18"/><polyline points="16 6 21 12 16 18"/></svg></span>
-        <span class="p-num">Layer 1</span>
-        <h3>Agent Code</h3>
-        <p>Your agent runs unmodified. ADK, Claude, OpenAI Agents, LangGraph, and Pydantic AI all emit framework callbacks automatically.</p>
-      </div>
-      <div class="p-step">
-        <span class="p-icon"><svg viewBox="0 0 24 24"><path d="M9 2v6M15 2v6"/><path d="M7 8h10v3a5 5 0 0 1-10 0z"/><path d="M12 16v6"/></svg></span>
-        <span class="p-num">Layer 2</span>
-        <h3>Adapter Layer</h3>
-        <p>Framework-specific adapters intercept callbacks and translate them into normalized events — no per-agent code required.</p>
-      </div>
-      <div class="p-step">
-        <span class="p-icon"><svg viewBox="0 0 24 24"><polygon points="12 2.5 20.5 7.25 20.5 16.75 12 21.5 3.5 16.75 3.5 7.25"/></svg></span>
-        <span class="p-num">Layer 3</span>
-        <h3>Core Pipeline</h3>
-        <p>CIM normalization, deduplication, PII redaction, and per-session cost calculation happen in sequence before any backend sees the event.</p>
-      </div>
-      <div class="p-step">
-        <span class="p-icon"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg></span>
-        <span class="p-num">Layer 4</span>
-        <h3>Backend Layer</h3>
-        <p>Enriched events are routed to JSONL, Webhook, OTel Spans, OTel Logs, or any combination via MultiBackend fan-out.</p>
-      </div>
-    </div>
-
     <div class="arch-flow reveal">
       <div class="arch-node n-agent">
         <div class="arch-row">
           <div class="arch-ic"><svg viewBox="0 0 24 24"><polyline points="8 6 3 12 8 18"/><polyline points="16 6 21 12 16 18"/></svg></div>
-          <div><h4>Agent Code</h4><p>ADK / Claude / OpenAI / LangGraph / Pydantic AI</p></div>
+          <div><h4>Agent Code</h4><p>Your agent runs unmodified — ADK, Claude, OpenAI Agents, LangGraph, and Pydantic AI all emit framework callbacks automatically.</p></div>
         </div>
       </div>
       <div class="arch-link"><span class="lbl">framework callbacks</span><svg class="arr" viewBox="0 0 24 24"><path d="M12 5v14M6 13l6 6 6-6"/></svg></div>
       <div class="arch-node n-adapter">
         <div class="arch-row">
           <div class="arch-ic"><svg viewBox="0 0 24 24"><path d="M9 2v6M15 2v6"/><path d="M7 8h10v3a5 5 0 0 1-10 0z"/><path d="M12 16v6"/></svg></div>
-          <div><h4>Adapter Layer</h4><p class="mono">adapters/{adk, claude, openai, langchain, …}</p></div>
+          <div><h4>Adapter Layer</h4><p>Framework-specific adapters intercept callbacks and translate them into normalized events — no per-agent code required.</p></div>
         </div>
       </div>
       <div class="arch-link"><span class="lbl">normalized events</span><svg class="arr" viewBox="0 0 24 24"><path d="M12 5v14M6 13l6 6 6-6"/></svg></div>
       <div class="arch-node n-core">
         <div class="arch-row">
           <div class="arch-ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.4v3.2M12 18.4v3.2M21.6 12h-3.2M5.6 12H2.4M18.36 5.64l-2.26 2.26M7.9 16.1l-2.26 2.26M18.36 18.36l-2.26-2.26M7.9 7.9 5.64 5.64"/></svg></div>
-          <div><h4>Core Pipeline</h4><p>CIM normalization → dedup → redaction → cost</p></div>
+          <div><h4>Core Pipeline</h4><p>CIM normalization, deduplication, PII redaction, and per-session cost calculation happen in sequence before any backend sees the event.</p></div>
         </div>
       </div>
       <div class="arch-link"><span class="lbl">enriched events</span><svg class="arr" viewBox="0 0 24 24"><path d="M12 5v14M6 13l6 6 6-6"/></svg></div>
       <div class="arch-node n-backend">
         <div class="arch-row">
           <div class="arch-ic"><svg viewBox="0 0 24 24"><path d="M4 6c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3z"/><path d="M4 6v6c0 1.7 3.6 3 8 3s8-1.3 8-3V6"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg></div>
-          <div><h4>Backend Layer</h4><p>JSONL / Webhook / OTel / Multi</p></div>
+          <div><h4>Backend Layer</h4><p>Enriched events are routed to JSONL, Webhook, OTel Spans, OTel Logs, or any combination via MultiBackend fan-out.</p></div>
         </div>
         <div class="arch-sinks">
           <div class="arch-sink"><svg viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg><span>JSONL</span></div>
