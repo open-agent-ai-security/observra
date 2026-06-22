@@ -1,0 +1,14 @@
+# Build-only dependencies — NOT part of the installed observra package (the
+# library has its own runtime deps in pyproject.toml). These are needed only to
+# regenerate the GitHub Pages docs site locally / at release time.
+#
+#   pip install -r requirements-dev.txt
+#
+# Used by docs_build.py to convert docs/*.md into the styled guide/ HTML.
+#
+# Pinned to an EXACT version on purpose: the committed guide/*.html is compared
+# against freshly-regenerated output, and Python-Markdown's HTML can shift
+# between releases (whitespace, attribute quoting, entity choices). An exact pin
+# keeps the committed artifacts and regeneration in lockstep. Bump this and
+# regenerate guide/ together.
+markdown==3.9
