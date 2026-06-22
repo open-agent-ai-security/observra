@@ -42,6 +42,17 @@ REPO = "https://github.com/open-agent-ai-security/observra"
 # (A purpose-built wordmark is pending the Marketing brand refresh.)
 BRAND_IMG = "assets/logo.png"
 
+# Cookieless web analytics injected into every docs page, mirroring the landing
+# page (index.html). The GoatCounter endpoint and Cloudflare token are shared
+# org-wide with Praxen (both Exabeam-sponsored). __PREFIX__ resolves count.js by
+# the page's depth under guide/ (e.g. "" at top level, "../" one level down).
+ANALYTICS_TMPL = (
+    '<script data-goatcounter="https://open-agent-ai-security.goatcounter.com/count" '
+    'async src="__PREFIX__assets/count.js"></script>\n'
+    '<script defer src="https://static.cloudflareinsights.com/beacon.min.js" '
+    'data-cf-beacon=\'{"token": "223642421cad463daf91bd9429a5f9a0"}\'></script>'
+)
+
 # Ordered table of contents for the left-nav: (source file relative to docs/, label).
 PAGES = [
     ("index.md",                  "Overview"),
@@ -164,6 +175,7 @@ def left_nav(active_src: str, active_toc: str, page_dir: str) -> str:
 
 def page_html(theme_css, title, nav, body, src, root_prefix, body_end=""):
     edit_url = f"{REPO}/blob/main/docs/{src}"
+    analytics = ANALYTICS_TMPL.replace("__PREFIX__", root_prefix)
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -171,6 +183,7 @@ def page_html(theme_css, title, nav, body, src, root_prefix, body_end=""):
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{html.escape(title)} · observra Docs</title>
 <style>{theme_css}</style>
+{analytics}
 </head>
 <body class="docs-page">
 <header class="docs-top">
