@@ -142,4 +142,4 @@ backend = MultiBackend([span_backend, log_backend])
 
 ## License
 
-Apache 2.0 — see [LICENSE](LICENSE)
+Apache 2.0 — see [LICENSE](LICENSE.md)
