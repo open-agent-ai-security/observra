@@ -1,3 +1,7 @@
+<!--
+  Copyright 2026 Exabeam, Inc.
+  SPDX-License-Identifier: Apache-2.0
+-->
 # Property-Based Parity Tests
 
 Phase 28 active responsibility.

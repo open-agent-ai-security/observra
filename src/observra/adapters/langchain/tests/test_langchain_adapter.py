@@ -1,3 +1,6 @@
+# Copyright 2026 Exabeam, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
 """Co-located tests for the LangChain adapter.
 
 Validates Protocol conformance, all callback types (LLM, tool, chain), all 3

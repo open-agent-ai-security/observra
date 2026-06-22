@@ -1,3 +1,6 @@
+# Copyright 2026 Exabeam, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
 """Tests for OTelExportBackend.
 
 Covers EXPT-01 (StorageBackend Protocol conformance) and EXPT-03 (GenAI semantic

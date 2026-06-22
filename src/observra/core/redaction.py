@@ -1,3 +1,6 @@
+# Copyright 2026 Exabeam, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
 """Redactor class for recursive dict traversal with custom pattern support."""
 
 import re

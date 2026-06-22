@@ -1,3 +1,6 @@
+# Copyright 2026 Exabeam, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
 """Sender backends for agent telemetry — SIEM and external webhook delivery."""
 
 try:

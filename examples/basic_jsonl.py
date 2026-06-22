@@ -1,3 +1,6 @@
+# Copyright 2026 Exabeam, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
 """Basic JSONL telemetry — capture agent events to a JSONL file.
 
 Usage:

@@ -1,3 +1,6 @@
+# Copyright 2026 Exabeam, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
 """ClaudeAdapter: Claude Agent SDK adapter for agent telemetry.
 
 Implements the FrameworkAdapter Protocol for the Claude Agent SDK.

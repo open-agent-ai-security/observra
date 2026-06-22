@@ -1,3 +1,7 @@
+<!--
+  Copyright 2026 Exabeam, Inc.
+  SPDX-License-Identifier: Apache-2.0
+-->
 
 # Code of Conduct
 The Obrervra project adopts the Contributor Covenant, version 2.1 as its code of conduct. The full text is the canonical source; this file states only the project-specific reporting and enforcement details required by the Covenant.

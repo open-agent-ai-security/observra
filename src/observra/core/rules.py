@@ -1,3 +1,6 @@
+# Copyright 2026 Exabeam, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
 """Detection rule evaluation for agent telemetry events.
 
 Rules are evaluated at event creation time (against unredacted values) and

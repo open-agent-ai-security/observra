@@ -1,3 +1,6 @@
+# Copyright 2026 Exabeam, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
 """Test configuration for Pydantic AI adapter tests.
 
 Patches the opentelemetry.sdk.trace module hierarchy into sys.modules before any test

@@ -1,3 +1,7 @@
+<!--
+  Copyright 2026 Exabeam, Inc.
+  SPDX-License-Identifier: Apache-2.0
+-->
 # Production Deployment Guide
 
 How to configure `observra` for production agent workloads running on

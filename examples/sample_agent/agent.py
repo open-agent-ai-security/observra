@@ -1,3 +1,6 @@
+# Copyright 2026 Exabeam, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
 """Sample ADK agent with telemetry — works with `adk web`.
 
 Run with telemetry:

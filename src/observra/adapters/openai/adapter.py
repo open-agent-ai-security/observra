@@ -1,3 +1,6 @@
+# Copyright 2026 Exabeam, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
 """OpenAIAdapter: OpenAI Agents SDK adapter for agent telemetry.
 
 Implements TracingProcessor from the OpenAI Agents SDK and satisfies the

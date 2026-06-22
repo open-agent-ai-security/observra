@@ -1,3 +1,6 @@
+# Copyright 2026 Exabeam, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
 """Cross-SDK adapter conformance matrix for shared telemetry guarantees."""
 
 from __future__ import annotations

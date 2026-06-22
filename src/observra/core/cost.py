@@ -1,3 +1,6 @@
+# Copyright 2026 Exabeam, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
 """Cost calculation module for LLM token tracking.
 
 Provides CostCalculator for computing USD costs from token counts using

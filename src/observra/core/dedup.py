@@ -1,3 +1,6 @@
+# Copyright 2026 Exabeam, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
 """Deduplication registry for explicit log API + passive adapter coexistence.
 
 Prevents duplicate events when both a passive adapter (e.g., ADK plugin) and

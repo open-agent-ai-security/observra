@@ -1,3 +1,6 @@
+# Copyright 2026 Exabeam, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
 """Detection signals — error classification, injection detection, depth limits.
 
 Usage:

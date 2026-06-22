@@ -1,3 +1,6 @@
+# Copyright 2026 Exabeam, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
 """Safe regex compilation with ReDoS prevention.
 
 This module provides compile_safe_pattern(), which enforces:

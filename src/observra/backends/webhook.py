@@ -1,3 +1,6 @@
+# Copyright 2026 Exabeam, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
 """Generic webhook backend — POST telemetry events as JSON to any URL."""
 
 import json

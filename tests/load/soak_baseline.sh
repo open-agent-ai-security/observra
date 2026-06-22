@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Copyright 2026 Exabeam, Inc.
+# SPDX-License-Identifier: Apache-2.0
 # soak_baseline.sh — Phase 31 soak benchmark baseline for PERF-03 validation.
 #
 # Purpose: Measure forwarder resource usage (RSS memory) and backpressure DLQ
