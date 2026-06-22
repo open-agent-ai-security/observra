@@ -139,6 +139,9 @@ backend = MultiBackend([span_backend, log_backend])
 - [Architecture](docs/architecture.md) — system design overview
 - [Compatibility](docs/COMPATIBILITY.md) — supported versions
 
+## Project sponsor
+
+observra is sponsored by [Exabeam](https://www.exabeam.com/). Exabeam contributed the initial code and continues to provide ongoing support and contributions to the project as part of its commitment to security in an increasingly agentic world.
 
 ## License
 
