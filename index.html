@@ -890,33 +890,6 @@ section { padding: 88px 40px; }
   gap: 32px;
 }
 
-/* ════════════════════════════════════════════════
-   SENSOR CALLOUT
-════════════════════════════════════════════════ */
-.sensor-callout {
-  margin-top: 40px;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-left: 3px solid var(--blue-lt);
-  border-radius: 10px;
-  padding: 20px 24px;
-  display: flex;
-  gap: 18px;
-  align-items: flex-start;
-}
-.sensor-callout-icon { flex-shrink: 0; line-height: 0; }
-.sensor-callout-icon svg {
-  width: 22px; height: 22px;
-  stroke: var(--blue-lt); fill: none;
-  stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round;
-}
-.sensor-callout h4 {
-  font-size: 14px;
-  font-weight: 600;
-  margin-bottom: 4px;
-}
-.sensor-callout p { font-size: 13px; color: var(--text-sub); }
-.sensor-callout a { color: var(--blue-lt); }
 
 /* ════════════════════════════════════════════════
    CTA BAND
@@ -1457,14 +1430,6 @@ footer {
             </div>
           </div>
         </div>
-
-        <div class="sensor-callout reveal" style="margin-top:32px;">
-          <div class="sensor-callout-icon"><svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/><path d="M9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4"/></svg></div>
-          <div>
-            <h4>aba-sensor — CLI agent log forwarder</h4>
-            <p>Rust-based log forwarder for CLI agents (Claude Code, Codex, Gemini CLI). Separate binary, zero Python dependency. <a href="https://github.com/ExabeamLabs/aba-sensor" target="_blank">github.com/ExabeamLabs/aba-sensor →</a></p>
-          </div>
-        </div>
       </div>
 
       <!-- Right: code block -->
@@ -1584,7 +1549,6 @@ atexit.register(observra.shutdown)
       <ul>
         <li><a href="https://github.com/open-agent-ai-security/observra" target="_blank">GitHub</a></li>
         <li><a href="https://github.com/open-agent-ai-security/observra/releases" target="_blank">Releases</a></li>
-        <li><a href="https://github.com/ExabeamLabs/aba-sensor" target="_blank">aba-sensor</a></li>
         <li><a href="https://github.com/open-agent-ai-security/observra/blob/main/CONTRIBUTING.md" target="_blank">Contributing</a></li>
         <li><a href="https://github.com/open-agent-ai-security/observra/blob/main/LICENSE.md" target="_blank">License (Apache 2.0)</a></li>
       </ul>
