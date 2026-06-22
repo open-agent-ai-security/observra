@@ -500,14 +500,17 @@ section { padding: 88px 40px; }
   display: block;
 }
 .p-icon {
-  margin-bottom: 14px;
-  display: block;
-  line-height: 0;
+  width: 40px; height: 40px;
+  border-radius: 10px;
+  background: var(--pill-bg);
+  border: 1px solid var(--blue-dim);
+  display: inline-flex; align-items: center; justify-content: center;
+  margin-bottom: 16px;
 }
 .p-icon svg {
-  width: 28px; height: 28px;
-  stroke: var(--blue-lt); fill: none;
-  stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round;
+  width: 20px; height: 20px;
+  stroke: var(--pill-text); fill: none;
+  stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
 }
 .p-step h3 {
   font-family: 'Space Grotesk', sans-serif;
