@@ -218,11 +218,7 @@ nav {
 .hero {
   position: relative;
   overflow: hidden;
-  padding: 88px 40px 72px;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  padding: 72px 40px;
   background: var(--bg);
 }
 .hero::before {
@@ -233,33 +229,29 @@ nav {
   pointer-events: none;
 }
 
-/* Animated heartbeat line */
-.telemetry-svg {
-  width: 100%;
-  max-width: 760px;
-  height: 52px;
-  margin-bottom: 44px;
-  opacity: 0.8;
+/* Two-column hero: copy left, mascot right */
+.hero-grid {
+  position: relative;
+  max-width: 1080px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: 48px;
+  align-items: center;
 }
-.pulse-line {
-  stroke: var(--blue);
-  stroke-width: 1.5;
-  fill: none;
-  stroke-dasharray: 1100;
-  stroke-dashoffset: 1100;
-  animation: draw-line 2s ease forwards;
+.hero-copy { text-align: left; }
+.mascot-stage { position: relative; display: flex; justify-content: center; align-items: center; }
+.mascot-stage::before {
+  content: ''; position: absolute; width: 80%; height: 80%; left: 10%; top: 10%;
+  background: radial-gradient(circle, var(--blue-glow), transparent 64%);
+  filter: blur(40px); z-index: 0;
 }
-.pulse-flat {
-  stroke: var(--border);
-  stroke-width: 1;
-  fill: none;
+.mascot-stage img {
+  position: relative; z-index: 1; width: 100%; max-width: 460px;
+  filter: drop-shadow(0 28px 42px rgba(0,0,0,0.5));
+  animation: float 6s ease-in-out infinite;
 }
-.pulse-dot {
-  fill: var(--blue-lt);
-}
-@keyframes draw-line {
-  to { stroke-dashoffset: 0; }
-}
+@keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
 
 .pill {
   display: inline-flex;
@@ -366,7 +358,7 @@ nav {
 
 /* Install pill in hero */
 .hero-install {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 0;
   background: var(--mono-bg);
@@ -405,16 +397,6 @@ nav {
   transition: color 0.2s;
 }
 .hero-install-copy:hover { color: var(--blue-lt); }
-
-.hero-img {
-  width: 100%;
-  max-width: 900px;
-  border-radius: 14px;
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow);
-  opacity: 0;
-  animation: fade-up 0.7s 1.3s ease forwards;
-}
 
 @keyframes fade-up {
   from { opacity: 0; transform: translateY(18px); }
@@ -1002,7 +984,10 @@ footer {
   .nav-center li { width: 100%; }
   .nav-center a { display: block; padding: 11px 0; }
   section { padding: 60px 20px; }
-  .hero { padding: 60px 20px 48px; }
+  .hero { padding: 56px 20px; }
+  .hero-grid { grid-template-columns: 1fr; gap: 28px; }
+  .mascot-stage { order: -1; }
+  .mascot-stage img { max-width: 300px; }
   .features-layout { grid-template-columns: 1fr; }
   .install-layout { grid-template-columns: 1fr; }
   .qs-layout { grid-template-columns: 1fr; }
@@ -1018,7 +1003,7 @@ footer {
   html { scroll-behavior: auto !important; }
   *, *::before, *::after { animation: none !important; transition: none !important; }
   /* Without animation the fade-up start state would stay hidden — force visible. */
-  .reveal, .pill, .hero h1, .hero-sub, .hero-question, .hero-ctas, .hero-install, .hero-img {
+  .reveal, .pill, .hero h1, .hero-sub, .hero-question, .hero-ctas, .hero-install {
     opacity: 1 !important; transform: none !important;
   }
 }
@@ -1060,31 +1045,29 @@ footer {
 <main>
 <!-- ═══════════════════════════════ HERO ═══════════════════════════════ -->
 <header class="hero">
-  <!-- Animated telemetry heartbeat -->
-  <svg class="telemetry-svg" viewBox="0 0 760 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-    <line class="pulse-flat" x1="0" y1="26" x2="120" y2="26"/>
-    <path class="pulse-line" d="M120,26 L172,26 L184,6 L198,46 L211,14 L222,38 L232,26 L310,26 L322,26 L334,8 L347,44 L358,18 L368,34 L376,26 L460,26 L472,26 L484,9 L496,43 L507,16 L517,36 L524,26 L620,26"/>
-    <line class="pulse-flat" x1="620" y1="26" x2="760" y2="26"/>
-    <circle class="pulse-dot" cx="620" cy="26" r="4"/>
-  </svg>
+  <div class="hero-grid">
+    <div class="hero-copy">
+      <div class="pill"><span class="pill-dot"></span>Open source · Apache 2.0 · Sponsored by Exabeam</div>
+      <h1>See exactly what your<br><em>agents are doing.</em></h1>
+      <p class="hero-sub">Framework-agnostic agent behavior analytics — capture every meaningful agent action: token usage, tool calls, cost, and errors — with zero custom instrumentation per agent.</p>
+      <p class="hero-question">Answer: <span>"what happened, how much did it cost, and was it normal?"</span></p>
 
-  <div class="pill"><span class="pill-dot"></span>Open source · Apache 2.0 · Sponsored by Exabeam</div>
-  <h1>See exactly what your<br><em>agents are doing.</em></h1>
-  <p class="hero-sub">Framework-agnostic agent behavior analytics — capture every meaningful agent action: token usage, tool calls, cost, and errors — with zero custom instrumentation per agent.</p>
-  <p class="hero-question">Answer: <span>"what happened, how much did it cost, and was it normal?"</span></p>
+      <div class="hero-install">
+        <span class="hero-install-label">pip</span>
+        <span class="hero-install-cmd">pip install observra</span>
+        <button class="hero-install-copy" onclick="copyPip(this)">copy</button>
+      </div>
 
-  <div class="hero-install">
-    <span class="hero-install-label">pip</span>
-    <span class="hero-install-cmd">pip install observra</span>
-    <button class="hero-install-copy" onclick="copyPip(this)">copy</button>
+      <div class="hero-ctas">
+        <a class="cta-primary" href="#install">Get started →</a>
+        <a class="cta-secondary" href="#frameworks">See supported frameworks</a>
+      </div>
+    </div>
+
+    <div class="mascot-stage">
+      <img src="assets/mascot.png" alt="The observra owl mascot reviewing live agent-telemetry dashboards">
+    </div>
   </div>
-
-  <div class="hero-ctas">
-    <a class="cta-primary" href="#install">Get started →</a>
-    <a class="cta-secondary" href="#frameworks">See supported frameworks</a>
-  </div>
-
-  <img class="hero-img" src="assets/hero.png" alt="Observra — observes, captures, normalizes signals in real time">
 </header>
 
 <!-- ═══════════════════════════════ BADGE BAR ═══════════════════════════════ -->

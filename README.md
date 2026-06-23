@@ -2,6 +2,10 @@
   Copyright 2026 Exabeam, Inc.
   SPDX-License-Identifier: Apache-2.0
 -->
+<p align="center">
+  <img src="assets/hero.png" alt="observra — framework-agnostic agent behavior analytics" width="840">
+</p>
+
 # observra
 **Framework-agnostic agent behavior analytics.**
 
