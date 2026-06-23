@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Architecture · observra Docs</title>
+<style>@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+/*
+  Copyright 2026 Exabeam, Inc.
+  SPDX-License-Identifier: Apache-2.0
+
+  observra documentation-site theme.
+
+  Design tokens, fonts, and accent colors are taken from the GitHub Pages
+  landing page (index.html) so the docs site matches the hero — dark navy
+  background, observra blue accent, Space Grotesk headings / Inter body /
+  JetBrains Mono code. Dark theme only (the landing page defaults to dark).
+
+  Inlined into every guide/*.html page by docs_build.py (each page is
+  self-contained). Edit tokens / base / .docs-page here and regenerate with
+  `python3 docs_build.py`.
+
+  NOTE: the @import is kept on line 1, ahead of this comment, so that when the
+  file is inlined into a page's <style> block the import is the very first
+  token — robust even for strict CSS processors that drop an @import preceded
+  by a comment.
+*/
+
+/* ---------- Design tokens (from index.html, dark theme) ---------- */
+:root {
+  --bg:          #070F1A;
+  --panel:       #0F2035;
+  --panel-2:     #122438;
+  --border:      #1A3050;
+  --border-hi:   rgba(77, 163, 255, 0.45);
+  --text:        #EEF4FF;
+  --muted:       #8FAFC8;
+  --muted-2:     #4D6E8A;
+  --accent:      #1E6FE0;   /* observra blue */
+  --accent-2:    #4DA3FF;   /* lighter blue — links / hover / code */
+  --accent-dim:  rgba(30, 111, 224, 0.12);
+  --mono-bg:     #040C16;
+  --mono-text:   #CBD8E6;
+  --mono:        'JetBrains Mono', ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+
+/* ---------- Global base + primitives ---------- */
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.65;
+  font-size: 17px;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3 { font-family: 'Space Grotesk', 'Inter', sans-serif; letter-spacing: -0.02em; }
+a { color: var(--accent-2); text-decoration: none; }
+a:hover { color: var(--accent); }
+img { max-width: 100%; display: block; }
+
+/* ---------- Docs site (scoped to .docs-page) ---------- */
+.docs-page { font-size: 16px; }
+
+/* Top bar */
+.docs-top {
+  position: sticky; top: 0; z-index: 50;
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  background: rgba(7, 15, 26, 0.80); border-bottom: 1px solid var(--border);
+}
+.docs-top-inner { max-width: 1240px; margin: 0 auto; padding: 0 24px; height: 60px;
+  display: flex; align-items: center; justify-content: space-between; }
+.docs-brand img { height: 26px; width: auto; display: block; }
+.docs-top-links { display: flex; gap: 22px; }
+.docs-top-links a { color: var(--muted); font-weight: 500; font-size: 14.5px; }
+.docs-top-links a:hover { color: var(--text); }
+
+/* Shell: sidebar + content */
+.docs-shell { max-width: 1240px; margin: 0 auto; padding: 0 24px;
+  display: grid; grid-template-columns: 248px minmax(0, 1fr); gap: 48px; align-items: start; }
+.docs-sidebar { position: sticky; top: 60px; align-self: start;
+  max-height: calc(100vh - 60px); overflow-y: auto; padding: 30px 0; }
+.docs-nav-title { font-size: 12px; font-weight: 700; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--muted-2); margin: 0 0 14px; }
+.docs-nav ul { list-style: none; margin: 0; padding: 0; }
+.docs-nav > ul > li > a {
+  display: block; padding: 7px 12px; border-radius: 9px; font-size: 14.5px;
+  color: var(--muted); font-weight: 500; border-left: 2px solid transparent;
+}
+.docs-nav > ul > li > a:hover { color: var(--text); background: var(--panel); }
+.docs-nav > ul > li > a.active { color: var(--accent-2); background: var(--accent-dim);
+  border-left-color: var(--accent); font-weight: 600; }
+.docs-subnav { list-style: none; margin: 2px 0 8px; padding: 0; }
+.docs-subnav a { display: block; padding: 4px 12px 4px 22px; font-size: 13px;
+  color: var(--muted-2); border-left: 2px solid var(--border); }
+.docs-subnav a:hover { color: var(--text); border-left-color: var(--border-hi); }
+
+/* Content */
+.docs-main { padding: 38px 0 80px; min-width: 0; }
+.docs-edit { margin-top: 48px; padding-top: 20px; border-top: 1px solid var(--border);
+  font-size: 13.5px; }
+.prose { max-width: 800px; }
+.prose > :first-child { margin-top: 0; }
+.prose h1 { font-size: clamp(30px, 4vw, 40px); font-weight: 700; line-height: 1.12; margin: 0 0 18px; }
+.prose h2 { font-size: 25px; font-weight: 600; margin: 46px 0 14px; padding-top: 16px;
+  border-top: 1px solid var(--border); scroll-margin-top: 76px; }
+.prose h3 { font-size: 19px; font-weight: 600; margin: 30px 0 10px; scroll-margin-top: 76px; }
+.prose p { color: var(--muted); margin: 0 0 16px; }
+.prose strong { color: var(--text); font-weight: 600; }
+.prose a { font-weight: 500; }
+.prose a:hover { text-decoration: underline; }
+.prose ul, .prose ol { color: var(--muted); margin: 0 0 16px; padding-left: 24px; }
+.prose li { margin: 6px 0; }
+.prose li::marker { color: var(--muted-2); }
+.prose blockquote { margin: 18px 0; padding: 4px 18px; border-left: 3px solid var(--accent);
+  background: var(--accent-dim); border-radius: 0 8px 8px 0; color: var(--text); }
+.prose blockquote p { color: var(--text); }
+.prose hr { border: none; border-top: 1px solid var(--border); margin: 36px 0; }
+.prose code { background: var(--panel-2); color: var(--accent-2); padding: 2px 6px;
+  border-radius: 5px; border: 1px solid var(--border); font-family: var(--mono); font-size: 0.85em; }
+.prose pre { background: var(--mono-bg); border: 1px solid var(--border); border-radius: 12px;
+  padding: 16px 18px; overflow-x: auto; margin: 0 0 18px;
+  box-shadow: 0 16px 36px -20px rgba(0,0,0,0.7); }
+.prose pre code { background: none; border: none; padding: 0; color: var(--mono-text);
+  font-size: 13px; line-height: 1.75; }
+.prose pre.mermaid { background: transparent; border: 0; border-radius: 0; padding: 8px 0;
+  box-shadow: none; overflow-x: auto; text-align: center; line-height: normal; margin: 0 0 22px; }
+.prose pre.mermaid svg { max-width: 100%; height: auto; }
+.prose table { width: 100%; border-collapse: collapse; margin: 4px 0 22px; font-size: 14px; display: block; overflow-x: auto; }
+.prose thead th { background: var(--panel-2); color: var(--text); text-align: left;
+  font-weight: 600; padding: 10px 13px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+.prose tbody td { padding: 10px 13px; border-bottom: 1px solid var(--border); color: var(--muted); vertical-align: top; }
+.prose tbody tr:hover { background: var(--panel); }
+
+@media (max-width: 860px) {
+  .docs-shell { grid-template-columns: 1fr; gap: 0; }
+  .docs-sidebar { position: static; max-height: none; overflow: visible;
+    padding: 20px 0; border-bottom: 1px solid var(--border); }
+  .docs-main { padding-top: 26px; }
+}
+</style>
+<script data-goatcounter="https://open-agent-ai-security.goatcounter.com/count" async src="../assets/count.js"></script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "223642421cad463daf91bd9429a5f9a0"}'></script>
+</head>
+<body class="docs-page">
+<header class="docs-top">
+  <div class="docs-top-inner">
+    <a class="docs-brand" href="../"><img src="../assets/logo.png" alt="observra"></a>
+    <div class="docs-top-links">
+      <a href="../">Home</a>
+      <a href="https://github.com/open-agent-ai-security/observra" target="_blank" rel="noopener">GitHub ↗</a>
+    </div>
+  </div>
+</header>
+<div class="docs-shell">
+  <aside class="docs-sidebar"><nav class="docs-nav"><div class="docs-nav-title">Documentation</div><ul><li><a href="index.html">Overview</a></li><li><a href="getting-started/adk.html">Getting Started · ADK</a></li><li><a href="architecture.html" class="active">Architecture</a><ul class="docs-subnav"><li><a href="#overview">Overview</a></li><li><a href="#components">Components</a></li><li><a href="#design-principles">Design Principles</a></li></ul></li><li><a href="event-schema.html">Event Schema</a></li><li><a href="production-deployment.html">Production Deployment</a></li><li><a href="COMPATIBILITY.html">Compatibility</a></li></ul></nav></aside>
+  <main class="docs-main">
+    <article class="prose"><h1 id="architecture">Architecture</h1>
+<h2 id="overview">Overview</h2>
+<p>observra is a Python SDK that instruments AI agent frameworks to capture structured telemetry events. Events are normalized to a Common Information Model (CIM) schema and routed to configurable backends.</p>
+<h2 id="components">Components</h2>
+<pre><code>┌─────────────────────────────────────────────────┐
+│                  Agent Code                     │
+│  (ADK / Claude / OpenAI / LangGraph / Pydantic) │
+└─────────────────────┬───────────────────────────┘
+                      │ framework callbacks
+                      ▼
+┌─────────────────────────────────────────────────┐
+│              Adapter Layer                      │
+│  adapters/{adk,claude,openai,langchain,...}     │
+└─────────────────────┬───────────────────────────┘
+                      │ normalized events
+                      ▼
+┌─────────────────────────────────────────────────┐
+│              Core Pipeline                      │
+│  CIM normalization → dedup → redaction → cost   │
+└─────────────────────┬───────────────────────────┘
+                      │ enriched events
+                      ▼
+┌─────────────────────────────────────────────────┐
+│              Backend Layer                      │
+│  jsonl / webhook / otel / multi                 │
+└─────────────────────────────────────────────────┘
+</code></pre>
+<h2 id="design-principles">Design Principles</h2>
+<ul>
+<li>Zero-config for common cases (JSONL backend, auto-detect framework)</li>
+<li>Framework adapters are optional extras — only import what you use</li>
+<li>All events conform to CIM schema before reaching backends</li>
+<li>Thread-safe, async-compatible event pipeline</li>
+</ul></article>
+    <p class="docs-edit"><a href="https://github.com/open-agent-ai-security/observra/blob/main/docs/architecture.md" target="_blank" rel="noopener">Edit this page on GitHub ↗</a></p>
+  </main>
+</div>
+
+</body>
+</html>
