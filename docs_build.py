@@ -126,13 +126,19 @@ def rewrite_links(body: str) -> str:
         quote, href = m.group(1), m.group(2)
         if urlparse(href).scheme or href.startswith(("#", "//")):
             return m.group(0)
-        if href.startswith("../"):
+        # Operate only on the path, leaving any ?query / #fragment untouched
+        # (so a fragment that happens to contain ".md" is never mangled, and a
+        # `foo.md?v=2` link still gets its extension rewritten).
+        path, rest = re.match(r"([^?#]*)(.*)", href, re.DOTALL).groups()
+        if path.startswith("../"):
             # docs/ is one level below the repo root, so a legitimate cross-repo
             # link is a single `../`. Strip any leading `../` runs defensively so
             # a stray `../../x` still yields a repo-root path, not `./x`.
-            new = f"{REPO}/blob/main/" + re.sub(r"^(?:\.\./)+", "", href)
+            new = f"{REPO}/blob/main/" + re.sub(r"^(?:\.\./)+", "", path) + rest
+        elif path.endswith(".md"):
+            new = path[:-3] + ".html" + rest
         else:
-            new = re.sub(r"\.md(#|$)", r".html\1", href)
+            return m.group(0)
         return f"href={quote}{new}{quote}"
     return re.sub(r"""href=(["'])(.*?)\1""", repl, body)
 

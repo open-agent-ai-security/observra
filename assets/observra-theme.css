@@ -23,7 +23,6 @@
 /* ---------- Design tokens (from index.html, dark theme) ---------- */
 :root {
   --bg:          #070F1A;
-  --bg-2:        #0D1B2A;
   --panel:       #0F2035;
   --panel-2:     #122438;
   --border:      #1A3050;
@@ -34,10 +33,8 @@
   --accent:      #1E6FE0;   /* observra blue */
   --accent-2:    #4DA3FF;   /* lighter blue — links / hover / code */
   --accent-dim:  rgba(30, 111, 224, 0.12);
-  --green:       #28C840;
   --mono-bg:     #040C16;
   --mono-text:   #CBD8E6;
-  --radius:      16px;
   --mono:        'JetBrains Mono', ui-monospace, "SF Mono", Menlo, Consolas, monospace;
 }
 
