@@ -195,14 +195,19 @@ observra.initialize(
     service_name=&quot;my-agent-svc&quot;,
 )
 </code></pre>
-<p><strong>Environment variable alternative (zero code changes):</strong></p>
-<pre><code class="language-bash">export ABA_TELEMETRY_BACKEND=otel_log
-export OTEL_EXPORTER_OTLP_LOGS_ENDPOINT=https://your-instance.live.dynatrace.com/api/v2/otlp/v1/logs
+<p><strong>Using the standard OTel environment variables:</strong></p>
+<p>observra's <code>initialize()</code> does not read telemetry settings from the
+environment, so the backend must be selected in code. The underlying OTLP
+exporter, however, honors the standard OpenTelemetry environment variables —
+so you can keep endpoint, headers, and service name out of your source:</p>
+<pre><code class="language-bash">export OTEL_EXPORTER_OTLP_LOGS_ENDPOINT=https://your-instance.live.dynatrace.com/api/v2/otlp/v1/logs
 export OTEL_EXPORTER_OTLP_HEADERS=&quot;Authorization=Api-Token dt0c01.XXXX&quot;
-export OTEL_SERVICE_NAME=my-agent-svc
 </code></pre>
 <pre><code class="language-python">import observra
-observra.initialize()  # reads from env vars
+
+# The OTLP exporter reads endpoint + headers from the OTEL_* env vars above.
+# service_name is set in code (defaults to &quot;observra&quot; if omitted).
+observra.initialize(backend=&quot;otel_log&quot;, service_name=&quot;my-agent-svc&quot;)
 </code></pre>
 <h3 id="2-otel-spans-distributed-tracing">2. OTel Spans — Distributed Tracing</h3>
 <p>Best for: multi-service architectures where you need trace correlation.</p>
