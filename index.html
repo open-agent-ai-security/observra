@@ -29,7 +29,7 @@
   --blue-lt:      #4DA3FF;
   --blue-dim:     rgba(30,111,224,0.18);
   --blue-glow:    rgba(30,111,224,0.30);
-  --btn-grad:     linear-gradient(100deg, #4DA3FF, #1763CC);
+  --btn-grad:     linear-gradient(100deg, #1E6FE0, #1457BE); /* AA: white text ≥4.5:1 on both stops */
   --text:         #EEF4FF;
   --text-sub:     #8FAFC8;
   --text-muted:   #6A8AA6;
@@ -43,7 +43,6 @@
   --pill-text:    #4DA3FF;
   --table-head:   #0A1826;
   --table-stripe: #0C1D2E;
-  --shadow:       0 4px 24px rgba(0,0,0,0.5);
 }
 
 [data-theme="light"] {
@@ -57,7 +56,6 @@
   --blue-lt:      #1560CC;
   --blue-dim:     rgba(21,96,204,0.08);
   --blue-glow:    rgba(21,96,204,0.20);
-  --btn-grad:     linear-gradient(100deg, #2C7BE6, #1457BE);
   --text:         #0D1B2A;
   --text-sub:     #3A5570;
   --text-muted:   #42596B;
@@ -71,7 +69,6 @@
   --pill-text:    #1560CC;
   --table-head:   #DDE8F2;
   --table-stripe: #EBF1F8;
-  --shadow:       0 4px 24px rgba(0,0,0,0.10);
 }
 
 /* ════════════════════════════════════════════════
@@ -935,7 +932,7 @@ footer {
 @media (max-width: 600px) {
   .fw-grid { grid-template-columns: 1fr 1fr; }
   .footer-grid { grid-template-columns: 1fr; }
-  .hero-ctas { flex-direction: column; align-items: center; }
+  .hero-ctas { flex-direction: column; align-items: flex-start; }
   .cta-band-btns { flex-direction: column; align-items: center; }
 }
 @media (prefers-reduced-motion: reduce) {
