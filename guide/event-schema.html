@@ -158,50 +158,168 @@ img { max-width: 100%; display: block; }
   </div>
 </header>
 <div class="docs-shell">
-  <aside class="docs-sidebar"><nav class="docs-nav"><div class="docs-nav-title">Documentation</div><ul><li><a href="index.html">Overview</a></li><li><a href="getting-started/adk.html">Getting Started · ADK</a></li><li><a href="architecture.html">Architecture</a></li><li><a href="event-schema.html" class="active">Event Schema</a><ul class="docs-subnav"><li><a href="#schema-source">Schema Source</a></li><li><a href="#event-structure">Event Structure</a></li><li><a href="#event-types">Event Types</a></li></ul></li><li><a href="production-deployment.html">Production Deployment</a></li><li><a href="COMPATIBILITY.html">Compatibility</a></li></ul></nav></aside>
+  <aside class="docs-sidebar"><nav class="docs-nav"><div class="docs-nav-title">Documentation</div><ul><li><a href="index.html">Overview</a></li><li><a href="getting-started/adk.html">Getting Started · ADK</a></li><li><a href="architecture.html">Architecture</a></li><li><a href="event-schema.html" class="active">Event Schema</a><ul class="docs-subnav"><li><a href="#schema-source">Schema Source</a></li><li><a href="#versioning">Versioning</a></li><li><a href="#event-envelope">Event Envelope</a></li><li><a href="#serialization-formats">Serialization Formats</a></li><li><a href="#event-types">Event Types</a></li></ul></li><li><a href="production-deployment.html">Production Deployment</a></li><li><a href="COMPATIBILITY.html">Compatibility</a></li></ul></nav></aside>
   <main class="docs-main">
     <article class="prose"><h1 id="event-schema">Event Schema</h1>
 <p>The Common Information Model (CIM) defines the canonical event structure for all telemetry events emitted by observra.</p>
 <h2 id="schema-source">Schema Source</h2>
 <p>The single source of truth is <a href="https://github.com/open-agent-ai-security/observra/blob/main/schema/cim_schema.toml"><code>schema/cim_schema.toml</code></a>.</p>
-<h2 id="event-structure">Event Structure</h2>
-<p>Every event contains:</p>
+<h2 id="versioning">Versioning</h2>
+<p>Events carry two independent version identifiers:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Source</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>library_version</code></td>
+<td>Package <code>__version__</code> (semver)</td>
+<td>Identifies the observra release that emitted the event</td>
+</tr>
+<tr>
+<td><code>cim_version</code></td>
+<td><code>CIM_VERSION</code> in <code>core/cim.py</code></td>
+<td>Identifies which CIM schema the event conforms to</td>
+</tr>
+</tbody>
+</table>
+<p>These move independently. A library patch release does not change the schema version; a new optional CIM field bumps the schema minor without requiring a library major.</p>
+<h2 id="event-envelope">Event Envelope</h2>
+<p>Every event serialized by observra contains:</p>
 <table>
 <thead>
 <tr>
 <th>Field</th>
 <th>Type</th>
+<th>Required</th>
 <th>Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>ts</code></td>
-<td>ISO 8601 string</td>
+<td><code>event_id</code></td>
+<td>string (ULID)</td>
+<td>yes</td>
+<td>Unique event identifier</td>
+</tr>
+<tr>
+<td><code>timestamp</code></td>
+<td>float (Unix epoch)</td>
+<td>yes</td>
 <td>Event timestamp</td>
+</tr>
+<tr>
+<td><code>trace_id</code></td>
+<td>string (ULID)</td>
+<td>yes</td>
+<td>Distributed trace identifier</td>
+</tr>
+<tr>
+<td><code>session_id</code></td>
+<td>string (ULID)</td>
+<td>yes</td>
+<td>Session identifier</td>
+</tr>
+<tr>
+<td><code>span_id</code></td>
+<td>string (ULID)</td>
+<td>yes</td>
+<td>Current span identifier</td>
 </tr>
 <tr>
 <td><code>event_type</code></td>
 <td>string</td>
+<td>yes</td>
 <td>One of the defined CIM event types</td>
 </tr>
 <tr>
 <td><code>framework</code></td>
 <td>string</td>
-<td>Source framework (adk, claude, openai, langchain, pydantic_ai)</td>
+<td>no</td>
+<td>Source framework (adk, claude, openai, langgraph, pydantic-ai, mcp)</td>
 </tr>
 <tr>
-<td><code>session_id</code></td>
+<td><code>agent_name</code></td>
 <td>string</td>
-<td>Session identifier (ULID)</td>
+<td>no</td>
+<td>Name of the agent</td>
+</tr>
+<tr>
+<td><code>tool_name</code></td>
+<td>string</td>
+<td>no</td>
+<td>Name of the tool being called</td>
+</tr>
+<tr>
+<td><code>model_name</code></td>
+<td>string</td>
+<td>no</td>
+<td>Name of the model being used</td>
+</tr>
+<tr>
+<td><code>skill_name</code></td>
+<td>string</td>
+<td>no</td>
+<td>MCP skill identifier</td>
 </tr>
 <tr>
 <td><code>data</code></td>
 <td>object</td>
-<td>Event-specific payload</td>
+<td>no</td>
+<td>Event-specific payload (CIM fields, detection annotations)</td>
+</tr>
+<tr>
+<td><code>cim_version</code></td>
+<td>string</td>
+<td>yes</td>
+<td>CIM schema version (e.g. "1.0")</td>
+</tr>
+<tr>
+<td><code>host</code></td>
+<td>string</td>
+<td>no</td>
+<td>Hostname of the emitting machine</td>
+</tr>
+<tr>
+<td><code>user</code></td>
+<td>string</td>
+<td>no</td>
+<td>OS user running the process</td>
+</tr>
+<tr>
+<td><code>os</code></td>
+<td>string</td>
+<td>no</td>
+<td>Operating system description</td>
+</tr>
+<tr>
+<td><code>arch</code></td>
+<td>string</td>
+<td>no</td>
+<td>CPU architecture (normalized)</td>
+</tr>
+<tr>
+<td><code>library_version</code></td>
+<td>string</td>
+<td>no</td>
+<td>observra package version</td>
 </tr>
 </tbody>
 </table>
+<h2 id="serialization-formats">Serialization Formats</h2>
+<p>All backends serialize the same logical <code>TelemetryEvent</code> dataclass:</p>
+<ul>
+<li><strong>JSONL</strong> (<code>backends/jsonl.py</code>): <code>dataclasses.asdict(event)</code> → one JSON object per line</li>
+<li><strong>Webhook</strong> (<code>backends/webhook.py</code>): <code>dataclasses.asdict(event)</code> → HTTP POST body</li>
+<li><strong>OTel Spans</strong> (<code>backends/otel.py</code>): Maps event fields to OpenTelemetry span attributes</li>
+<li><strong>OTel Logs</strong> (<code>backends/otel_log.py</code>): Maps event fields to OTel LogRecord body</li>
+<li><strong>Exabeam</strong> (<code>senders/exabeam.py</code>): Curated field subset via <code>build_payload()</code> / <code>build_raw_payload()</code></li>
+</ul>
+<p>The <code>cim_version</code> field is present in all serializations that use <code>asdict()</code> (JSONL, webhook). The Exabeam sender includes it only if explicitly added to its canonical field set.</p>
 <h2 id="event-types">Event Types</h2>
 <p>See <a href="CIM_SCHEMA_SPEC.html">CIM Schema Spec</a> for the full catalog of event types, actions, and classification rules.</p></article>
     <p class="docs-edit"><a href="https://github.com/open-agent-ai-security/observra/blob/main/docs/event-schema.md" target="_blank" rel="noopener">Edit this page on GitHub ↗</a></p>
