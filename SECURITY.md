@@ -17,9 +17,11 @@
 
 Use GitHub Security Advisories to report vulnerabilities privately:
 
-1. Go to the [Security tab](https://github.com/ExabeamLabs/observra/security) of this repository
+1. Go to the [Security tab](https://github.com/open-agent-ai-security/observra/security) of this repository
 2. Click "Report a vulnerability"
 3. Fill in the vulnerability details
+
+If GitHub Security Advisories are unavailable to you for any reason, email **developer@exabeam.com** with the subject line **`observra security report`** and the same level of detail.
 
 ### What We Consider a Security Issue
 

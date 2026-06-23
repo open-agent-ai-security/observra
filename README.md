@@ -3,8 +3,12 @@
   SPDX-License-Identifier: Apache-2.0
 -->
 # observra
+**Framework-agnostic agent behavior analytics.**
 
-Framework-agnostic agent behavior analytics — capture every meaningful agent action (token usage, tool calls, cost, errors) with structured context based on the Common Information Model (CIM).
+[![License: Apache-2.0](https://img.shields.io/badge/license-Apache_2.0-blue.svg)](LICENSE.md)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
+
+Capture every meaningful agent action (token usage, tool calls, cost, errors) with structured context based on the Common Information Model (CIM).
 
 Zero custom instrumentation per-agent. Answer "what happened, how much did it cost, and was it normal?" for any agent on any framework.
 
@@ -135,7 +139,10 @@ backend = MultiBackend([span_backend, log_backend])
 - [Architecture](docs/architecture.md) — system design overview
 - [Compatibility](docs/COMPATIBILITY.md) — supported versions
 
+## Project sponsor
+
+observra is sponsored by [Exabeam](https://www.exabeam.com/). Exabeam contributed the initial code and continues to provide ongoing support and contributions to the project as part of its commitment to security in an increasingly agentic world.
 
 ## License
 
-Apache 2.0 — see [LICENSE](LICENSE)
+Apache 2.0 — see [LICENSE](LICENSE.md)
