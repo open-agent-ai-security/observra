@@ -188,6 +188,9 @@ def page_html(theme_css, title, nav, body, src, root_prefix, body_end=""):
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{html.escape(title)} · observra Docs</title>
+<link rel="icon" type="image/png" sizes="32x32" href="{root_prefix}graphics/web/favicon-32.png">
+<link rel="icon" type="image/png" sizes="256x256" href="{root_prefix}graphics/web/favicon-256.png">
+<link rel="apple-touch-icon" sizes="180x180" href="{root_prefix}graphics/web/favicon-180.png">
 <style>{theme_css}</style>
 {analytics}
 </head>
