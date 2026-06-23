@@ -173,8 +173,8 @@ def get_stats() -> dict:
     stats = _queue.get_stats()
     stats.update(
         {
-            "events_processed": _worker.events_processed,
-            "errors": _worker.errors,
+            "events_processed": _worker._events_processed,
+            "errors": _worker._errors,
         }
     )
     return stats

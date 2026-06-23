@@ -72,18 +72,16 @@ runner = Runner(
 #   cat telemetry.jsonl | python -m json.tool
 
 
-# ── Optional: environment variable config (zero code changes) ──────
+# ── Optional: gate telemetry behind your own env var ───────────────
 #
-# Instead of passing parameters to initialize(), set env vars:
+# initialize() does not read telemetry settings from the environment, but you
+# can gate it with your own flag so it can be toggled without code edits:
 #
-#   export ABA_TELEMETRY_BACKEND=jsonl
-#   export ABA_TELEMETRY_PATH=telemetry.jsonl
-#
-# Then just:
-#   initialize()
-#   plugin = create_plugin()
-#
-# This lets you enable/disable telemetry without touching code.
+#   import os
+#   if os.environ.get("MY_APP_TELEMETRY"):
+#       initialize(backend="jsonl", path="telemetry.jsonl")
+#       plugin = create_plugin()
+#       runner_kwargs["plugins"] = [plugin]
 
 
 # ── Optional: advanced configuration ───────────────────────────────
