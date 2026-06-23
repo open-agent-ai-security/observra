@@ -60,6 +60,7 @@ _AT_SESSION_ID = "observra.session_id"
 _AT_FRAMEWORK = "observra.framework"
 _AT_COST_USD = "observra.cost_usd"
 _AT_SCHEMA = "observra.schema"
+_AT_CIM_VERSION = "observra.cim_version"
 _AT_HAS_INJECTION = "observra.has_injection_patterns"
 _AT_INJECTION_PATTERNS = "observra.injection_patterns"
 
@@ -90,6 +91,7 @@ def _build_safe_body(event: TelemetryEvent) -> dict:
         "span_id": event.span_id,
         "event_type": event.event_type,
         "framework": event.framework or "unknown",
+        "cim_version": event.cim_version,
     }
 
     if event.agent_name:
@@ -184,6 +186,7 @@ def _build_sensor_body(event: TelemetryEvent) -> dict:
         "type": _EVENT_TYPE_TO_SENSOR.get(event.event_type, event.event_type),
         "framework": event.framework or "unknown",
         "schema": "observra",
+        "cim_version": event.cim_version,
     }
 
     if event.agent_name:
@@ -244,6 +247,7 @@ def _build_attributes(event: TelemetryEvent) -> dict:
         _AT_SESSION_ID: event.session_id,
         _AT_FRAMEWORK: event.framework or "unknown",
         _AT_SCHEMA: "observra",
+        _AT_CIM_VERSION: event.cim_version or "1.0",
     }
 
     if event.agent_name:

@@ -65,6 +65,7 @@ _AT_TRACE_ID = "observra.trace_id"
 _AT_SESSION_ID = "observra.session_id"
 _AT_FRAMEWORK = "observra.framework"
 _AT_COST_USD = "observra.cost_usd"
+_AT_CIM_VERSION = "observra.cim_version"
 _AT_HAS_INJECTION = "observra.has_injection_patterns"
 _AT_INJECTION_PATTERNS = "observra.injection_patterns"
 
@@ -150,6 +151,7 @@ def _apply_gen_ai_attributes(span, event: TelemetryEvent) -> None:
     span.set_attribute(_AT_TRACE_ID, event.trace_id)
     span.set_attribute(_AT_SESSION_ID, event.session_id)
     span.set_attribute(_AT_FRAMEWORK, event.framework or "unknown")
+    span.set_attribute(_AT_CIM_VERSION, event.cim_version or "1.0")
 
     # Extract token/cost/tool data from event.data dict (skip any that are None)
     data = event.data or {}
