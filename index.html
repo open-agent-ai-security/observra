@@ -261,24 +261,24 @@ nav {
 .pill {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
+  gap: 9px;
   background: var(--pill-bg);
   border: 1px solid var(--blue-dim);
-  border-radius: 20px;
-  padding: 5px 14px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-  letter-spacing: 0.08em;
-  color: var(--pill-text);
-  margin-bottom: 24px;
+  border-radius: 999px;
+  padding: 7px 15px 7px 12px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--text-sub);
+  margin-bottom: 26px;
   opacity: 0;
   animation: fade-up 0.5s 0.3s ease forwards;
 }
+/* Status-green dot ("good"), theme-independent like Praxen's */
 .pill-dot {
-  width: 6px; height: 6px;
+  width: 7px; height: 7px;
   border-radius: 50%;
-  background: var(--blue-lt);
-  box-shadow: 0 0 6px var(--blue-lt);
+  background: #34C759;
+  box-shadow: 0 0 0 4px rgba(52,199,89,0.18);
 }
 
 .hero h1 {
@@ -840,6 +840,10 @@ footer {
 }
 .footer-bottom a { color: var(--text-sub); transition: color 0.18s; }
 .footer-bottom a:hover { color: var(--text); text-decoration: none; }
+/* Link back to the parent community (logo swaps with theme via .logo-on-*) */
+.footer-community { display: inline-flex; align-items: center; gap: 10px; opacity: 0.9; transition: opacity 0.18s; }
+.footer-community:hover { opacity: 1; }
+.footer-community img { height: 24px; }
 /* Sponsor band — official Exabeam white logo on a fixed dark panel so it
    reads in both light and dark themes (Praxen-style sponsor treatment) */
 .sponsor-band {
@@ -984,7 +988,7 @@ footer {
 <header class="hero">
   <div class="hero-grid">
     <div class="hero-copy">
-      <div class="pill"><span class="pill-dot"></span>Open source · Apache 2.0 · Sponsored by Exabeam</div>
+      <div class="pill"><span class="pill-dot"></span>Open source · Multi-framework · Route Anywhere</div>
       <h1>See exactly what your<br><em>agents are doing.</em></h1>
       <p class="hero-sub">Framework-agnostic agent behavior observability — capture every meaningful agent action: token usage, tool calls, cost, and errors — with zero custom instrumentation per agent.</p>
       <p class="hero-question">Answer: <span>"what happened, how much did it cost, and was it normal?"</span></p>
@@ -1367,7 +1371,11 @@ log.session_end(agent_name=<span class="c-string">"my-agent"</span>)
   </div>
   <div class="footer-bottom">
     <span>Apache 2.0 License · © 2026 Exabeam, Inc.</span>
-    <a href="https://github.com/open-agent-ai-security/observra" target="_blank" rel="noopener">github.com/open-agent-ai-security/observra</a>
+    <a class="footer-community" href="https://open-agent-ai-security.github.io/" target="_blank" rel="noopener" aria-label="Part of the Open Agent AI Security community">
+      <span>Part of the</span>
+      <img class="logo-on-dark" src="graphics/brand/community-logo-dark-background.svg" alt="Open Agent AI Security community">
+      <img class="logo-on-light" src="graphics/brand/community-logo-light-background.svg" alt="Open Agent AI Security community">
+    </a>
   </div>
 </footer>
 
