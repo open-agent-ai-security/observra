@@ -29,6 +29,7 @@
   --blue-lt:      #4DA3FF;
   --blue-dim:     rgba(30,111,224,0.18);
   --blue-glow:    rgba(30,111,224,0.30);
+  --btn-grad:     linear-gradient(100deg, #1E6FE0, #1457BE); /* AA: white text ≥4.5:1 on both stops */
   --text:         #EEF4FF;
   --text-sub:     #8FAFC8;
   --text-muted:   #6A8AA6;
@@ -42,7 +43,6 @@
   --pill-text:    #4DA3FF;
   --table-head:   #0A1826;
   --table-stripe: #0C1D2E;
-  --shadow:       0 4px 24px rgba(0,0,0,0.5);
 }
 
 [data-theme="light"] {
@@ -69,7 +69,6 @@
   --pill-text:    #1560CC;
   --table-head:   #DDE8F2;
   --table-stripe: #EBF1F8;
-  --shadow:       0 4px 24px rgba(0,0,0,0.10);
 }
 
 /* ════════════════════════════════════════════════
@@ -115,7 +114,13 @@ nav {
 [data-theme="light"] nav {
   background: rgba(245,248,252,0.92);
 }
-.nav-logo img { height: 32px; }
+.nav-logo img { height: 30px; }
+/* Theme-aware logo: show the variant built for the active background.
+   (No `display` on `.nav-logo img` — it would out-specify these toggles.) */
+.logo-on-dark { display: block; }
+.logo-on-light { display: none; }
+[data-theme="light"] .logo-on-dark { display: none; }
+[data-theme="light"] .logo-on-light { display: block; }
 .nav-center {
   display: flex;
   gap: 28px;
@@ -195,20 +200,20 @@ nav {
 .btn-ghost svg { width: 15px; height: 15px; fill: currentColor; flex-shrink: 0; }
 .btn-primary {
   display: inline-flex; align-items: center; gap: 7px;
-  background: var(--blue);
+  background: var(--btn-grad);
   color: #fff;
   font-size: 13px;
   font-weight: 600;
   padding: 8px 16px;
   border-radius: 9px;
   border: 1px solid transparent;
-  box-shadow: 0 4px 14px -4px var(--blue-glow);
-  transition: transform 0.18s, background 0.18s, box-shadow 0.18s;
+  box-shadow: 0 6px 20px -6px var(--blue-glow);
+  transition: transform 0.18s, filter 0.18s, box-shadow 0.18s;
 }
 .btn-primary:hover {
-  background: var(--blue-lt);
+  filter: brightness(1.08);
   transform: translateY(-1px);
-  box-shadow: 0 8px 22px -6px var(--blue-glow);
+  box-shadow: 0 10px 26px -8px var(--blue-glow);
   text-decoration: none;
 }
 
@@ -218,11 +223,7 @@ nav {
 .hero {
   position: relative;
   overflow: hidden;
-  padding: 88px 40px 72px;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  padding: 72px 40px;
   background: var(--bg);
 }
 .hero::before {
@@ -233,33 +234,29 @@ nav {
   pointer-events: none;
 }
 
-/* Animated heartbeat line */
-.telemetry-svg {
-  width: 100%;
-  max-width: 760px;
-  height: 52px;
-  margin-bottom: 44px;
-  opacity: 0.8;
+/* Two-column hero: copy left, mascot right */
+.hero-grid {
+  position: relative;
+  max-width: 1080px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: 48px;
+  align-items: center;
 }
-.pulse-line {
-  stroke: var(--blue);
-  stroke-width: 1.5;
-  fill: none;
-  stroke-dasharray: 1100;
-  stroke-dashoffset: 1100;
-  animation: draw-line 2s ease forwards;
+.hero-copy { text-align: left; }
+.mascot-stage { position: relative; display: flex; justify-content: center; align-items: center; }
+.mascot-stage::before {
+  content: ''; position: absolute; width: 80%; height: 80%; left: 10%; top: 10%;
+  background: radial-gradient(circle, var(--blue-glow), transparent 64%);
+  filter: blur(40px); z-index: 0;
 }
-.pulse-flat {
-  stroke: var(--border);
-  stroke-width: 1;
-  fill: none;
+.mascot-stage img {
+  position: relative; z-index: 1; width: 100%; max-width: 500px;
+  filter: drop-shadow(0 28px 42px rgba(0,0,0,0.5));
+  animation: float 6s ease-in-out infinite;
 }
-.pulse-dot {
-  fill: var(--blue-lt);
-}
-@keyframes draw-line {
-  to { stroke-dashoffset: 0; }
-}
+@keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
 
 .pill {
   display: inline-flex;
@@ -330,20 +327,20 @@ nav {
 }
 .cta-primary {
   display: inline-flex; align-items: center; gap: 8px;
-  background: var(--blue);
+  background: var(--btn-grad);
   color: #fff;
   font-weight: 600;
   font-size: 14px;
   padding: 13px 26px;
   border-radius: 9px;
   border: 1px solid transparent;
-  box-shadow: 0 4px 14px -4px var(--blue-glow);
-  transition: transform 0.18s, background 0.18s, box-shadow 0.18s;
+  box-shadow: 0 6px 20px -6px var(--blue-glow);
+  transition: transform 0.18s, filter 0.18s, box-shadow 0.18s;
 }
 .cta-primary:hover {
-  background: var(--blue-lt);
+  filter: brightness(1.08);
   transform: translateY(-1px);
-  box-shadow: 0 8px 22px -6px var(--blue-glow);
+  box-shadow: 0 10px 26px -8px var(--blue-glow);
   text-decoration: none;
 }
 .cta-secondary {
@@ -364,92 +361,11 @@ nav {
   text-decoration: none;
 }
 
-/* Install pill in hero */
-.hero-install {
-  display: flex;
-  align-items: center;
-  gap: 0;
-  background: var(--mono-bg);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  overflow: hidden;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 13px;
-  margin-bottom: 64px;
-  opacity: 0;
-  animation: fade-up 0.55s 1.1s ease forwards;
-}
-.hero-install-label {
-  padding: 10px 14px;
-  background: var(--border);
-  color: var(--text-muted);
-  font-size: 11px;
-  letter-spacing: 0.08em;
-  white-space: nowrap;
-}
-.hero-install-cmd {
-  padding: 10px 16px;
-  color: var(--green);
-  white-space: nowrap;
-}
-.hero-install-copy {
-  padding: 10px 14px;
-  cursor: pointer;
-  color: var(--text-muted);
-  border: none;
-  background: transparent;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-  letter-spacing: 0.06em;
-  border-left: 1px solid var(--border);
-  transition: color 0.2s;
-}
-.hero-install-copy:hover { color: var(--blue-lt); }
-
-.hero-img {
-  width: 100%;
-  max-width: 900px;
-  border-radius: 14px;
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow);
-  opacity: 0;
-  animation: fade-up 0.7s 1.3s ease forwards;
-}
-
 @keyframes fade-up {
   from { opacity: 0; transform: translateY(18px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* ════════════════════════════════════════════════
-   BADGE BAR
-════════════════════════════════════════════════ */
-.badge-bar {
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-  padding: 14px 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 32px;
-  background: var(--bg-mid);
-}
-.badge-item {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-  letter-spacing: 0.07em;
-  color: var(--text-muted);
-}
-.badge-item .dot {
-  width: 5px; height: 5px;
-  border-radius: 50%;
-  background: var(--blue-lt);
-  box-shadow: 0 0 6px var(--blue-lt);
-}
 
 /* ════════════════════════════════════════════════
    SECTION SHARED
@@ -843,9 +759,11 @@ section { padding: 88px 40px; }
 
 .qs-layout {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 32px;
+  grid-template-columns: 0.9fr 1.1fr;
+  gap: 48px;
+  align-items: start;
 }
+.qs-copy .install-steps { margin-top: 36px; }
 
 
 /* ════════════════════════════════════════════════
@@ -1002,7 +920,10 @@ footer {
   .nav-center li { width: 100%; }
   .nav-center a { display: block; padding: 11px 0; }
   section { padding: 60px 20px; }
-  .hero { padding: 60px 20px 48px; }
+  .hero { padding: 56px 20px; }
+  .hero-grid { grid-template-columns: 1fr; gap: 28px; }
+  .mascot-stage { order: -1; }
+  .mascot-stage img { max-width: 360px; }
   .features-layout { grid-template-columns: 1fr; }
   .install-layout { grid-template-columns: 1fr; }
   .qs-layout { grid-template-columns: 1fr; }
@@ -1011,14 +932,14 @@ footer {
 @media (max-width: 600px) {
   .fw-grid { grid-template-columns: 1fr 1fr; }
   .footer-grid { grid-template-columns: 1fr; }
-  .hero-ctas { flex-direction: column; align-items: center; }
+  .hero-ctas { flex-direction: column; align-items: flex-start; }
   .cta-band-btns { flex-direction: column; align-items: center; }
 }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto !important; }
   *, *::before, *::after { animation: none !important; transition: none !important; }
   /* Without animation the fade-up start state would stay hidden — force visible. */
-  .reveal, .pill, .hero h1, .hero-sub, .hero-question, .hero-ctas, .hero-install, .hero-img {
+  .reveal, .pill, .hero h1, .hero-sub, .hero-question, .hero-ctas {
     opacity: 1 !important; transform: none !important;
   }
 }
@@ -1034,7 +955,8 @@ footer {
 <!-- ═══════════════════════════════ NAV ═══════════════════════════════ -->
 <nav id="top">
   <a class="nav-logo" href="#top">
-    <img src="assets/logo.png" alt="Observra">
+    <img class="logo-on-dark" src="graphics/brand/observra-wordmark-dark-background.svg" alt="observra">
+    <img class="logo-on-light" src="graphics/brand/observra-wordmark-light-background.svg" alt="observra">
   </a>
   <ul class="nav-center" id="navMenu">
     <li><a href="#how">Architecture</a></li>
@@ -1060,42 +982,24 @@ footer {
 <main>
 <!-- ═══════════════════════════════ HERO ═══════════════════════════════ -->
 <header class="hero">
-  <!-- Animated telemetry heartbeat -->
-  <svg class="telemetry-svg" viewBox="0 0 760 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-    <line class="pulse-flat" x1="0" y1="26" x2="120" y2="26"/>
-    <path class="pulse-line" d="M120,26 L172,26 L184,6 L198,46 L211,14 L222,38 L232,26 L310,26 L322,26 L334,8 L347,44 L358,18 L368,34 L376,26 L460,26 L472,26 L484,9 L496,43 L507,16 L517,36 L524,26 L620,26"/>
-    <line class="pulse-flat" x1="620" y1="26" x2="760" y2="26"/>
-    <circle class="pulse-dot" cx="620" cy="26" r="4"/>
-  </svg>
+  <div class="hero-grid">
+    <div class="hero-copy">
+      <div class="pill"><span class="pill-dot"></span>Open source · Apache 2.0 · Sponsored by Exabeam</div>
+      <h1>See exactly what your<br><em>agents are doing.</em></h1>
+      <p class="hero-sub">Framework-agnostic agent behavior observability — capture every meaningful agent action: token usage, tool calls, cost, and errors — with zero custom instrumentation per agent.</p>
+      <p class="hero-question">Answer: <span>"what happened, how much did it cost, and was it normal?"</span></p>
 
-  <div class="pill"><span class="pill-dot"></span>Open source · Apache 2.0 · Sponsored by Exabeam</div>
-  <h1>See exactly what your<br><em>agents are doing.</em></h1>
-  <p class="hero-sub">Framework-agnostic agent behavior analytics — capture every meaningful agent action: token usage, tool calls, cost, and errors — with zero custom instrumentation per agent.</p>
-  <p class="hero-question">Answer: <span>"what happened, how much did it cost, and was it normal?"</span></p>
+      <div class="hero-ctas">
+        <a class="cta-primary" href="#install">Get started →</a>
+        <a class="cta-secondary" href="#frameworks">See supported frameworks</a>
+      </div>
+    </div>
 
-  <div class="hero-install">
-    <span class="hero-install-label">pip</span>
-    <span class="hero-install-cmd">pip install observra</span>
-    <button class="hero-install-copy" onclick="copyPip(this)">copy</button>
+    <div class="mascot-stage">
+      <img src="assets/mascot.png" alt="The observra owl mascot reviewing live agent-telemetry dashboards">
+    </div>
   </div>
-
-  <div class="hero-ctas">
-    <a class="cta-primary" href="#install">Get started →</a>
-    <a class="cta-secondary" href="#frameworks">See supported frameworks</a>
-  </div>
-
-  <img class="hero-img" src="assets/hero.png" alt="Observra — observes, captures, normalizes signals in real time">
 </header>
-
-<!-- ═══════════════════════════════ BADGE BAR ═══════════════════════════════ -->
-<div class="badge-bar">
-  <div class="badge-item"><span class="dot"></span>Python 3.10 – 3.12</div>
-  <div class="badge-item"><span class="dot"></span>CIM-normalized events</div>
-  <div class="badge-item"><span class="dot"></span>5 agent frameworks</div>
-  <div class="badge-item"><span class="dot"></span>OTel-compatible export</div>
-  <div class="badge-item"><span class="dot"></span>Zero instrumentation per agent</div>
-  <div class="badge-item"><span class="dot"></span>Non-blocking pipeline</div>
-</div>
 
 <!-- ═══════════════════════════════ HOW IT WORKS ═══════════════════════════════ -->
 <section id="how">
@@ -1339,13 +1243,12 @@ footer {
 <!-- ═══════════════════════════════ INSTALL / QUICKSTART ═══════════════════════════════ -->
 <section id="install">
   <div class="inner">
-    <p class="eyebrow">Installation &amp; quick start</p>
-    <h2 class="section-h2">Up and running in three steps.</h2>
-    <p class="section-lead">Install the base package, add the extras for your frameworks and backends, and initialize once at app startup.</p>
-
     <div class="qs-layout reveal">
-      <!-- Left: install steps -->
-      <div>
+      <!-- Left: title + install steps -->
+      <div class="qs-copy">
+        <p class="eyebrow">Installation &amp; quick start</p>
+        <h2 class="section-h2">Up and running in three steps.</h2>
+        <p class="section-lead">Install the base package, add the extras for your frameworks and backends, and initialize once at app startup.</p>
         <div class="install-steps">
           <div class="i-step">
             <div class="i-num">1</div>
@@ -1420,7 +1323,8 @@ log.session_end(agent_name=<span class="c-string">"my-agent"</span>)
 <footer>
   <div class="footer-grid">
     <div class="footer-brand">
-      <img src="assets/logo.png" alt="Observra">
+      <img class="logo-on-dark" src="graphics/brand/observra-wordmark-dark-background.svg" alt="observra">
+      <img class="logo-on-light" src="graphics/brand/observra-wordmark-light-background.svg" alt="observra">
       <p>The open-source Python SDK for framework-agnostic agent telemetry and observability. Answer "what happened, how much did it cost, and was it normal?" for any agent on any framework.</p>
     </div>
     <div class="footer-col">
@@ -1515,12 +1419,6 @@ function fallbackCopy(text, done) {
     document.body.appendChild(ta); ta.focus(); ta.select();
     document.execCommand('copy'); document.body.removeChild(ta); done();
   } catch (e) { /* clipboard unavailable */ }
-}
-function copyPip(el) {
-  copyText('pip install observra', () => {
-    el.textContent = 'copied ✓';
-    setTimeout(() => el.textContent = 'copy', 2000);
-  });
 }
 function copyCode(btn, id) {
   const el = document.getElementById(id);

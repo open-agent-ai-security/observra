@@ -38,9 +38,9 @@ DOCS_DIR = ROOT / "docs"
 OUT_DIR = ROOT / "guide"
 THEME_CSS = ROOT / "assets" / "observra-theme.css"
 REPO = "https://github.com/open-agent-ai-security/observra"
-# Brand mark shown in the docs top bar. Interim: the existing logo asset.
-# (A purpose-built wordmark is pending the Marketing brand refresh.)
-BRAND_IMG = "assets/logo.png"
+# Brand wordmark shown in the docs top bar. The docs theme is dark-only, so use
+# the dark-background (light-colored) variant.
+BRAND_IMG = "graphics/brand/observra-wordmark-dark-background.svg"
 
 # Cookieless web analytics injected into every docs page, mirroring the landing
 # page (index.html). The GoatCounter endpoint and Cloudflare token are shared
