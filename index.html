@@ -115,8 +115,10 @@ nav {
 [data-theme="light"] nav {
   background: rgba(245,248,252,0.92);
 }
-.nav-logo img { height: 30px; display: block; }
-/* Theme-aware logo: show the variant built for the active background */
+.nav-logo img { height: 30px; }
+/* Theme-aware logo: show the variant built for the active background.
+   (No `display` on `.nav-logo img` — it would out-specify these toggles.) */
+.logo-on-dark { display: block; }
 .logo-on-light { display: none; }
 [data-theme="light"] .logo-on-dark { display: none; }
 [data-theme="light"] .logo-on-light { display: block; }
