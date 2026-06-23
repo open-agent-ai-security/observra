@@ -9,6 +9,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Observra — Agent Telemetry &amp; Observability</title>
 <meta name="description" content="Framework-agnostic agent telemetry. Observra captures every meaningful agent action — token usage, tool calls, cost, errors — with zero custom instrumentation per agent.">
+<!-- Set saved theme before first paint to avoid a flash of the wrong theme -->
+<script>try{var t=localStorage.getItem('observra-theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -29,7 +31,7 @@
   --blue-glow:    rgba(30,111,224,0.30);
   --text:         #EEF4FF;
   --text-sub:     #8FAFC8;
-  --text-muted:   #4D6E8A;
+  --text-muted:   #6A8AA6;
   --mono-bg:      #040C16;
   --mono-text:    #CBD8E6;
   --green:        #28C840;
@@ -51,16 +53,16 @@
   --border:       #C8D8E8;
   --border-lt:    #B0C8DC;
   --blue:         #1560CC;
-  --blue-lt:      #1A70E0;
+  --blue-lt:      #1560CC;
   --blue-dim:     rgba(21,96,204,0.08);
   --blue-glow:    rgba(21,96,204,0.20);
   --text:         #0D1B2A;
   --text-sub:     #3A5570;
-  --text-muted:   #50697D;
+  --text-muted:   #42596B;
   --mono-bg:      #1A2D40;
   --mono-text:    #CBD8E6;
-  --green:        #1A9E30;
-  --green-dim:    rgba(26,158,48,0.12);
+  --green:        #157A26;
+  --green-dim:    rgba(21,122,38,0.12);
   --yellow:       #B07800;
   --teal:         #1A7899;
   --pill-bg:      rgba(21,96,204,0.10);
@@ -89,6 +91,8 @@ img { display: block; max-width: 100%; }
 code, pre {
   font-family: 'JetBrains Mono', monospace;
 }
+/* Visible keyboard focus on all interactive controls (WCAG 2.4.7) */
+:focus-visible { outline: 2px solid var(--blue-lt); outline-offset: 2px; border-radius: 4px; }
 
 /* ════════════════════════════════════════════════
    NAV
@@ -104,6 +108,7 @@ nav {
   padding: 0 40px;
   background: rgba(7,15,26,0.88);
   backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   border-bottom: 1px solid var(--border);
   transition: background 0.25s, border-color 0.25s;
 }
@@ -123,6 +128,13 @@ nav {
   transition: color 0.18s;
 }
 .nav-center a:hover { color: var(--text); text-decoration: none; }
+.nav-toggle {
+  display: none;
+  align-items: center; justify-content: center;
+  background: var(--bg-card); border: 1px solid var(--border-lt);
+  border-radius: 9px; padding: 6px; color: var(--text-sub); cursor: pointer;
+}
+.nav-toggle:hover { color: var(--text); border-color: var(--blue); }
 .nav-right {
   display: flex;
   align-items: center;
@@ -977,7 +989,18 @@ footer {
 ════════════════════════════════════════════════ */
 @media (max-width: 960px) {
   nav { padding: 0 20px; }
-  .nav-center { display: none; }
+  .nav-toggle { display: inline-flex; }
+  .nav-center {
+    display: none;
+    position: absolute; top: 60px; left: 0; right: 0;
+    flex-direction: column; gap: 0;
+    background: var(--bg-mid);
+    border-bottom: 1px solid var(--border);
+    padding: 8px 20px 16px;
+  }
+  .nav-center.open { display: flex; }
+  .nav-center li { width: 100%; }
+  .nav-center a { display: block; padding: 11px 0; }
   section { padding: 60px 20px; }
   .hero { padding: 60px 20px 48px; }
   .features-layout { grid-template-columns: 1fr; }
@@ -992,7 +1015,12 @@ footer {
   .cta-band-btns { flex-direction: column; align-items: center; }
 }
 @media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto !important; }
   *, *::before, *::after { animation: none !important; transition: none !important; }
+  /* Without animation the fade-up start state would stay hidden — force visible. */
+  .reveal, .pill, .hero h1, .hero-sub, .hero-question, .hero-ctas, .hero-install, .hero-img {
+    opacity: 1 !important; transform: none !important;
+  }
 }
 </style>
 <!-- Cookieless web analytics — two tools side by side (temporary A/B comparison):
@@ -1008,7 +1036,7 @@ footer {
   <a class="nav-logo" href="#top">
     <img src="assets/logo.png" alt="Observra">
   </a>
-  <ul class="nav-center">
+  <ul class="nav-center" id="navMenu">
     <li><a href="#how">Architecture</a></li>
     <li><a href="#frameworks">Frameworks</a></li>
     <li><a href="#features">Features</a></li>
@@ -1021,11 +1049,15 @@ footer {
       <div class="toggle-track"><div class="toggle-thumb"></div></div>
       <span class="toggle-label" id="toggleLabel">DARK</span>
     </button>
-    <a class="btn-ghost" href="https://github.com/open-agent-ai-security/observra" target="_blank"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5C5.7.5.5 5.7.5 12c0 5.1 3.3 9.4 7.9 10.9.6.1.8-.2.8-.6v-2c-3.2.7-3.9-1.4-3.9-1.4-.5-1.3-1.3-1.7-1.3-1.7-1.1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0C17.3 4.7 18.3 5 18.3 5c.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.3c0 .4.2.7.8.6 4.6-1.5 7.9-5.8 7.9-10.9C23.5 5.7 18.3.5 12 .5z"/></svg>GitHub</a>
+    <a class="btn-ghost" href="https://github.com/open-agent-ai-security/observra" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5C5.7.5.5 5.7.5 12c0 5.1 3.3 9.4 7.9 10.9.6.1.8-.2.8-.6v-2c-3.2.7-3.9-1.4-3.9-1.4-.5-1.3-1.3-1.7-1.3-1.7-1.1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0C17.3 4.7 18.3 5 18.3 5c.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.3c0 .4.2.7.8.6 4.6-1.5 7.9-5.8 7.9-10.9C23.5 5.7 18.3.5 12 .5z"/></svg>GitHub</a>
     <a class="btn-primary" href="#install">Install</a>
+    <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="navMenu">
+      <svg viewBox="0 0 24 24" aria-hidden="true" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+    </button>
   </div>
 </nav>
 
+<main>
 <!-- ═══════════════════════════════ HERO ═══════════════════════════════ -->
 <header class="hero">
   <!-- Animated telemetry heartbeat -->
@@ -1075,28 +1107,28 @@ footer {
     <div class="arch-flow reveal">
       <div class="arch-node n-agent">
         <div class="arch-row">
-          <div class="arch-ic"><svg viewBox="0 0 24 24"><polyline points="8 6 3 12 8 18"/><polyline points="16 6 21 12 16 18"/></svg></div>
+          <div class="arch-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="8 6 3 12 8 18"/><polyline points="16 6 21 12 16 18"/></svg></div>
           <div><h3>Agent Code</h3><p>Your agent runs unmodified — ADK, Claude, OpenAI Agents, LangGraph, and Pydantic AI all emit framework callbacks automatically.</p><div class="arch-tags"><span>ADK</span><span>Claude</span><span>OpenAI</span><span>LangGraph</span><span>Pydantic AI</span></div></div>
         </div>
       </div>
-      <div class="arch-link"><span class="lbl">framework callbacks</span><svg class="arr" viewBox="0 0 24 24"><path d="M12 5v14M6 13l6 6 6-6"/></svg></div>
+      <div class="arch-link"><span class="lbl">framework callbacks</span><svg class="arr" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6"/></svg></div>
       <div class="arch-node n-adapter">
         <div class="arch-row">
-          <div class="arch-ic"><svg viewBox="0 0 24 24"><path d="M9 2v6M15 2v6"/><path d="M7 8h10v3a5 5 0 0 1-10 0z"/><path d="M12 16v6"/></svg></div>
+          <div class="arch-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 2v6M15 2v6"/><path d="M7 8h10v3a5 5 0 0 1-10 0z"/><path d="M12 16v6"/></svg></div>
           <div><h3>Adapter Layer</h3><p>Framework-specific adapters intercept callbacks and translate them into normalized events — no per-agent code required.</p><div class="arch-tags"><span>adk</span><span>claude</span><span>openai</span><span>langchain</span><span>pydantic_ai</span></div></div>
         </div>
       </div>
-      <div class="arch-link"><span class="lbl">normalized events</span><svg class="arr" viewBox="0 0 24 24"><path d="M12 5v14M6 13l6 6 6-6"/></svg></div>
+      <div class="arch-link"><span class="lbl">normalized events</span><svg class="arr" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6"/></svg></div>
       <div class="arch-node n-core">
         <div class="arch-row">
-          <div class="arch-ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.4v3.2M12 18.4v3.2M21.6 12h-3.2M5.6 12H2.4M18.36 5.64l-2.26 2.26M7.9 16.1l-2.26 2.26M18.36 18.36l-2.26-2.26M7.9 7.9 5.64 5.64"/></svg></div>
+          <div class="arch-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.4v3.2M12 18.4v3.2M21.6 12h-3.2M5.6 12H2.4M18.36 5.64l-2.26 2.26M7.9 16.1l-2.26 2.26M18.36 18.36l-2.26-2.26M7.9 7.9 5.64 5.64"/></svg></div>
           <div><h3>Core Pipeline</h3><p>CIM normalization, deduplication, PII redaction, and per-session cost calculation happen in sequence before any backend sees the event.</p><div class="arch-tags"><span>CIM normalize</span><span>dedup</span><span>redact</span><span>cost</span></div></div>
         </div>
       </div>
-      <div class="arch-link"><span class="lbl">enriched events</span><svg class="arr" viewBox="0 0 24 24"><path d="M12 5v14M6 13l6 6 6-6"/></svg></div>
+      <div class="arch-link"><span class="lbl">enriched events</span><svg class="arr" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6"/></svg></div>
       <div class="arch-node n-backend">
         <div class="arch-row">
-          <div class="arch-ic"><svg viewBox="0 0 24 24"><path d="M4 6c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3z"/><path d="M4 6v6c0 1.7 3.6 3 8 3s8-1.3 8-3V6"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg></div>
+          <div class="arch-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3z"/><path d="M4 6v6c0 1.7 3.6 3 8 3s8-1.3 8-3V6"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg></div>
           <div><h3>Backend Layer</h3><p>Enriched events are routed to JSONL, Webhook, OTel Spans, OTel Logs, or any combination via MultiBackend fan-out.</p><div class="arch-tags"><span>JSONL</span><span>Webhook</span><span>OTel</span><span>Multi</span></div></div>
         </div>
       </div>
@@ -1155,56 +1187,56 @@ footer {
     <div class="features-layout">
       <ul class="feature-list reveal">
         <li>
-          <div class="feat-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v10"/><path d="M14.5 9.3c-.4-1-1.4-1.6-2.6-1.6-1.5 0-2.6.8-2.6 2 0 1.1.8 1.7 2.6 2 1.9.3 2.8.9 2.8 2.1 0 1.3-1.2 2.1-2.8 2.1-1.3 0-2.4-.6-2.8-1.7"/></svg></div>
+          <div class="feat-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v10"/><path d="M14.5 9.3c-.4-1-1.4-1.6-2.6-1.6-1.5 0-2.6.8-2.6 2 0 1.1.8 1.7 2.6 2 1.9.3 2.8.9 2.8 2.1 0 1.3-1.2 2.1-2.8 2.1-1.3 0-2.4-.6-2.8-1.7"/></svg></div>
           <div class="feat-body">
             <strong>Cost tracking</strong>
             <span>Per-session cost with a model-specific pricing catalog and configurable threshold alerts for runaway LLM spend.</span>
           </div>
         </li>
         <li>
-          <div class="feat-icon"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+          <div class="feat-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
           <div class="feat-body">
             <strong>PII redaction</strong>
             <span>Automatic secret and PII masking on by default, with configurable patterns for org-specific tokens and credentials.</span>
           </div>
         </li>
         <li>
-          <div class="feat-icon"><svg viewBox="0 0 24 24"><polygon points="13 2 4 14 11 14 10 22 20 9 13 9"/></svg></div>
+          <div class="feat-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="13 2 4 14 11 14 10 22 20 9 13 9"/></svg></div>
           <div class="feat-body">
             <strong>Non-blocking pipeline</strong>
             <span>Drop-oldest queue guarantees zero latency impact on the host agent, even under backpressure.</span>
           </div>
         </li>
         <li>
-          <div class="feat-icon"><svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></div>
+          <div class="feat-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></div>
           <div class="feat-body">
             <strong>CIM-normalized events</strong>
             <span>All events conform to the Common Information Model schema before reaching any backend — SIEM-ready out of the box.</span>
           </div>
         </li>
         <li>
-          <div class="feat-icon"><svg viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 4.6-3.1 7.6-7 9-3.9-1.4-7-4.4-7-9V6z"/></svg></div>
+          <div class="feat-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 4.6-3.1 7.6-7 9-3.9-1.4-7-4.4-7-9V6z"/></svg></div>
           <div class="feat-body">
             <strong>Prompt injection detection</strong>
             <span>Built-in heuristics flag injection attempts in the event stream, annotating events so downstream consumers can act on them.</span>
           </div>
         </li>
         <li>
-          <div class="feat-icon"><svg viewBox="0 0 24 24"><circle cx="8" cy="15" r="4"/><path d="M10.5 12.5 20 3"/><path d="M16 7l3 3"/><path d="M14 9l2 2"/></svg></div>
+          <div class="feat-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="15" r="4"/><path d="M10.5 12.5 20 3"/><path d="M16 7l3 3"/><path d="M14 9l2 2"/></svg></div>
           <div class="feat-body">
             <strong>Encryption at rest</strong>
             <span>Optional AES line-level encryption for sensitive telemetry in the JSONL backend via the <code style="font-size:11px;color:var(--blue-lt)">[encryption]</code> extra.</span>
           </div>
         </li>
         <li>
-          <div class="feat-icon"><svg viewBox="0 0 24 24"><path d="M3 11a8 8 0 0 1 14-5l3 2"/><path d="M20 4v5h-5"/><path d="M21 13a8 8 0 0 1-14 5l-3-2"/><path d="M4 20v-5h5"/></svg></div>
+          <div class="feat-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11a8 8 0 0 1 14-5l3 2"/><path d="M20 4v5h-5"/><path d="M21 13a8 8 0 0 1-14 5l-3-2"/><path d="M4 20v-5h5"/></svg></div>
           <div class="feat-body">
             <strong>Deduplication</strong>
             <span>Automatic event dedup across backends ensures no duplicate records reach SIEM or observability pipelines.</span>
           </div>
         </li>
         <li>
-          <div class="feat-icon"><svg viewBox="0 0 24 24"><path d="M3 21h18"/><rect x="5" y="11" width="3.5" height="7"/><rect x="10.25" y="6" width="3.5" height="12"/><rect x="15.5" y="13" width="3.5" height="5"/></svg></div>
+          <div class="feat-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 21h18"/><rect x="5" y="11" width="3.5" height="7"/><rect x="10.25" y="6" width="3.5" height="12"/><rect x="15.5" y="13" width="3.5" height="5"/></svg></div>
           <div class="feat-body">
             <strong>Pipeline self-observability</strong>
             <span><code style="font-size:11px;color:var(--blue-lt)">get_metrics()</code> exposes drop count, queue depth, and write latency — expose via <code style="font-size:11px;color:var(--blue-lt)">/health</code> for alerting.</span>
@@ -1223,19 +1255,19 @@ footer {
         <div class="terminal-body">
 <span class="t-comment">// CIM-normalized event output</span><br>
 {<br>
-&nbsp;&nbsp;<span class="t-key">"ts"</span>: <span class="t-str">"2026-06-11T14:23:01.882Z"</span>,<br>
+&nbsp;&nbsp;<span class="t-key">"timestamp"</span>: <span class="t-num">1718115781.882</span>,<br>
 &nbsp;&nbsp;<span class="t-key">"event_type"</span>: <span class="t-str">"model_response"</span>,<br>
 &nbsp;&nbsp;<span class="t-key">"framework"</span>: <span class="t-str">"adk"</span>,<br>
 &nbsp;&nbsp;<span class="t-key">"agent_name"</span>: <span class="t-str">"research-agent"</span>,<br>
+&nbsp;&nbsp;<span class="t-key">"model_name"</span>: <span class="t-str">"gemini-2.0-flash"</span>,<br>
 &nbsp;&nbsp;<span class="t-key">"session_id"</span>: <span class="t-str">"s-a1f6c2e3"</span>,<br>
+&nbsp;&nbsp;<span class="t-key">"cim_version"</span>: <span class="t-str">"1.0"</span>,<br>
 &nbsp;&nbsp;<span class="t-key">"data"</span>: {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="t-key">"model"</span>: <span class="t-str">"gemini-2.0-flash"</span>,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="t-key">"in"</span>: <span class="t-num">1240</span>,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="t-key">"out"</span>: <span class="t-num">387</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="t-key">"input_tokens"</span>: <span class="t-num">1240</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="t-key">"output_tokens"</span>: <span class="t-num">387</span>,<br>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="t-key">"cost_usd"</span>: <span class="t-num">0.0019</span>,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="t-key">"tool_call"</span>: <span class="t-str">"web_search"</span>,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="t-key">"authorized"</span>: <span class="t-bool">true</span>,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="t-key">"has_injection_patterns"</span>: <span class="t-bool">false</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="t-key">"action"</span>: <span class="t-str">"call_llm"</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="t-key">"result"</span>: <span class="t-str">"success"</span><br>
 &nbsp;&nbsp;}<br>
 }<br>
 <br>
@@ -1378,9 +1410,11 @@ log.session_end(agent_name=<span class="c-string">"my-agent"</span>)
   <p>Observra runs at dev time and in production — open source, built for transparency, nothing phones home.</p>
   <div class="cta-band-btns">
     <a class="cta-primary" href="guide/index.html">Read the Docs →</a>
-    <a class="cta-secondary" href="https://github.com/open-agent-ai-security/observra" target="_blank">Star on GitHub</a>
+    <a class="cta-secondary" href="https://github.com/open-agent-ai-security/observra" target="_blank" rel="noopener">Star on GitHub</a>
   </div>
 </div>
+
+</main>
 
 <!-- ═══════════════════════════════ FOOTER ═══════════════════════════════ -->
 <footer>
@@ -1413,10 +1447,10 @@ log.session_end(agent_name=<span class="c-string">"my-agent"</span>)
     <div class="footer-col">
       <h5>Project</h5>
       <ul>
-        <li><a href="https://github.com/open-agent-ai-security/observra" target="_blank">GitHub</a></li>
-        <li><a href="https://github.com/open-agent-ai-security/observra/releases" target="_blank">Releases</a></li>
-        <li><a href="https://github.com/open-agent-ai-security/observra/blob/main/CONTRIBUTING.md" target="_blank">Contributing</a></li>
-        <li><a href="https://github.com/open-agent-ai-security/observra/blob/main/LICENSE.md" target="_blank">License (Apache 2.0)</a></li>
+        <li><a href="https://github.com/open-agent-ai-security/observra" target="_blank" rel="noopener">GitHub</a></li>
+        <li><a href="https://github.com/open-agent-ai-security/observra/releases" target="_blank" rel="noopener">Releases</a></li>
+        <li><a href="https://github.com/open-agent-ai-security/observra/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener">Contributing</a></li>
+        <li><a href="https://github.com/open-agent-ai-security/observra/blob/main/LICENSE.md" target="_blank" rel="noopener">License (Apache 2.0)</a></li>
       </ul>
     </div>
   </div>
@@ -1434,55 +1468,84 @@ log.session_end(agent_name=<span class="c-string">"my-agent"</span>)
 </footer>
 
 <script>
-// ── Theme toggle ──────────────────────────────────────────
-const html  = document.documentElement;
-const btn   = document.getElementById('themeToggle');
-const label = document.getElementById('toggleLabel');
+// ── Theme toggle (storage-safe) ───────────────────────────
+(function () {
+  const html  = document.documentElement;
+  const btn   = document.getElementById('themeToggle');
+  const label = document.getElementById('toggleLabel');
+  const store = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
+  const read  = (k)    => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+  function setTheme(t) {
+    html.setAttribute('data-theme', t);
+    if (label) label.textContent = t === 'dark' ? 'DARK' : 'LITE';
+    if (btn) btn.setAttribute('aria-pressed', String(t === 'light'));
+    store('observra-theme', t);
+  }
+  if (btn) btn.addEventListener('click', () =>
+    setTheme(html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'));
+  setTheme(read('observra-theme') || html.getAttribute('data-theme') || 'dark');
+})();
 
-function setTheme(t) {
-  html.setAttribute('data-theme', t);
-  label.textContent = t === 'dark' ? 'DARK' : 'LITE';
-  localStorage.setItem('observra-theme', t);
+// ── Mobile nav ────────────────────────────────────────────
+(function () {
+  const t = document.getElementById('navToggle');
+  const m = document.getElementById('navMenu');
+  if (!t || !m) return;
+  t.addEventListener('click', () => {
+    const open = m.classList.toggle('open');
+    t.setAttribute('aria-expanded', String(open));
+  });
+  m.querySelectorAll('a').forEach(a => a.addEventListener('click', () => {
+    m.classList.remove('open'); t.setAttribute('aria-expanded', 'false');
+  }));
+})();
+
+// ── Copy helpers (clipboard-safe, with execCommand fallback) ──
+function copyText(text, done) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(done).catch(() => fallbackCopy(text, done));
+  } else {
+    fallbackCopy(text, done);
+  }
 }
-
-btn.addEventListener('click', () => {
-  setTheme(html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
-});
-
-// Restore saved preference
-const saved = localStorage.getItem('observra-theme');
-if (saved) setTheme(saved);
-else setTheme('dark');
-
-// ── Copy helpers ──────────────────────────────────────────
+function fallbackCopy(text, done) {
+  try {
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.focus(); ta.select();
+    document.execCommand('copy'); document.body.removeChild(ta); done();
+  } catch (e) { /* clipboard unavailable */ }
+}
 function copyPip(el) {
-  navigator.clipboard.writeText('pip install observra').then(() => {
-    const orig = el.textContent;
+  copyText('pip install observra', () => {
     el.textContent = 'copied ✓';
-    setTimeout(() => el.textContent = orig, 2000);
+    setTimeout(() => el.textContent = 'copy', 2000);
   });
 }
-
 function copyCode(btn, id) {
   const el = document.getElementById(id);
+  if (!el) return;
   const text = el.innerText.replace(/^[$>] /gm, '').trim();
-  navigator.clipboard.writeText(text).then(() => {
+  copyText(text, () => {
     btn.textContent = 'copied ✓';
     setTimeout(() => btn.textContent = 'copy', 2000);
   });
 }
 
-// ── Scroll reveal ─────────────────────────────────────────
-const io = new IntersectionObserver((entries) => {
-  entries.forEach(e => {
-    if (e.isIntersecting) {
-      e.target.classList.add('in-view');
-      io.unobserve(e.target);
-    }
-  });
-}, { threshold: 0.08 });
-
-document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+// ── Scroll reveal (reveal-all fallback if unsupported) ────
+(function () {
+  const els = document.querySelectorAll('.reveal');
+  if (!('IntersectionObserver' in window)) {
+    els.forEach(el => el.classList.add('in-view'));
+    return;
+  }
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('in-view'); io.unobserve(e.target); }
+    });
+  }, { threshold: 0.08 });
+  els.forEach(el => io.observe(el));
+})();
 </script>
 
 </body>
