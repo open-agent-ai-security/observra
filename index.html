@@ -29,6 +29,7 @@
   --blue-lt:      #4DA3FF;
   --blue-dim:     rgba(30,111,224,0.18);
   --blue-glow:    rgba(30,111,224,0.30);
+  --btn-grad:     linear-gradient(100deg, #4DA3FF, #1763CC);
   --text:         #EEF4FF;
   --text-sub:     #8FAFC8;
   --text-muted:   #6A8AA6;
@@ -56,6 +57,7 @@
   --blue-lt:      #1560CC;
   --blue-dim:     rgba(21,96,204,0.08);
   --blue-glow:    rgba(21,96,204,0.20);
+  --btn-grad:     linear-gradient(100deg, #2C7BE6, #1457BE);
   --text:         #0D1B2A;
   --text-sub:     #3A5570;
   --text-muted:   #42596B;
@@ -201,20 +203,20 @@ nav {
 .btn-ghost svg { width: 15px; height: 15px; fill: currentColor; flex-shrink: 0; }
 .btn-primary {
   display: inline-flex; align-items: center; gap: 7px;
-  background: var(--blue);
+  background: var(--btn-grad);
   color: #fff;
   font-size: 13px;
   font-weight: 600;
   padding: 8px 16px;
   border-radius: 9px;
   border: 1px solid transparent;
-  box-shadow: 0 4px 14px -4px var(--blue-glow);
-  transition: transform 0.18s, background 0.18s, box-shadow 0.18s;
+  box-shadow: 0 6px 20px -6px var(--blue-glow);
+  transition: transform 0.18s, filter 0.18s, box-shadow 0.18s;
 }
 .btn-primary:hover {
-  background: var(--blue-lt);
+  filter: brightness(1.08);
   transform: translateY(-1px);
-  box-shadow: 0 8px 22px -6px var(--blue-glow);
+  box-shadow: 0 10px 26px -8px var(--blue-glow);
   text-decoration: none;
 }
 
@@ -328,20 +330,20 @@ nav {
 }
 .cta-primary {
   display: inline-flex; align-items: center; gap: 8px;
-  background: var(--blue);
+  background: var(--btn-grad);
   color: #fff;
   font-weight: 600;
   font-size: 14px;
   padding: 13px 26px;
   border-radius: 9px;
   border: 1px solid transparent;
-  box-shadow: 0 4px 14px -4px var(--blue-glow);
-  transition: transform 0.18s, background 0.18s, box-shadow 0.18s;
+  box-shadow: 0 6px 20px -6px var(--blue-glow);
+  transition: transform 0.18s, filter 0.18s, box-shadow 0.18s;
 }
 .cta-primary:hover {
-  background: var(--blue-lt);
+  filter: brightness(1.08);
   transform: translateY(-1px);
-  box-shadow: 0 8px 22px -6px var(--blue-glow);
+  box-shadow: 0 10px 26px -8px var(--blue-glow);
   text-decoration: none;
 }
 .cta-secondary {
