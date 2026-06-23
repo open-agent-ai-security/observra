@@ -802,9 +802,11 @@ section { padding: 88px 40px; }
 
 .qs-layout {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 32px;
+  grid-template-columns: 0.9fr 1.1fr;
+  gap: 48px;
+  align-items: start;
 }
+.qs-copy .install-steps { margin-top: 36px; }
 
 
 /* ════════════════════════════════════════════════
@@ -1027,7 +1029,7 @@ footer {
     <div class="hero-copy">
       <div class="pill"><span class="pill-dot"></span>Open source · Apache 2.0 · Sponsored by Exabeam</div>
       <h1>See exactly what your<br><em>agents are doing.</em></h1>
-      <p class="hero-sub">Framework-agnostic agent behavior analytics — capture every meaningful agent action: token usage, tool calls, cost, and errors — with zero custom instrumentation per agent.</p>
+      <p class="hero-sub">Framework-agnostic agent behavior observability — capture every meaningful agent action: token usage, tool calls, cost, and errors — with zero custom instrumentation per agent.</p>
       <p class="hero-question">Answer: <span>"what happened, how much did it cost, and was it normal?"</span></p>
 
       <div class="hero-install">
@@ -1290,13 +1292,12 @@ footer {
 <!-- ═══════════════════════════════ INSTALL / QUICKSTART ═══════════════════════════════ -->
 <section id="install">
   <div class="inner">
-    <p class="eyebrow">Installation &amp; quick start</p>
-    <h2 class="section-h2">Up and running in three steps.</h2>
-    <p class="section-lead">Install the base package, add the extras for your frameworks and backends, and initialize once at app startup.</p>
-
     <div class="qs-layout reveal">
-      <!-- Left: install steps -->
-      <div>
+      <!-- Left: title + install steps -->
+      <div class="qs-copy">
+        <p class="eyebrow">Installation &amp; quick start</p>
+        <h2 class="section-h2">Up and running in three steps.</h2>
+        <p class="section-lead">Install the base package, add the extras for your frameworks and backends, and initialize once at app startup.</p>
         <div class="install-steps">
           <div class="i-step">
             <div class="i-num">1</div>
