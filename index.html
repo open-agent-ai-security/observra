@@ -403,35 +403,6 @@ nav {
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* ════════════════════════════════════════════════
-   BADGE BAR
-════════════════════════════════════════════════ */
-.badge-bar {
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-  padding: 14px 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 32px;
-  background: var(--bg-mid);
-}
-.badge-item {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-  letter-spacing: 0.07em;
-  color: var(--text-muted);
-}
-.badge-item .dot {
-  width: 5px; height: 5px;
-  border-radius: 50%;
-  background: var(--blue-lt);
-  box-shadow: 0 0 6px var(--blue-lt);
-}
 
 /* ════════════════════════════════════════════════
    SECTION SHARED
@@ -1069,16 +1040,6 @@ footer {
     </div>
   </div>
 </header>
-
-<!-- ═══════════════════════════════ BADGE BAR ═══════════════════════════════ -->
-<div class="badge-bar">
-  <div class="badge-item"><span class="dot"></span>Python 3.10 – 3.12</div>
-  <div class="badge-item"><span class="dot"></span>CIM-normalized events</div>
-  <div class="badge-item"><span class="dot"></span>5 agent frameworks</div>
-  <div class="badge-item"><span class="dot"></span>OTel-compatible export</div>
-  <div class="badge-item"><span class="dot"></span>Zero instrumentation per agent</div>
-  <div class="badge-item"><span class="dot"></span>Non-blocking pipeline</div>
-</div>
 
 <!-- ═══════════════════════════════ HOW IT WORKS ═══════════════════════════════ -->
 <section id="how">
