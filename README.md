@@ -3,7 +3,10 @@
   SPDX-License-Identifier: Apache-2.0
 -->
 <p align="center">
-  <img src="assets/hero.png" alt="observra — framework-agnostic agent behavior analytics" width="840">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="graphics/brand/observra-lockup-dark-background.svg">
+    <img src="graphics/brand/observra-lockup-light-background.svg" alt="observra — framework-agnostic agent behavior analytics" width="480">
+  </picture>
 </p>
 
 # observra
