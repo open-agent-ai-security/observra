@@ -142,7 +142,7 @@ class TestSensorBodySchema:
         assert body["cost_usd"] == 0.003
         assert body["stop"] == "end_turn"
         assert body["framework"] == "adk"
-        assert body["schema"] == "observra"
+        assert body["schema"] == "observra:1.0"
         assert "ts" in body
         assert "session" in body
         assert len(body["session"]) == 8

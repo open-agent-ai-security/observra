@@ -60,7 +60,6 @@ _AT_SESSION_ID = "observra.session_id"
 _AT_FRAMEWORK = "observra.framework"
 _AT_COST_USD = "observra.cost_usd"
 _AT_SCHEMA = "observra.schema"
-_AT_CIM_VERSION = "observra.cim_version"
 _AT_HAS_INJECTION = "observra.has_injection_patterns"
 _AT_INJECTION_PATTERNS = "observra.injection_patterns"
 
@@ -82,6 +81,8 @@ def _build_safe_body(event: TelemetryEvent) -> dict:
     response text, tool results, and other payload content that may contain
     sensitive data.
     """
+    from observra.core.cim import CIM_VERSION
+
     data = event.data or {}
     body: dict = {
         "event_id": event.event_id,
@@ -91,7 +92,7 @@ def _build_safe_body(event: TelemetryEvent) -> dict:
         "span_id": event.span_id,
         "event_type": event.event_type,
         "framework": event.framework or "unknown",
-        "cim_version": event.cim_version,
+        "schema": f"observra:{CIM_VERSION}",
     }
 
     if event.agent_name:
@@ -180,13 +181,14 @@ def _build_sensor_body(event: TelemetryEvent) -> dict:
     data = event.data or {}
     ts = datetime.fromtimestamp(event.timestamp, tz=timezone.utc).isoformat()
 
+    from observra.core.cim import CIM_VERSION
+
     rec: dict = {
         "ts": ts,
         "session": event.session_id[:8] if event.session_id else None,
         "type": _EVENT_TYPE_TO_SENSOR.get(event.event_type, event.event_type),
         "framework": event.framework or "unknown",
-        "schema": "observra",
-        "cim_version": event.cim_version,
+        "schema": f"observra:{CIM_VERSION}",
     }
 
     if event.agent_name:
@@ -240,14 +242,15 @@ BodySchema = Literal["native", "sensor"]
 
 def _build_attributes(event: TelemetryEvent) -> dict:
     """Build OTel log record attributes from a TelemetryEvent."""
+    from observra.core.cim import CIM_VERSION
+
     attrs: dict = {
         _AT_EVENT_ID: event.event_id,
         _AT_EVENT_TYPE: event.event_type,
         _AT_TRACE_ID: event.trace_id,
         _AT_SESSION_ID: event.session_id,
         _AT_FRAMEWORK: event.framework or "unknown",
-        _AT_SCHEMA: "observra",
-        _AT_CIM_VERSION: event.cim_version or "1.0",
+        _AT_SCHEMA: f"observra:{CIM_VERSION}",
     }
 
     if event.agent_name:
