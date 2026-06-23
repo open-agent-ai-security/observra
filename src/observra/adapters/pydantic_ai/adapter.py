@@ -1,3 +1,6 @@
+# Copyright 2026 Exabeam, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
 """PydanticAIAdapter: Pydantic AI adapter for agent telemetry via OTel SpanProcessor bridge.
 
 Implements SpanProcessor from opentelemetry.sdk.trace and satisfies the

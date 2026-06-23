@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Copyright 2026 Exabeam, Inc.
+# SPDX-License-Identifier: Apache-2.0
 set -euo pipefail
 # uat-03-wsl-fallback.sh — UAT-03: WSL2 PollWatcher fallback verification.
 #

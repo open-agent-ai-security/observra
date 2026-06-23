@@ -1,3 +1,6 @@
+# Copyright 2026 Exabeam, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
 """Full CIM field coverage tests for the ADK TelemetryPlugin.
 
 Verifies that every field from siem_parser.json is captured in the

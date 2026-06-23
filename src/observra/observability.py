@@ -1,3 +1,6 @@
+# Copyright 2026 Exabeam, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
 """Self-observability API for observra.
 
 Stable v1.0 API surface -- SemVer-covered per OBS-03.

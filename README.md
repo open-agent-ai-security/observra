@@ -1,3 +1,7 @@
+<!--
+  Copyright 2026 Exabeam, Inc.
+  SPDX-License-Identifier: Apache-2.0
+-->
 # observra
 
 Framework-agnostic agent behavior analytics — capture every meaningful agent action (token usage, tool calls, cost, errors) with structured context based on the Common Information Model (CIM).

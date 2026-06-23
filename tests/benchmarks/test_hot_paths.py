@@ -1,3 +1,6 @@
+# Copyright 2026 Exabeam, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
 """Phase 39 -- pytest-benchmark tests for Python hot paths (PERF-07).
 
 Four benchmarks exercising the performance-critical functions:

@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Copyright 2026 Exabeam, Inc.
+# SPDX-License-Identifier: Apache-2.0
 # soak_1hr.sh — 1-hour soak test orchestrator for BEAM agent-telemetry-fwd.
 #
 # Purpose: TEST-01 production-grade soak test. Extends the Phase 31 scaffold

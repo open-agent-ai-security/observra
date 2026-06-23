@@ -1,3 +1,6 @@
+# Copyright 2026 Exabeam, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
 """Level 3 instrumentation decorators: @tool and @model_call.
 
 These decorators let users instrument any function in their agent code so the

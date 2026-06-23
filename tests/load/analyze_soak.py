@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# Copyright 2026 Exabeam, Inc.
+# SPDX-License-Identifier: Apache-2.0
 """
 analyze_soak.py — Post-soak analysis: RSS monotonicity, p99 latency, event count.
 

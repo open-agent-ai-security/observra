@@ -1,3 +1,6 @@
+# Copyright 2026 Exabeam, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
 """Cross-source CIM-aligned data block contract — GENERATED FROM cim_schema.toml. DO NOT EDIT."""
 
 from __future__ import annotations

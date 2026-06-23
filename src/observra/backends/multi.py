@@ -1,3 +1,6 @@
+# Copyright 2026 Exabeam, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
 """MultiBackend: fan-out compositor that writes to multiple StorageBackends.
 
 All write/flush/close/query calls are forwarded to every registered backend

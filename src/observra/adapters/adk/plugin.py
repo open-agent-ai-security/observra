@@ -1,3 +1,6 @@
+# Copyright 2026 Exabeam, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
 """TelemetryPlugin: BasePlugin implementation with all 13 lifecycle callbacks.
 
 This module provides the core plugin class that captures every ADK lifecycle event

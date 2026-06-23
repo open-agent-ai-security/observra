@@ -1,3 +1,6 @@
+# Copyright 2026 Exabeam, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
 """How to add telemetry to an OpenAI Agents SDK agent.
 
 Install:

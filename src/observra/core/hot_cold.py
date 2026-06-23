@@ -1,3 +1,6 @@
+# Copyright 2026 Exabeam, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
 """Hot/cold path event type classification for selective redaction.
 
 Hot path: Safe metrics-only events with no user content (no redaction needed)

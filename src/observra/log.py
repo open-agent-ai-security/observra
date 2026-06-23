@@ -1,3 +1,6 @@
+# Copyright 2026 Exabeam, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
 """Explicit logging API for framework-agnostic agent telemetry.
 
 Provides 12 event functions (+ ``set_framework()``) that developers call

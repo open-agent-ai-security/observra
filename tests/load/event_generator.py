@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# Copyright 2026 Exabeam, Inc.
+# SPDX-License-Identifier: Apache-2.0
 """
 event_generator.py — Sustained synthetic event generator for soak tests.
 

@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# Copyright 2026 Exabeam, Inc.
+# SPDX-License-Identifier: Apache-2.0
 """Unified 6-framework demo: every framework, same telemetry, same fields.
 
 Runs mock sessions through all 6 REAL adapters (ADK, OpenAI, Claude,

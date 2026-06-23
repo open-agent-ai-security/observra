@@ -1,3 +1,6 @@
+# Copyright 2026 Exabeam, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
 """Stable v1.0 API surface.
 
 This module defines the stable v1.0 API surface. Import from here for

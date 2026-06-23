@@ -1,3 +1,6 @@
+# Copyright 2026 Exabeam, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
 """Unit tests for ``observra.core.host_context``."""
 
 from __future__ import annotations

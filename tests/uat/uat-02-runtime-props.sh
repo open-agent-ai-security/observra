@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Copyright 2026 Exabeam, Inc.
+# SPDX-License-Identifier: Apache-2.0
 set -euo pipefail
 # uat-02-runtime-props.sh — UAT-02: Linux runtime property confirmations.
 #
