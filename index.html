@@ -364,48 +364,6 @@ nav {
   text-decoration: none;
 }
 
-/* Install pill in hero */
-.hero-install {
-  display: inline-flex;
-  align-items: center;
-  gap: 0;
-  background: var(--mono-bg);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  overflow: hidden;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 13px;
-  margin-bottom: 64px;
-  opacity: 0;
-  animation: fade-up 0.55s 1.1s ease forwards;
-}
-.hero-install-label {
-  padding: 10px 14px;
-  background: var(--border);
-  color: var(--text-muted);
-  font-size: 11px;
-  letter-spacing: 0.08em;
-  white-space: nowrap;
-}
-.hero-install-cmd {
-  padding: 10px 16px;
-  color: var(--green);
-  white-space: nowrap;
-}
-.hero-install-copy {
-  padding: 10px 14px;
-  cursor: pointer;
-  color: var(--text-muted);
-  border: none;
-  background: transparent;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-  letter-spacing: 0.06em;
-  border-left: 1px solid var(--border);
-  transition: color 0.2s;
-}
-.hero-install-copy:hover { color: var(--blue-lt); }
-
 @keyframes fade-up {
   from { opacity: 0; transform: translateY(18px); }
   to   { opacity: 1; transform: translateY(0); }
@@ -984,7 +942,7 @@ footer {
   html { scroll-behavior: auto !important; }
   *, *::before, *::after { animation: none !important; transition: none !important; }
   /* Without animation the fade-up start state would stay hidden — force visible. */
-  .reveal, .pill, .hero h1, .hero-sub, .hero-question, .hero-ctas, .hero-install {
+  .reveal, .pill, .hero h1, .hero-sub, .hero-question, .hero-ctas {
     opacity: 1 !important; transform: none !important;
   }
 }
@@ -1033,12 +991,6 @@ footer {
       <h1>See exactly what your<br><em>agents are doing.</em></h1>
       <p class="hero-sub">Framework-agnostic agent behavior observability — capture every meaningful agent action: token usage, tool calls, cost, and errors — with zero custom instrumentation per agent.</p>
       <p class="hero-question">Answer: <span>"what happened, how much did it cost, and was it normal?"</span></p>
-
-      <div class="hero-install">
-        <span class="hero-install-label">pip</span>
-        <span class="hero-install-cmd">pip install observra</span>
-        <button class="hero-install-copy" onclick="copyPip(this)">copy</button>
-      </div>
 
       <div class="hero-ctas">
         <a class="cta-primary" href="#install">Get started →</a>
@@ -1470,12 +1422,6 @@ function fallbackCopy(text, done) {
     document.body.appendChild(ta); ta.focus(); ta.select();
     document.execCommand('copy'); document.body.removeChild(ta); done();
   } catch (e) { /* clipboard unavailable */ }
-}
-function copyPip(el) {
-  copyText('pip install observra', () => {
-    el.textContent = 'copied ✓';
-    setTimeout(() => el.textContent = 'copy', 2000);
-  });
 }
 function copyCode(btn, id) {
   const el = document.getElementById(id);
