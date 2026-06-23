@@ -28,3 +28,6 @@ uv.lock
 
 .DS_Store
 Thumbs.db
+
+# Per-developer Claude Code local settings (machine paths, personal allowlist)
+.claude/settings.local.json
