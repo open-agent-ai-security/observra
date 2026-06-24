@@ -42,16 +42,20 @@ def _install_openai_stubs() -> None:
         def force_flush(self):
             pass
 
-    class _StubAgentSpanData:
+    class _StubSpanData:
+        def __init__(self, **kwargs):
+            self.__dict__.update(kwargs)
+
+    class _StubAgentSpanData(_StubSpanData):
         pass
 
-    class _StubGenerationSpanData:
+    class _StubGenerationSpanData(_StubSpanData):
         pass
 
-    class _StubFunctionSpanData:
+    class _StubFunctionSpanData(_StubSpanData):
         pass
 
-    class _StubHandoffSpanData:
+    class _StubHandoffSpanData(_StubSpanData):
         pass
 
     agents_mod = sys.modules.setdefault("agents", types.ModuleType("agents"))
