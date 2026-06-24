@@ -1172,7 +1172,7 @@ footer {
 &nbsp;&nbsp;<span class="t-key">"agent_name"</span>: <span class="t-str">"research-agent"</span>,<br>
 &nbsp;&nbsp;<span class="t-key">"model_name"</span>: <span class="t-str">"gemini-2.0-flash"</span>,<br>
 &nbsp;&nbsp;<span class="t-key">"session_id"</span>: <span class="t-str">"s-a1f6c2e3"</span>,<br>
-&nbsp;&nbsp;<span class="t-key">"cim_version"</span>: <span class="t-str">"1.0"</span>,<br>
+&nbsp;&nbsp;<span class="t-key">"library_version"</span>: <span class="t-str">"1.0.3"</span>,<br>
 &nbsp;&nbsp;<span class="t-key">"data"</span>: {<br>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="t-key">"input_tokens"</span>: <span class="t-num">1240</span>,<br>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="t-key">"output_tokens"</span>: <span class="t-num">387</span>,<br>
@@ -1291,23 +1291,23 @@ footer {
 <span class="c-comment"># 1. Install with your framework extra</span>
 <span class="c-prompt">$</span> pip install observra[adk]
 
-<span class="c-comment"># 2. Initialize at startup</span>
+<span class="c-comment"># 2. Start telemetry and build the plugin (once, at startup)</span>
 <span class="c-keyword">import</span> observra
-<span class="c-keyword">from</span> observra <span class="c-keyword">import</span> log
-
 observra.initialize(
     backend=<span class="c-string">"jsonl"</span>,
     path=<span class="c-string">"telemetry.jsonl"</span>
 )
+plugin = observra.create_plugin(<span class="c-string">"adk"</span>)
 
-<span class="c-comment"># 3. Record events (any framework)</span>
-log.session_start(agent_name=<span class="c-string">"my-agent"</span>)
-log.model_response(
-    <span class="c-string">"gpt-4o"</span>,
-    input_tokens=<span class="c-num">500</span>,
-    output_tokens=<span class="c-num">200</span>
+<span class="c-comment"># 3. Attach the plugin to your ADK Runner — no other code changes</span>
+runner = Runner(
+    agent=root_agent,
+    app_name=<span class="c-string">"my-agent"</span>,
+    session_service=InMemorySessionService(),
+    plugins=[plugin]
 )
-log.session_end(agent_name=<span class="c-string">"my-agent"</span>)
+
+<span class="c-comment"># Every LLM call, tool use, and cost is now captured automatically.</span>
         </div>
       </div>
     </div>
