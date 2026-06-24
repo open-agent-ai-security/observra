@@ -54,18 +54,24 @@ observra.initialize(
 )
 ```
 
-**Environment variable alternative (zero code changes):**
+**Using the standard OTel environment variables:**
+
+observra's `initialize()` does not read telemetry settings from the
+environment, so the backend must be selected in code. The underlying OTLP
+exporter, however, honors the standard OpenTelemetry environment variables —
+so you can keep endpoint, headers, and service name out of your source:
 
 ```bash
-export ABA_TELEMETRY_BACKEND=otel_log
 export OTEL_EXPORTER_OTLP_LOGS_ENDPOINT=https://your-instance.live.dynatrace.com/api/v2/otlp/v1/logs
 export OTEL_EXPORTER_OTLP_HEADERS="Authorization=Api-Token dt0c01.XXXX"
-export OTEL_SERVICE_NAME=my-agent-svc
 ```
 
 ```python
 import observra
-observra.initialize()  # reads from env vars
+
+# The OTLP exporter reads endpoint + headers from the OTEL_* env vars above.
+# service_name is set in code (defaults to "observra" if omitted).
+observra.initialize(backend="otel_log", service_name="my-agent-svc")
 ```
 
 ### 2. OTel Spans — Distributed Tracing

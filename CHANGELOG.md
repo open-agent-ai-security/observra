@@ -11,7 +11,27 @@ All notable changes to observra are recorded here. The format is based on
 
 ## [Unreleased]
 
-_Nothing released yet beyond 1.0.1._
+### Fixed
+- `get_stats()` raised `AttributeError` whenever a pipeline was active — it read
+  non-existent `events_processed`/`errors` attributes on the worker instead of
+  `_events_processed`/`_errors`.
+
+### Changed
+- Rewrote the Google ADK getting-started guide to show the real, runnable
+  `create_plugin()` + `Runner` integration (the prior snippet captured nothing),
+  with a model-auth prerequisite and a `capture_tool_data` note.
+- Corrected examples and `production-deployment.md` that implied `initialize()`
+  reads `ABA_TELEMETRY_*` environment variables; it does not. The `sample_agent`
+  example now wires telemetry via its own `OBSERVRA_DEMO_TELEMETRY` flag and
+  passes `capture_tool_data` to `create_plugin()` (not `initialize()`).
+
+### Added
+- `examples/README.md` indexing every example with run instructions.
+- `tests/unit/test_examples_smoke.py` guarding the documented ADK pattern and
+  the shipped example files against regression.
+
+### Removed
+- Empty `examples/test_claude_interactive.py` stub.
 
 ## [1.0.1] — 2026-06-18
 

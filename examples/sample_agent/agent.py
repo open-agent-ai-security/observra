@@ -3,10 +3,14 @@
 
 """Sample ADK agent with telemetry — works with `adk web`.
 
+Telemetry is enabled by setting OBSERVRA_DEMO_TELEMETRY=1. This example reads
+that flag itself and wires up the plugin; observra's own initialize() does not
+read telemetry settings from the environment.
+
 Run with telemetry:
     cd examples
-    export ABA_TELEMETRY_BACKEND=jsonl
-    export ABA_TELEMETRY_PATH=telemetry_live.jsonl
+    export OBSERVRA_DEMO_TELEMETRY=1
+    export OBSERVRA_DEMO_PATH=telemetry_live.jsonl   # optional, this is the default
     adk web . --extra_plugins sample_agent.agent.telemetry_plugin
 
 Run without telemetry:
@@ -69,19 +73,17 @@ def save_notes(title: str, content: str) -> dict:
 
 # ── Telemetry (opt-in) ────────────────────────────────────────────
 #
-# Single backend:
-#   export ABA_TELEMETRY_BACKEND=jsonl
-#   export ABA_TELEMETRY_PATH=telemetry.jsonl
-#
-# Multi-backend (JSONL + OTel):
-#   export ABA_TELEMETRY_BACKENDS='[{"type":"jsonl","path":"telemetry.jsonl"},{"type":"otel"}]'
-#
-# Without these env vars, telemetry is off and the agent runs normally.
+# Enable by setting OBSERVRA_DEMO_TELEMETRY=1. This block does the wiring:
+# initialize() chooses the backend, create_plugin() builds the ADK plugin.
+# Without the flag, telemetry is off and the agent runs normally.
 
 telemetry_plugin = None
-if os.environ.get("ABA_TELEMETRY_BACKENDS") or os.environ.get("ABA_TELEMETRY_BACKEND"):
-    initialize(capture_tool_data=True)
-    telemetry_plugin = create_plugin()
+if os.environ.get("OBSERVRA_DEMO_TELEMETRY"):
+    initialize(
+        backend="jsonl",
+        path=os.environ.get("OBSERVRA_DEMO_PATH", "telemetry_live.jsonl"),
+    )
+    telemetry_plugin = create_plugin(capture_tool_data=True)
 
 
 # ── Agent ──────────────────────────────────────────────────────────

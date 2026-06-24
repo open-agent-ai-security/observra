@@ -158,24 +158,89 @@ img { max-width: 100%; display: block; }
   </div>
 </header>
 <div class="docs-shell">
-  <aside class="docs-sidebar"><nav class="docs-nav"><div class="docs-nav-title">Documentation</div><ul><li><a href="../index.html">Overview</a></li><li><a href="adk.html" class="active">Getting Started · ADK</a><ul class="docs-subnav"><li><a href="#install">Install</a></li><li><a href="#usage">Usage</a></li><li><a href="#captured-events">Captured Events</a></li></ul></li><li><a href="../architecture.html">Architecture</a></li><li><a href="../event-schema.html">Event Schema</a></li><li><a href="../production-deployment.html">Production Deployment</a></li><li><a href="../COMPATIBILITY.html">Compatibility</a></li></ul></nav></aside>
+  <aside class="docs-sidebar"><nav class="docs-nav"><div class="docs-nav-title">Documentation</div><ul><li><a href="../index.html">Overview</a></li><li><a href="adk.html" class="active">Getting Started · ADK</a><ul class="docs-subnav"><li><a href="#install">Install</a></li><li><a href="#prerequisites">Prerequisites</a></li><li><a href="#usage">Usage</a></li><li><a href="#capturing-tool-arguments-and-results">Capturing tool arguments and results</a></li><li><a href="#configuration">Configuration</a></li><li><a href="#captured-events">Captured Events</a></li></ul></li><li><a href="../architecture.html">Architecture</a></li><li><a href="../event-schema.html">Event Schema</a></li><li><a href="../production-deployment.html">Production Deployment</a></li><li><a href="../COMPATIBILITY.html">Compatibility</a></li></ul></nav></aside>
   <main class="docs-main">
     <article class="prose"><h1 id="google-adk-setup">Google ADK Setup</h1>
+<p>Capture every LLM call, tool use, cost, and error from a Google ADK agent.</p>
 <h2 id="install">Install</h2>
 <pre><code class="language-bash">pip install observra[adk]
 </code></pre>
-<h2 id="usage">Usage</h2>
-<pre><code class="language-python">import observra
-
-observra.initialize(backend=&quot;jsonl&quot;, path=&quot;telemetry.jsonl&quot;)
-
-# Your ADK agent code — telemetry is captured automatically
+<h2 id="prerequisites">Prerequisites</h2>
+<p>observra observes your agent — it does not provide model credentials. Configure
+ADK's model access as you normally would before adding telemetry, e.g. for
+Gemini via AI Studio:</p>
+<pre><code class="language-bash">export GOOGLE_API_KEY=...          # or configure Vertex AI per the ADK docs
 </code></pre>
+<h2 id="usage">Usage</h2>
+<p>ADK captures telemetry through a <strong>plugin</strong> that you register with your
+<code>Runner</code>. This is two added lines plus one Runner argument — <code>initialize()</code>
+alone does <strong>not</strong> capture anything until the plugin is attached.</p>
+<pre><code class="language-python">from google.adk.runners import Runner
+from google.adk.sessions import InMemorySessionService
+
+from observra import create_plugin, initialize
+
+# 1. Point telemetry at a backend (JSONL file shown here).
+initialize(backend=&quot;jsonl&quot;, path=&quot;telemetry.jsonl&quot;)
+
+# 2. Build the plugin connected to that pipeline.
+plugin = create_plugin()  # framework=&quot;adk&quot; is the default
+
+# 3. Register the plugin with your Runner.
+runner = Runner(
+    agent=root_agent,                 # your existing ADK agent, unchanged
+    app_name=&quot;my_app&quot;,
+    session_service=InMemorySessionService(),
+    plugins=[plugin],                 # &lt;-- the only change to your Runner
+)
+
+# Run the agent normally — every lifecycle event is now captured.
+</code></pre>
+<p>Events are written to <code>telemetry.jsonl</code>, one JSON object per line:</p>
+<pre><code class="language-bash">cat telemetry.jsonl | python -m json.tool
+</code></pre>
+<h3 id="running-under-adk-web">Running under <code>adk web</code></h3>
+<p>When you launch with <code>adk web</code> instead of constructing your own <code>Runner</code>,
+expose a module-level plugin and pass it with <code>--extra_plugins</code>:</p>
+<pre><code class="language-python"># in your agent module
+from observra import create_plugin, initialize
+
+initialize(backend=&quot;jsonl&quot;, path=&quot;telemetry.jsonl&quot;)
+telemetry_plugin = create_plugin()
+</code></pre>
+<pre><code class="language-bash">adk web . --extra_plugins your_module.telemetry_plugin
+</code></pre>
+<p>See <a href="https://github.com/open-agent-ai-security/observra/blob/main/examples/sample_agent/"><code>examples/sample_agent/</code></a> for a complete
+<code>adk web</code> agent and <a href="https://github.com/open-agent-ai-security/observra/blob/main/examples/add_telemetry_to_agent.py"><code>examples/add_telemetry_to_agent.py</code></a>
+for the programmatic <code>Runner</code> integration.</p>
+<h2 id="capturing-tool-arguments-and-results">Capturing tool arguments and results</h2>
+<p>By default, tool inputs/outputs are <strong>not</strong> recorded (to avoid logging
+sensitive payloads). Opt in on the plugin — not on <code>initialize()</code>:</p>
+<pre><code class="language-python">plugin = create_plugin(capture_tool_data=True)
+</code></pre>
+<h2 id="configuration">Configuration</h2>
+<p>All configuration is passed as arguments. observra does not read telemetry
+settings from environment variables (aside from <code>ABA_TELEMETRY_KEY</code> for
+encryption-at-rest), so set them explicitly:</p>
+<pre><code class="language-python">initialize(
+    backend=&quot;jsonl&quot;,
+    path=&quot;telemetry.jsonl&quot;,
+    queue_size=1000,                  # bounded, drop-oldest queue
+)
+plugin = create_plugin(
+    capture_tool_data=False,          # opt in to record tool args/results
+    max_delegation_depth=3,           # flag unusually deep sub-agent chains
+)
+</code></pre>
+<p>For OTel/Dynatrace/Datadog export and production tuning, see
+<a href="https://github.com/open-agent-ai-security/observra/blob/main/production-deployment.md">Production Deployment</a>.</p>
 <h2 id="captured-events">Captured Events</h2>
 <ul>
-<li><code>model_response</code> — LLM calls with token counts and cost</li>
+<li><code>model_request</code> / <code>model_response</code> — LLM calls with token counts and cost</li>
+<li><code>turn_duration</code> — per-turn latency</li>
 <li><code>tool_start</code> / <code>tool_end</code> — tool invocations with duration</li>
 <li><code>agent_start</code> / <code>agent_end</code> — agent lifecycle with delegation depth</li>
+<li><code>model_error</code> / <code>tool_error</code> — failures with error classification</li>
 <li><code>session_start</code> / <code>session_end</code> — session boundaries</li>
 </ul></article>
     <p class="docs-edit"><a href="https://github.com/open-agent-ai-security/observra/blob/main/docs/getting-started/adk.md" target="_blank" rel="noopener">Edit this page on GitHub ↗</a></p>
