@@ -29,14 +29,13 @@ argument — your agent code stays unchanged.
 
 ```python
 from langgraph.graph import StateGraph, MessagesState
-from observra import initialize
-from observra.adapters.langchain import LangChainAdapter
+from observra import create_plugin, initialize
 
 # 1. Point telemetry at a backend (JSONL file shown here).
 initialize(backend="jsonl", path="telemetry.jsonl")
 
-# 2. Create the adapter.
-adapter = LangChainAdapter()
+# 2. Create the adapter (wired to the pipeline).
+adapter = create_plugin("langchain")
 
 # 3. Pass as a callback when invoking the graph.
 result = app.invoke(
@@ -84,7 +83,7 @@ By default, tool inputs/outputs are **not** recorded (to avoid logging
 sensitive payloads). Opt in on the adapter:
 
 ```python
-adapter = LangChainAdapter(capture_tool_data=True)
+adapter = create_plugin("langchain", capture_tool_data=True)
 ```
 
 Payloads are truncated at 4KB and redacted for PII.
@@ -96,7 +95,7 @@ estimated). Cost is computed using co-located pricing data. To alert when
 a call exceeds a threshold:
 
 ```python
-adapter = LangChainAdapter(cost_threshold_usd=5.00)
+adapter = create_plugin("langchain", cost_threshold_usd=5.00)
 ```
 
 This emits a `cost_threshold_exceeded` event when an LLM call's cost
@@ -110,7 +109,8 @@ initialize(
     path="telemetry.jsonl",
     queue_size=1000,                  # bounded, drop-oldest queue
 )
-adapter = LangChainAdapter(
+adapter = create_plugin(
+    "langchain",
     capture_tool_data=False,          # opt in to record tool args/results
     cost_threshold_usd=None,          # cost alerting threshold
     payload_max_bytes=4096,           # max serialized tool data size
