@@ -12,11 +12,10 @@ BEFORE (your existing agent):
     result = Runner.run_sync(agent, "Hello")
 
 AFTER (3 lines added):
-    from observra import initialize                      # 1. import
-    from observra.adapters.openai import OpenAIAdapter
+    from observra import create_plugin, initialize       # 1. import
     from agents import add_trace_processor
     initialize(backend="jsonl", path="telemetry.jsonl")          # 2. init storage
-    adapter = OpenAIAdapter()                                   # 3. create adapter
+    adapter = create_plugin("openai")                           # 3. create adapter (wired to pipeline)
     add_trace_processor(adapter)                                # 4. register
 
     # Run your agent normally — telemetry is captured automatically:
@@ -45,14 +44,15 @@ agent = Agent(
 
 # ── Step 1: Add telemetry (3 lines) ─────────────────────────────
 
-from observra import initialize  # noqa: E402
-from observra.adapters.openai import OpenAIAdapter  # noqa: E402
+from observra import create_plugin, initialize  # noqa: E402
 
 initialize(
     backend="jsonl",
     path="telemetry.jsonl",  # where events are stored
 )
-adapter = OpenAIAdapter()
+# create_plugin() connects the adapter to the pipeline initialize() built.
+# Constructing OpenAIAdapter() directly leaves it unwired and events are dropped.
+adapter = create_plugin("openai")
 add_trace_processor(adapter)  # register alongside default processors
 
 
@@ -73,7 +73,7 @@ add_trace_processor(adapter)  # register alongside default processors
 
 # ── Optional: capture tool input/output payloads ────────────────
 #
-# adapter = OpenAIAdapter(capture_tool_data=True)
+# adapter = create_plugin("openai", capture_tool_data=True)
 #
 # This enables tool_args and tool_result in event data.
 

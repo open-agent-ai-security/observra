@@ -14,10 +14,9 @@ BEFORE (your existing agent):
     result = app.invoke({"messages": [HumanMessage(content="Hello")]})
 
 AFTER (3 lines added):
-    from observra import initialize                          # 1. import
-    from observra.adapters.langchain import LangChainAdapter
+    from observra import create_plugin, initialize                 # 1. import
     initialize(backend="jsonl", path="telemetry.jsonl")              # 2. init storage
-    adapter = LangChainAdapter()                                    # 3. create adapter
+    adapter = create_plugin("langchain")                            # 3. create adapter (wired to pipeline)
 
     # Pass as callback when invoking the graph:
     result = app.invoke(
@@ -53,14 +52,15 @@ app = graph.compile()
 
 # ── Step 1: Add telemetry (3 lines) ─────────────────────────────
 
-from observra import initialize  # noqa: E402
-from observra.adapters.langchain import LangChainAdapter  # noqa: E402
+from observra import create_plugin, initialize  # noqa: E402
 
 initialize(
     backend="jsonl",
     path="telemetry.jsonl",  # where events are stored
 )
-adapter = LangChainAdapter()
+# create_plugin() connects the adapter to the pipeline initialize() built.
+# Constructing LangChainAdapter() directly leaves it unwired and events are dropped.
+adapter = create_plugin("langchain")
 
 
 # ── Step 2: Pass adapter as a callback ──────────────────────────
@@ -87,7 +87,7 @@ adapter = LangChainAdapter()
 
 # ── Optional: capture tool input/output payloads ────────────────
 #
-# adapter = LangChainAdapter(capture_tool_data=True)
+# adapter = create_plugin("langchain", capture_tool_data=True)
 #
 # This enables tool_args and tool_result in event data.
 
