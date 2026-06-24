@@ -29,14 +29,13 @@ tracing system. This is three added lines — your agent code stays unchanged.
 ```python
 from agents import Agent, Runner, add_trace_processor
 
-from observra import initialize
-from observra.adapters.openai import OpenAIAdapter
+from observra import create_plugin, initialize
 
 # 1. Point telemetry at a backend (JSONL file shown here).
 initialize(backend="jsonl", path="telemetry.jsonl")
 
-# 2. Create the adapter.
-adapter = OpenAIAdapter()
+# 2. Create the adapter (wired to the pipeline).
+adapter = create_plugin("openai")
 
 # 3. Register it with the tracing system.
 add_trace_processor(adapter)
@@ -75,7 +74,7 @@ By default, tool inputs/outputs are **not** recorded (to avoid logging
 sensitive payloads). Opt in on the adapter:
 
 ```python
-adapter = OpenAIAdapter(capture_tool_data=True)
+adapter = create_plugin("openai", capture_tool_data=True)
 ```
 
 Payloads are truncated at 4KB and redacted for PII.
@@ -87,7 +86,7 @@ co-located pricing data for OpenAI models. To alert when session cost
 exceeds a threshold:
 
 ```python
-adapter = OpenAIAdapter(cost_threshold_usd=5.00)
+adapter = create_plugin("openai", cost_threshold_usd=5.00)
 ```
 
 This emits a `cost_threshold_exceeded` event when a generation span's
@@ -101,7 +100,8 @@ initialize(
     path="telemetry.jsonl",
     queue_size=1000,                  # bounded, drop-oldest queue
 )
-adapter = OpenAIAdapter(
+adapter = create_plugin(
+    "openai",
     capture_tool_data=False,          # opt in to record tool args/results
     cost_threshold_usd=None,          # cost alerting threshold
     payload_max_bytes=4096,           # max serialized tool data size
