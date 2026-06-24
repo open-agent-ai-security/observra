@@ -54,7 +54,7 @@ runner = Runner(
 Events are written to `telemetry.jsonl`, one JSON object per line:
 
 ```bash
-cat telemetry.jsonl | jq
+cat telemetry.jsonl | jq   # install jq if it isn't already on your system
 ```
 
 ## How it works

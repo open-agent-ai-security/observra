@@ -48,7 +48,7 @@ result = Runner.run_sync(agent, "Hello")
 Events are written to `telemetry.jsonl`, one JSON object per line:
 
 ```bash
-cat telemetry.jsonl | jq
+cat telemetry.jsonl | jq   # install jq if it isn't already on your system
 ```
 
 ## How it works
@@ -118,6 +118,7 @@ For OTel/Dynatrace/Datadog export and production tuning, see
 - `model_response` — LLM calls with exact token counts, reasoning tokens, and cost
 - `tool_end` — tool invocations with duration
 - `agent_handoff` — multi-agent transitions with source/target agent names
+- `agent_handoff_error` — failed or aborted handoffs
 - `cost_threshold_exceeded` — cost alerting (if configured)
 
 All events have `framework="openai"` for SIEM filtering.
