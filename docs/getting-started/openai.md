@@ -48,7 +48,7 @@ result = Runner.run_sync(agent, "Hello")
 Events are written to `telemetry.jsonl`, one JSON object per line:
 
 ```bash
-cat telemetry.jsonl | python -m json.tool
+cat telemetry.jsonl | jq
 ```
 
 ## How it works
@@ -116,7 +116,7 @@ For OTel/Dynatrace/Datadog export and production tuning, see
 
 - `session_start` / `session_end` — agent span boundaries
 - `model_response` — LLM calls with exact token counts, reasoning tokens, and cost
-- `tool_start` / `tool_end` — tool invocations with duration
+- `tool_end` — tool invocations with duration
 - `agent_handoff` — multi-agent transitions with source/target agent names
 - `cost_threshold_exceeded` — cost alerting (if configured)
 
