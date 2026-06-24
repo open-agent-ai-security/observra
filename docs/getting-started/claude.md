@@ -28,15 +28,14 @@ stream to capture model responses. This is three added lines plus two small
 changes to your existing client setup.
 
 ```python
-from claude_agent_sdk import ClaudeSDKClient, ClaudeAgentOptions
-from observra import initialize
-from observra.adapters.claude import ClaudeAdapter
+from claude_agent_sdk import ClaudeSDKClient
+from observra import create_plugin, initialize
 
 # 1. Point telemetry at a backend (JSONL file shown here).
 initialize(backend="jsonl", path="telemetry.jsonl")
 
-# 2. Create the adapter.
-adapter = ClaudeAdapter()
+# 2. Create the adapter (wired to the pipeline).
+adapter = create_plugin("claude")
 
 # 3. Pass hooks to the SDK client.
 client = ClaudeSDKClient(options=adapter.get_hook_options())
@@ -69,7 +68,7 @@ By default, tool inputs/outputs are **not** recorded (to avoid logging
 sensitive payloads). Opt in on the adapter:
 
 ```python
-adapter = ClaudeAdapter(capture_tool_data=True)
+adapter = create_plugin("claude", capture_tool_data=True)
 ```
 
 Payloads are truncated at 4KB and redacted for PII.
@@ -84,11 +83,7 @@ when using `wrap_stream()` or `handle_result_message()` — these are flagged
 To alert when session cost exceeds a threshold:
 
 ```python
-initialize(
-    backend="jsonl",
-    path="telemetry.jsonl",
-    cost_threshold_usd=5.00,
-)
+adapter = create_plugin("claude", cost_threshold_usd=5.00)
 ```
 
 This emits a `cost_threshold_exceeded` event when the session total crosses
@@ -102,8 +97,10 @@ initialize(
     path="telemetry.jsonl",
     queue_size=1000,                  # bounded, drop-oldest queue
 )
-adapter = ClaudeAdapter(
+adapter = create_plugin(
+    "claude",
     capture_tool_data=False,          # opt in to record tool args/results
+    cost_threshold_usd=None,          # cost alerting threshold
 )
 ```
 
