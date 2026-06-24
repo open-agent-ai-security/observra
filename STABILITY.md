@@ -5,12 +5,6 @@
 
 # observra Stability Contract
 
-> **Status: DRAFT for review.** This is a first cut, authored after an internal
-> discussion, to give the team something concrete to react to. Items marked
-> _(for review)_ are not yet locked, and one part of the contract is not yet
-> fully implemented (see [Current status & known gaps](#current-status--known-gaps)).
-> Nothing here is binding until this document is merged.
-
 From **1.0**, observra follows semantic versioning across **two independently
 versioned surfaces**, because observra is two things at once:
 
@@ -36,8 +30,10 @@ and may change in a minor release.**
   API surface (below) requires a package **MAJOR**. Deprecations get one minor's
   notice via `@deprecated` (machinery in `core/deprecation.py`, with CI
   introspection) and are removed no earlier than the next **MAJOR**.
-- **Event / CIM schema** carries its own version, emitted on every record as
-  `schema: observra:<MAJOR>.<MINOR>`. **Downstream consumers should pin to a schema
+- **Event / CIM schema** carries its own version. On the production (OTel) path it
+  is emitted on each record as `schema: observra:<MAJOR>.<MINOR>`; on the native
+  `jsonl`/`webhook` dev/debug backends it is inferred from `library_version` (see
+  [Output formats](#output-formats)). **Downstream consumers should pin to a schema
   MAJOR and tolerate unknown fields and unknown enum values**, since both may be
   added in a schema MINOR.
 - **Security fixes** ship in the latest released line as PATCH releases.
@@ -77,23 +73,30 @@ version. The single source of truth is `schema/cim_schema.toml`. Within a schema
 
 **Requires a schema MAJOR**
 - Removing or renaming any field, enum value, or event type, or changing a
-  field's type or required-ness. _(for review: confirm that retiring an enum
-  value — e.g. a `FinishReason` — is a schema MAJOR, not a minor.)_
+  field's type or required-ness. (Retiring an enum value — e.g. a `FinishReason`
+  — is a schema MAJOR, not a minor.)
 
 **Consumer rule:** pin to the schema **MAJOR** (e.g. `observra:1.*`) and tolerate
 fields and enum values you don't recognize in your own parsing.
 
 ## Output formats
 
-One logical event is serialized by several backends. **The intent is that every
-serialization is gated by the single schema version above** _(for review)_:
+One logical event is serialized by several backends. **The schema rules above
+apply to every serialization.** The self-describing `schema` anchor is carried by
+the production (OTel) backends; the native dev/debug backends do not stamp it:
 
-| Backend | Format | Schema anchor |
+| Backend | Format | Schema version on the record |
 |---|---|---|
-| `jsonl` | native flat JSON (one object per line) | `schema` field — _pending, see gaps_ |
-| `webhook` | native JSON POST body (same as JSONL) | `schema` field — _pending, see gaps_ |
-| `otel` | OTel spans, `gen_ai.*` semantic conventions | `observra.schema` span attribute |
-| `otel_log` | OTel log records, `gen_ai.*` semantic conventions | `schema` field |
+| `otel` | OTel spans, `gen_ai.*` semantic conventions | `observra.schema` span attribute = `observra:<MAJOR>.<MINOR>` |
+| `otel_log` | OTel log records, `gen_ai.*` semantic conventions | `schema` field = `observra:<MAJOR>.<MINOR>` |
+| `jsonl` | native flat JSON (one object per line) | not stamped — local dev/debug; infer from `library_version` |
+| `webhook` | native JSON POST body (same as JSONL) | not stamped — local dev/debug; infer from `library_version` |
+
+This split is intentional: the production path (OTel → Dynatrace / Grafana / SIEM)
+self-identifies its schema version, while `jsonl` and `webhook` are local
+dev/debug backends where the schema can be inferred from the package
+`library_version` carried on every record. The same schema-version convention is
+shared with `agent-sensor`, so consumers see a consistent contract across both.
 
 The OTel attribute/field mapping (`gen_ai.*`, `observra.*`) is its **own
 sub-contract**, documented in `docs/production-deployment.md`. OTel backends are
@@ -114,20 +117,18 @@ Do **not** build hard dependencies on these; they may change in any minor releas
 - Model-derived values (token counts, computed `cost_usd`, latencies) — these are
   observations, not a stability surface.
 
-## Current status & known gaps
+## Notes
 
-This draft describes the **intended** contract. Two items are not yet true of the
-code and should land before this document is considered binding:
-
-1. **Schema stamping is OTel-only.** The `schema: observra:<…>` anchor is currently
-   emitted by the OTel backends (`otel`, `otel_log`) but **not** by the default
-   `jsonl` or `webhook` serializations — those records carry `library_version`
-   (the *package* version) but no schema version. Until the anchor is stamped into
-   the native serialization, the default stream does not self-describe its schema.
-   Tracked in issue #10.
-2. **Doc/output reconciliation.** `docs/event-schema.md` should be reconciled with
-   the actual emitted records so "the format" is described once, accurately, across
-   all serializations.
+- **Schema stamping is OTel-only, by design.** The `schema` anchor is carried by
+  the production OTel backends; `jsonl` and `webhook` are local dev/debug backends
+  and do not stamp it — infer the schema from `library_version` there. See
+  [Output formats](#output-formats).
+- **Cross-repo convention.** The event/CIM schema version is a shared convention:
+  `agent-sensor` uses the same `schema_version` scheme, so downstream consumers see
+  one consistent contract across both projects.
+- **Follow-up (#10 / #14):** `docs/event-schema.md` should be reconciled with the
+  actual emitted records so "the format" is documented once, accurately, across all
+  serializations.
 
 ## Deprecation policy
 
