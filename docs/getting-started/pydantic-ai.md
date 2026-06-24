@@ -32,14 +32,13 @@ from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.trace import set_tracer_provider
 from pydantic_ai import Agent
 
-from observra import initialize
-from observra.adapters.pydantic_ai import PydanticAIAdapter
+from observra import create_plugin, initialize
 
 # 1. Point telemetry at a backend (JSONL file shown here).
 initialize(backend="jsonl", path="telemetry.jsonl")
 
-# 2. Create the adapter.
-adapter = PydanticAIAdapter()
+# 2. Create the adapter (wired to the pipeline).
+adapter = create_plugin("pydantic-ai")
 
 # 3. Wire into OpenTelemetry (order matters!).
 provider = TracerProvider()
@@ -98,7 +97,7 @@ By default, tool inputs are **not** recorded (to avoid logging sensitive
 payloads). Opt in on the adapter:
 
 ```python
-adapter = PydanticAIAdapter(capture_tool_data=True)
+adapter = create_plugin("pydantic-ai", capture_tool_data=True)
 ```
 
 Payloads are truncated at 4KB and redacted for PII.
@@ -109,7 +108,7 @@ Token counts are extracted from OTel span attributes. Cost is computed using
 co-located pricing data. To alert when a call exceeds a threshold:
 
 ```python
-adapter = PydanticAIAdapter(cost_threshold_usd=5.00)
+adapter = create_plugin("pydantic-ai", cost_threshold_usd=5.00)
 ```
 
 This emits a `cost_threshold_exceeded` event when a model call's cost
@@ -123,7 +122,8 @@ initialize(
     path="telemetry.jsonl",
     queue_size=1000,                  # bounded, drop-oldest queue
 )
-adapter = PydanticAIAdapter(
+adapter = create_plugin(
+    "pydantic-ai",
     capture_tool_data=False,          # opt in to record tool args
     cost_threshold_usd=None,          # cost alerting threshold
     payload_max_bytes=4096,           # max serialized tool data size
