@@ -120,7 +120,6 @@ initialize(
 plugin = create_plugin(
     capture_tool_data=False,          # opt in to record tool args/results
     cost_threshold_usd=None,          # alert when session cost crosses this
-    max_delegation_depth=3,           # flag unusually deep sub-agent chains
 )
 ```
 
@@ -134,7 +133,7 @@ For OTel/Dynatrace/Datadog export and production tuning, see
 - `turn_duration` — per-turn latency
 - `tool_start` / `tool_end` — tool invocations with duration
 - `agent_start` / `agent_end` — agent lifecycle with delegation depth
-- `depth_exceeded` — delegation deeper than `max_delegation_depth`
+- `depth_exceeded` — sub-agent delegation exceeded observra's safe depth limit
 - `model_error` / `tool_error` — failures with error classification
 - `cost_threshold_exceeded` — session cost crossed the configured threshold
 - `session_start` / `session_end` — session boundaries
