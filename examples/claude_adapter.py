@@ -13,10 +13,9 @@ BEFORE (your existing agent):
         print(msg)
 
 AFTER (3 lines added):
-    from observra import initialize                    # 1. import
-    from observra.adapters.claude import ClaudeAdapter
+    from observra import create_plugin, initialize             # 1. import
     initialize(backend="jsonl", path="telemetry.jsonl")        # 2. init storage
-    adapter = ClaudeAdapter()                                 # 3. create adapter
+    adapter = create_plugin("claude")                          # 3. create adapter (wired to pipeline)
 
     # Pass hooks to SDK client:
     client = ClaudeSDKClient(options=adapter.get_hook_options())
@@ -35,14 +34,15 @@ That's it. Every tool call, user prompt, and model response is captured.
 
 # ── Step 1: Add telemetry ────────────────────────────────────────
 
-from observra import initialize
-from observra.adapters.claude import ClaudeAdapter
+from observra import create_plugin, initialize
 
 initialize(
     backend="jsonl",
     path="telemetry.jsonl",  # where events are stored
 )
-adapter = ClaudeAdapter()
+# create_plugin() connects the adapter to the pipeline initialize() built.
+# Constructing ClaudeAdapter() directly leaves it unwired and events are dropped.
+adapter = create_plugin("claude")
 
 
 # ── Step 2: Pass hooks to the Claude SDK client ─────────────────
@@ -69,7 +69,7 @@ adapter = ClaudeAdapter()
 
 # ── Optional: capture tool input/output payloads ────────────────
 #
-# adapter = ClaudeAdapter(capture_tool_data=True)
+# adapter = create_plugin("claude", capture_tool_data=True)
 #
 # This enables tool_args and tool_result in event data (default: off
 # for privacy). Payloads are truncated at 4KB and redacted.
@@ -77,11 +77,8 @@ adapter = ClaudeAdapter()
 
 # ── Optional: cost threshold alerting ───────────────────────────
 #
-# initialize(
-#     backend="jsonl",
-#     path="telemetry.jsonl",
-#     cost_threshold_usd=5.00,  # alert when session cost > $5
-# )
+# cost_threshold_usd is an adapter option, not an initialize() option:
+# adapter = create_plugin("claude", cost_threshold_usd=5.00)  # alert when session cost > $5
 
 
 # ── View your telemetry ─────────────────────────────────────────

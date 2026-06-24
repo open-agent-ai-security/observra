@@ -15,11 +15,10 @@ AFTER (5 lines added):
     from opentelemetry.sdk.trace import TracerProvider          # 1. OTel setup
     from opentelemetry.trace import set_tracer_provider
     from pydantic_ai import Agent
-    from observra import initialize                      # 2. import
-    from observra.adapters.pydantic_ai import PydanticAIAdapter
+    from observra import create_plugin, initialize       # 2. import
 
     initialize(backend="jsonl", path="telemetry.jsonl")          # 3. init storage
-    adapter = PydanticAIAdapter()                               # 4. create adapter
+    adapter = create_plugin("pydantic-ai")                      # 4. create adapter (wired to pipeline)
 
     provider = TracerProvider()
     provider.add_span_processor(adapter)                        # 5. register
@@ -41,14 +40,15 @@ from opentelemetry.trace import set_tracer_provider
 from pydantic_ai import Agent
 
 # ── Step 1: Add telemetry ────────────────────────────────────────
-from observra import initialize
-from observra.adapters.pydantic_ai import PydanticAIAdapter
+from observra import create_plugin, initialize
 
 initialize(
     backend="jsonl",
     path="telemetry.jsonl",  # where events are stored
 )
-adapter = PydanticAIAdapter()
+# create_plugin() connects the adapter to the pipeline initialize() built.
+# Constructing PydanticAIAdapter() directly leaves it unwired and events are dropped.
+adapter = create_plugin("pydantic-ai")
 
 
 # ── Step 2: Wire into OpenTelemetry (order matters!) ────────────
@@ -76,7 +76,7 @@ Agent.instrument_all()  # must call BEFORE any agent runs
 
 # ── Optional: capture tool input/output payloads ────────────────
 #
-# adapter = PydanticAIAdapter(capture_tool_data=True)
+# adapter = create_plugin("pydantic-ai", capture_tool_data=True)
 #
 # This enables tool_args in event data.
 
