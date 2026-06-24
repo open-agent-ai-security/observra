@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Overview · observra Docs</title>
-<link rel="icon" type="image/png" sizes="32x32" href="../graphics/web/favicon-32.png">
-<link rel="icon" type="image/png" sizes="256x256" href="../graphics/web/favicon-256.png">
-<link rel="apple-touch-icon" sizes="180x180" href="../graphics/web/favicon-180.png">
+<title>OpenAI Agents SDK Setup · observra Docs</title>
+<link rel="icon" type="image/png" sizes="32x32" href="../../graphics/web/favicon-32.png">
+<link rel="icon" type="image/png" sizes="256x256" href="../../graphics/web/favicon-256.png">
+<link rel="apple-touch-icon" sizes="180x180" href="../../graphics/web/favicon-180.png">
 <style>@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
 /*
   Copyright 2026 Exabeam, Inc.
@@ -144,43 +144,110 @@ img { max-width: 100%; display: block; }
   .docs-main { padding-top: 26px; }
 }
 </style>
-<script data-goatcounter="https://open-agent-ai-security.goatcounter.com/count" async src="../assets/count.js"></script>
+<script data-goatcounter="https://open-agent-ai-security.goatcounter.com/count" async src="../../assets/count.js"></script>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "223642421cad463daf91bd9429a5f9a0"}'></script>
 </head>
 <body class="docs-page">
 <header class="docs-top">
   <div class="docs-top-inner">
-    <a class="docs-brand" href="../"><img src="../graphics/brand/observra-wordmark-dark-background.svg" alt="observra"></a>
+    <a class="docs-brand" href="../../"><img src="../../graphics/brand/observra-wordmark-dark-background.svg" alt="observra"></a>
     <div class="docs-top-links">
-      <a href="../">Home</a>
+      <a href="../../">Home</a>
       <a href="https://github.com/open-agent-ai-security/observra" target="_blank" rel="noopener">GitHub ↗</a>
     </div>
   </div>
 </header>
 <div class="docs-shell">
-  <aside class="docs-sidebar"><nav class="docs-nav"><div class="docs-nav-title">Documentation</div><ul><li><a href="index.html" class="active">Overview</a><ul class="docs-subnav"><li><a href="#start-here">Start here</a></li><li><a href="#how-it-works">How it works</a></li></ul></li><li><a href="getting-started/adk.html">Getting Started · ADK</a></li><li><a href="getting-started/claude.html">Getting Started · Claude</a></li><li><a href="getting-started/openai.html">Getting Started · OpenAI</a></li><li><a href="getting-started/langchain.html">Getting Started · LangChain</a></li><li><a href="getting-started/pydantic-ai.html">Getting Started · Pydantic AI</a></li><li><a href="architecture.html">Architecture</a></li><li><a href="event-schema.html">Event Schema</a></li><li><a href="production-deployment.html">Production Deployment</a></li><li><a href="COMPATIBILITY.html">Compatibility</a></li></ul></nav></aside>
+  <aside class="docs-sidebar"><nav class="docs-nav"><div class="docs-nav-title">Documentation</div><ul><li><a href="../index.html">Overview</a></li><li><a href="adk.html">Getting Started · ADK</a></li><li><a href="claude.html">Getting Started · Claude</a></li><li><a href="openai.html" class="active">Getting Started · OpenAI</a><ul class="docs-subnav"><li><a href="#install">Install</a></li><li><a href="#prerequisites">Prerequisites</a></li><li><a href="#usage">Usage</a></li><li><a href="#how-it-works">How it works</a></li><li><a href="#important-use-add_trace_processor">Important: use add_trace_processor</a></li><li><a href="#capturing-tool-arguments-and-results">Capturing tool arguments and results</a></li><li><a href="#cost-tracking">Cost tracking</a></li><li><a href="#configuration">Configuration</a></li><li><a href="#captured-events">Captured Events</a></li><li><a href="#full-example">Full example</a></li></ul></li><li><a href="langchain.html">Getting Started · LangChain</a></li><li><a href="pydantic-ai.html">Getting Started · Pydantic AI</a></li><li><a href="../architecture.html">Architecture</a></li><li><a href="../event-schema.html">Event Schema</a></li><li><a href="../production-deployment.html">Production Deployment</a></li><li><a href="../COMPATIBILITY.html">Compatibility</a></li></ul></nav></aside>
   <main class="docs-main">
-    <article class="prose"><h1 id="overview">Overview</h1>
-<p><strong>observra</strong> is framework-agnostic agent behavior analytics. It captures every
-meaningful agent action — token usage, tool calls, cost, errors — as
-CIM-normalized telemetry, with zero custom instrumentation per agent. Answer
-"what happened, how much did it cost, and was it normal?" for any agent on any
-framework.</p>
-<h2 id="start-here">Start here</h2>
-<ul>
-<li><a href="getting-started/adk.html">Getting Started · ADK</a> — wire observra into a Google ADK agent</li>
-<li><a href="architecture.html">Architecture</a> — how the capture → queue → backend pipeline fits together</li>
-<li><a href="event-schema.html">Event Schema</a> — the Common Information Model (CIM) event contract</li>
-<li><a href="production-deployment.html">Production Deployment</a> — backends, OTel export, and operational guidance</li>
-<li><a href="COMPATIBILITY.html">Compatibility</a> — supported Python and framework versions</li>
-</ul>
+    <article class="prose"><h1 id="openai-agents-sdk-setup">OpenAI Agents SDK Setup</h1>
+<p>Capture every LLM call, tool use, agent handoff, and cost from an OpenAI Agents SDK agent.</p>
+<h2 id="install">Install</h2>
+<pre><code class="language-bash">pip install observra[openai-agents]
+</code></pre>
+<h2 id="prerequisites">Prerequisites</h2>
+<p>observra observes your agent — it does not provide model credentials. Configure
+your OpenAI API key as you normally would before adding telemetry:</p>
+<pre><code class="language-bash">export OPENAI_API_KEY=...
+</code></pre>
+<h2 id="usage">Usage</h2>
+<p>The OpenAI adapter is a <code>TracingProcessor</code> that you register with the SDK's
+tracing system. This is three added lines — your agent code stays unchanged.</p>
+<pre><code class="language-python">from agents import Agent, Runner, add_trace_processor
+
+from observra import create_plugin, initialize
+
+# 1. Point telemetry at a backend (JSONL file shown here).
+initialize(backend=&quot;jsonl&quot;, path=&quot;telemetry.jsonl&quot;)
+
+# 2. Create the adapter (wired to the pipeline).
+adapter = create_plugin(&quot;openai&quot;)
+
+# 3. Register it with the tracing system.
+add_trace_processor(adapter)
+
+# Run your agent normally — every lifecycle event is now captured.
+agent = Agent(name=&quot;my_agent&quot;, instructions=&quot;Be helpful&quot;, tools=[...])
+result = Runner.run_sync(agent, &quot;Hello&quot;)
+</code></pre>
+<p>Events are written to <code>telemetry.jsonl</code>, one JSON object per line:</p>
+<pre><code class="language-bash">cat telemetry.jsonl | jq   # install jq if it isn't already on your system
+</code></pre>
 <h2 id="how-it-works">How it works</h2>
-<p>An adapter for your framework feeds events into a non-blocking, drop-oldest
-queue; a background worker drains them to one or more backends (JSONL, webhook,
-OTel spans/logs, or a SIEM). Events are normalized to a single CIM schema so the
-same query works regardless of which framework produced them.</p>
-<p>See the <a href="architecture.html">Architecture</a> guide for the full picture.</p></article>
-    <p class="docs-edit"><a href="https://github.com/open-agent-ai-security/observra/blob/main/docs/index.md" target="_blank" rel="noopener">Edit this page on GitHub ↗</a></p>
+<p>The adapter subclasses <code>TracingProcessor</code> from the OpenAI Agents SDK. It
+receives span lifecycle callbacks (<code>on_span_start</code>, <code>on_span_end</code>) for all
+span types — generation, function, handoff, agent, and custom spans. Token
+data comes from <code>GenerationSpanData.usage</code> and is <strong>exact</strong> (not estimated).</p>
+<h2 id="important-use-add_trace_processor">Important: use <code>add_trace_processor</code></h2>
+<pre><code class="language-python">add_trace_processor(adapter)       # ✅ CORRECT — adds alongside defaults
+set_trace_processors([adapter])    # ❌ WRONG — replaces all processors
+</code></pre>
+<p>Using <code>add_trace_processor</code> ensures observra runs alongside any existing
+trace processors (e.g. the SDK's default console tracer).</p>
+<h2 id="capturing-tool-arguments-and-results">Capturing tool arguments and results</h2>
+<p>By default, tool inputs/outputs are <strong>not</strong> recorded (to avoid logging
+sensitive payloads). Opt in on the adapter:</p>
+<pre><code class="language-python">adapter = create_plugin(&quot;openai&quot;, capture_tool_data=True)
+</code></pre>
+<p>Payloads are truncated at 4KB and redacted for PII.</p>
+<h2 id="cost-tracking">Cost tracking</h2>
+<p>Token counts are exact (from SDK usage data). Cost is computed using
+co-located pricing data for OpenAI models. To alert when session cost
+exceeds a threshold:</p>
+<pre><code class="language-python">adapter = create_plugin(&quot;openai&quot;, cost_threshold_usd=5.00)
+</code></pre>
+<p>This emits a <code>cost_threshold_exceeded</code> event when a generation span's
+cost crosses the configured limit.</p>
+<h2 id="configuration">Configuration</h2>
+<pre><code class="language-python">initialize(
+    backend=&quot;jsonl&quot;,
+    path=&quot;telemetry.jsonl&quot;,
+    queue_size=1000,                  # bounded, drop-oldest queue
+)
+adapter = create_plugin(
+    &quot;openai&quot;,
+    capture_tool_data=False,          # opt in to record tool args/results
+    cost_threshold_usd=None,          # cost alerting threshold
+    payload_max_bytes=4096,           # max serialized tool data size
+)
+add_trace_processor(adapter)
+</code></pre>
+<p>For OTel/Dynatrace/Datadog export and production tuning, see
+<a href="https://github.com/open-agent-ai-security/observra/blob/main/production-deployment.md">Production Deployment</a>.</p>
+<h2 id="captured-events">Captured Events</h2>
+<ul>
+<li><code>session_start</code> / <code>session_end</code> — agent span boundaries</li>
+<li><code>model_response</code> — LLM calls with exact token counts, reasoning tokens, and cost</li>
+<li><code>tool_end</code> — tool invocations with duration</li>
+<li><code>agent_handoff</code> — multi-agent transitions with source/target agent names</li>
+<li><code>agent_handoff_error</code> — failed or aborted handoffs</li>
+<li><code>cost_threshold_exceeded</code> — cost alerting (if configured)</li>
+</ul>
+<p>All events have <code>framework="openai"</code> for SIEM filtering.</p>
+<h2 id="full-example">Full example</h2>
+<p>See <a href="https://github.com/open-agent-ai-security/observra/blob/main/examples/openai_adapter.py"><code>examples/openai_adapter.py</code></a> for
+a complete before/after walkthrough with a calculator tool agent.</p></article>
+    <p class="docs-edit"><a href="https://github.com/open-agent-ai-security/observra/blob/main/docs/getting-started/openai.md" target="_blank" rel="noopener">Edit this page on GitHub ↗</a></p>
   </main>
 </div>
 

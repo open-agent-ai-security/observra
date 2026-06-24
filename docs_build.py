@@ -55,12 +55,16 @@ ANALYTICS_TMPL = (
 
 # Ordered table of contents for the left-nav: (source file relative to docs/, label).
 PAGES = [
-    ("index.md",                  "Overview"),
-    ("getting-started/adk.md",    "Getting Started · ADK"),
-    ("architecture.md",           "Architecture"),
-    ("event-schema.md",           "Event Schema"),
-    ("production-deployment.md",  "Production Deployment"),
-    ("COMPATIBILITY.md",          "Compatibility"),
+    ("index.md",                       "Overview"),
+    ("getting-started/adk.md",         "Getting Started · ADK"),
+    ("getting-started/claude.md",      "Getting Started · Claude"),
+    ("getting-started/openai.md",      "Getting Started · OpenAI"),
+    ("getting-started/langchain.md",   "Getting Started · LangChain"),
+    ("getting-started/pydantic-ai.md", "Getting Started · Pydantic AI"),
+    ("architecture.md",                "Architecture"),
+    ("event-schema.md",                "Event Schema"),
+    ("production-deployment.md",       "Production Deployment"),
+    ("COMPATIBILITY.md",               "Compatibility"),
 ]
 
 LEADING_COMMENT = re.compile(r"^\s*<!--.*?-->\s*", re.DOTALL)
