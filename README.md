@@ -142,6 +142,7 @@ backend = MultiBackend([span_backend, log_backend])
 - [Event Schema](docs/event-schema.md) — CIM event contract
 - [Architecture](docs/architecture.md) — system design overview
 - [Compatibility](docs/COMPATIBILITY.md) — supported versions
+- [Stability Contract](STABILITY.md) — API + event/CIM-schema stability guarantees
 
 ## Project sponsor
 
