@@ -4,6 +4,10 @@
 name: Auto Release
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - "src/observra/__init__.py" # the single source of truth for the version
   workflow_dispatch:
 
 permissions:
@@ -22,10 +26,10 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Extract version from pyproject.toml
+      - name: Extract version from src/observra/__init__.py
         id: version
         run: |
-          VERSION=$(python -c "import tomllib; print(tomllib.load(open('pyproject.toml','rb'))['project']['version'])")
+          VERSION=$(sed -n 's/^__version__ = "\(.*\)"$/\1/p' src/observra/__init__.py)
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
 
