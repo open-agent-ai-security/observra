@@ -400,9 +400,40 @@ section { padding: 88px 40px; }
 }
 
 /* ════════════════════════════════════════════════
+   WHY OBSERVRA — problem / solution + value pillars
+════════════════════════════════════════════════ */
+.hero-sub strong { color: var(--text); font-weight: 600; }
+.why-intro { max-width: 660px; margin-bottom: 48px; }
+.why-problem { font-size: 16px; color: var(--text-sub); line-height: 1.7; margin-bottom: 16px; }
+.why-solution { font-size: 16px; color: var(--text); line-height: 1.7; }
+.why-solution strong { color: var(--blue-lt); font-weight: 600; }
+.pillars { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.pillar {
+  padding: 26px 24px;
+  border-radius: 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  transition: border-color 0.18s, transform 0.18s;
+}
+.pillar:hover { border-color: var(--blue); transform: translateY(-2px); }
+.pillar-ic {
+  width: 40px; height: 40px;
+  border-radius: 9px;
+  background: var(--pill-bg);
+  border: 1px solid var(--blue-dim);
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 16px;
+}
+.pillar-ic svg { width: 20px; height: 20px; stroke: var(--pill-text); fill: none;
+  stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.pillar h3 { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+.pillar p { font-size: 14px; color: var(--text-sub); line-height: 1.6; }
+
+/* ════════════════════════════════════════════════
    HOW IT WORKS — architecture flow
 ════════════════════════════════════════════════ */
-#how { background: var(--bg-mid); }
+#why { background: var(--bg-mid); }
+#how { background: var(--bg); }
 
 
 /* Architecture diagram */
@@ -478,7 +509,7 @@ section { padding: 88px 40px; }
 /* ════════════════════════════════════════════════
    FRAMEWORKS
 ════════════════════════════════════════════════ */
-#frameworks { background: var(--bg); }
+#frameworks { background: var(--bg-mid); }
 
 .fw-grid {
   display: grid;
@@ -526,7 +557,7 @@ section { padding: 88px 40px; }
 /* ════════════════════════════════════════════════
    FEATURES
 ════════════════════════════════════════════════ */
-#features { background: var(--bg-mid); }
+#features { background: var(--bg); }
 
 .features-layout {
   display: grid;
@@ -618,7 +649,7 @@ section { padding: 88px 40px; }
 /* ════════════════════════════════════════════════
    BACKENDS
 ════════════════════════════════════════════════ */
-#backends { background: var(--bg); }
+#backends { background: var(--bg-mid); }
 
 .backends-grid {
   display: grid;
@@ -673,7 +704,7 @@ section { padding: 88px 40px; }
 /* ════════════════════════════════════════════════
    INSTALL
 ════════════════════════════════════════════════ */
-#install { background: var(--bg-mid); }
+#install { background: var(--bg); }
 
 .install-layout {
   display: grid;
@@ -932,6 +963,7 @@ footer {
   .mascot-stage { order: -1; }
   .mascot-stage img { max-width: 360px; }
   .features-layout { grid-template-columns: 1fr; }
+  .pillars { grid-template-columns: 1fr; }
   .install-layout { grid-template-columns: 1fr; }
   .qs-layout { grid-template-columns: 1fr; }
   .footer-grid { grid-template-columns: 1fr 1fr; }
@@ -992,7 +1024,7 @@ footer {
     <div class="hero-copy">
       <div class="pill"><span class="pill-dot"></span>Open source · Multi-framework · Route Anywhere</div>
       <h1>See exactly what your<br><em>agents are doing.</em></h1>
-      <p class="hero-sub">Framework-agnostic agent behavior observability — capture every meaningful agent action: token usage, tool calls, cost, and errors — with zero custom instrumentation per agent.</p>
+      <p class="hero-sub"><strong>An open-source telemetry SDK for AI agents.</strong> Observra captures what your agents do — model calls, tool use, cost, errors — converts it into one common event format, and routes it to the observability and security tools you already use.</p>
       <p class="hero-question">Answer: <span>"what happened, how much did it cost, and was it normal?"</span></p>
 
       <div class="hero-ctas">
@@ -1006,6 +1038,35 @@ footer {
     </div>
   </div>
 </header>
+
+<!-- ═══════════════════════════════ WHY OBSERVRA ═══════════════════════════════ -->
+<section id="why">
+  <div class="inner">
+    <p class="eyebrow">Why Observra</p>
+    <h2 class="section-h2">One telemetry layer for every agent framework.</h2>
+    <div class="why-intro">
+      <p class="why-problem">Every agent framework exposes different callbacks, metadata, and event formats. Monitoring each one means custom integrations — and they get harder to maintain as your agent fleet grows.</p>
+      <p class="why-solution"><strong>Observra</strong> is one open telemetry layer across frameworks: it captures key agent activity, translates it into a consistent schema, and routes it to the systems your teams already use — so developers, platform, and security teams work from the same record of agent behavior.</p>
+    </div>
+    <div class="pillars reveal">
+      <div class="pillar">
+        <div class="pillar-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2 3 14 12 14 11 22 21 10 12 10z"/></svg></div>
+        <h3>Build faster</h3>
+        <p>Add telemetry without writing custom logging for every agent or framework.</p>
+      </div>
+      <div class="pillar">
+        <div class="pillar-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+        <h3>See cost and risk</h3>
+        <p>Token cost, latency, errors, and risky tool calls and handoffs — surfaced per agent session for cost control and security review.</p>
+      </div>
+      <div class="pillar">
+        <div class="pillar-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></div>
+        <h3>Use your existing tools</h3>
+        <p>Send normalized events to OpenTelemetry, webhooks, local storage, SIEMs, and observability platforms.</p>
+      </div>
+    </div>
+  </div>
+</section>
 
 <!-- ═══════════════════════════════ HOW IT WORKS ═══════════════════════════════ -->
 <section id="how">
