@@ -12,7 +12,7 @@ framework.
 
 ## Start here
 
-- [Getting Started · ADK](getting-started/adk.md) — wire observra into a Google ADK agent
+- **Quickstart** — wire observra into your framework: [ADK](getting-started/adk.md), [Claude](getting-started/claude.md), [OpenAI](getting-started/openai.md), [LangChain](getting-started/langchain.md), [Pydantic AI](getting-started/pydantic-ai.md)
 - [Architecture](architecture.md) — how the capture → queue → backend pipeline fits together
 - [Event Schema](event-schema.md) — the Common Information Model (CIM) event contract
 - [Production Deployment](production-deployment.md) — backends, OTel export, and operational guidance

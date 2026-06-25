@@ -20,6 +20,7 @@ Edit the docs in markdown; regenerate:
 
     python3 docs_build.py
 """
+
 import html
 import posixpath
 import re
@@ -30,8 +31,7 @@ from urllib.parse import urlparse
 try:
     import markdown
 except ImportError:
-    sys.exit("docs_build.py: Python-Markdown not installed. "
-             "Run: pip install -r requirements-dev.txt")
+    sys.exit("docs_build.py: Python-Markdown not installed. Run: pip install -r requirements-dev.txt")
 
 ROOT = Path(__file__).resolve().parent
 DOCS_DIR = ROOT / "docs"
@@ -55,12 +55,16 @@ ANALYTICS_TMPL = (
 
 # Ordered table of contents for the left-nav: (source file relative to docs/, label).
 PAGES = [
-    ("index.md",                  "Overview"),
-    ("getting-started/adk.md",    "Getting Started · ADK"),
-    ("architecture.md",           "Architecture"),
-    ("event-schema.md",           "Event Schema"),
-    ("production-deployment.md",  "Production Deployment"),
-    ("COMPATIBILITY.md",          "Compatibility"),
+    ("index.md", "Overview"),
+    ("getting-started/adk.md", "Quickstart · ADK"),
+    ("getting-started/claude.md", "Quickstart · Claude"),
+    ("getting-started/openai.md", "Quickstart · OpenAI"),
+    ("getting-started/langchain.md", "Quickstart · LangChain"),
+    ("getting-started/pydantic-ai.md", "Quickstart · Pydantic AI"),
+    ("architecture.md", "Architecture"),
+    ("event-schema.md", "Event Schema"),
+    ("production-deployment.md", "Production Deployment"),
+    ("COMPATIBILITY.md", "Compatibility"),
 ]
 
 LEADING_COMMENT = re.compile(r"^\s*<!--.*?-->\s*", re.DOTALL)
@@ -68,9 +72,7 @@ LEADING_COMMENT = re.compile(r"^\s*<!--.*?-->\s*", re.DOTALL)
 # Python-Markdown's fenced_code renders ```mermaid as <pre><code class="language-mermaid">
 # with the source HTML-escaped. Mermaid.js renders elements matching `.mermaid`
 # from their raw text, so convert the block and un-escape the diagram source.
-MERMAID_BLOCK = re.compile(
-    r'<pre><code class="language-mermaid">(.*?)</code></pre>', re.DOTALL
-)
+MERMAID_BLOCK = re.compile(r'<pre><code class="language-mermaid">(.*?)</code></pre>', re.DOTALL)
 
 # Loaded only on pages that actually contain a diagram. Mermaid (MIT) is loaded
 # from the jsDelivr CDN, pinned to an EXACT version with a Subresource Integrity
@@ -122,6 +124,7 @@ def rewrite_links(body: str) -> str:
     in a fenced code block (Python-Markdown escapes the quotes there, so it
     never matches). Both double- and single-quoted href attributes are handled.
     """
+
     def repl(m):
         quote, href = m.group(1), m.group(2)
         if urlparse(href).scheme or href.startswith(("#", "//")):
@@ -140,6 +143,7 @@ def rewrite_links(body: str) -> str:
         else:
             return m.group(0)
         return f"href={quote}{new}{quote}"
+
     return re.sub(r"""href=(["'])(.*?)\1""", repl, body)
 
 
@@ -156,9 +160,7 @@ def onpage_toc(toc_tokens) -> str:
     collect(toc_tokens)
     if not items:
         return ""
-    lis = "".join(
-        f'<li><a href="#{t["id"]}">{html.escape(t["name"])}</a></li>' for t in items
-    )
+    lis = "".join(f'<li><a href="#{t["id"]}">{html.escape(t["name"])}</a></li>' for t in items)
     return f'<ul class="docs-subnav">{lis}</ul>'
 
 
@@ -230,8 +232,7 @@ def build():
         sys.exit(f"docs_build.py: PAGES lists files not in docs/: {sorted(missing)}")
     extra = on_disk - known - {"README.md"}
     if extra:
-        print(f"docs_build.py: note: docs/*.md not in the nav (skipped): {sorted(extra)}",
-              file=sys.stderr)
+        print(f"docs_build.py: note: docs/*.md not in the nav (skipped): {sorted(extra)}", file=sys.stderr)
 
     md = markdown.Markdown(
         extensions=["tables", "fenced_code", "toc", "sane_lists"],

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Google ADK Setup · observra Docs</title>
+<title>Pydantic AI Setup · observra Docs</title>
 <link rel="icon" type="image/png" sizes="32x32" href="../../graphics/web/favicon-32.png">
 <link rel="icon" type="image/png" sizes="256x256" href="../../graphics/web/favicon-256.png">
 <link rel="apple-touch-icon" sizes="180x180" href="../../graphics/web/favicon-180.png">
@@ -158,113 +158,112 @@ img { max-width: 100%; display: block; }
   </div>
 </header>
 <div class="docs-shell">
-  <aside class="docs-sidebar"><nav class="docs-nav"><div class="docs-nav-title">Documentation</div><ul><li><a href="../index.html">Overview</a></li><li><a href="adk.html" class="active">Quickstart · ADK</a><ul class="docs-subnav"><li><a href="#install">Install</a></li><li><a href="#prerequisites">Prerequisites</a></li><li><a href="#usage">Usage</a></li><li><a href="#how-it-works">How it works</a></li><li><a href="#capturing-tool-arguments-and-results">Capturing tool arguments and results</a></li><li><a href="#cost-tracking">Cost tracking</a></li><li><a href="#configuration">Configuration</a></li><li><a href="#captured-events">Captured Events</a></li><li><a href="#full-example">Full example</a></li></ul></li><li><a href="claude.html">Quickstart · Claude</a></li><li><a href="openai.html">Quickstart · OpenAI</a></li><li><a href="langchain.html">Quickstart · LangChain</a></li><li><a href="pydantic-ai.html">Quickstart · Pydantic AI</a></li><li><a href="../architecture.html">Architecture</a></li><li><a href="../event-schema.html">Event Schema</a></li><li><a href="../production-deployment.html">Production Deployment</a></li><li><a href="../COMPATIBILITY.html">Compatibility</a></li></ul></nav></aside>
+  <aside class="docs-sidebar"><nav class="docs-nav"><div class="docs-nav-title">Documentation</div><ul><li><a href="../index.html">Overview</a></li><li><a href="adk.html">Quickstart · ADK</a></li><li><a href="claude.html">Quickstart · Claude</a></li><li><a href="openai.html">Quickstart · OpenAI</a></li><li><a href="langchain.html">Quickstart · LangChain</a></li><li><a href="pydantic-ai.html" class="active">Quickstart · Pydantic AI</a><ul class="docs-subnav"><li><a href="#install">Install</a></li><li><a href="#prerequisites">Prerequisites</a></li><li><a href="#usage">Usage</a></li><li><a href="#setup-order-matters">Setup order matters</a></li><li><a href="#how-it-works">How it works</a></li><li><a href="#multi-provider-support">Multi-provider support</a></li><li><a href="#capturing-tool-arguments">Capturing tool arguments</a></li><li><a href="#cost-tracking">Cost tracking</a></li><li><a href="#configuration">Configuration</a></li><li><a href="#captured-events">Captured Events</a></li><li><a href="#full-example">Full example</a></li></ul></li><li><a href="../architecture.html">Architecture</a></li><li><a href="../event-schema.html">Event Schema</a></li><li><a href="../production-deployment.html">Production Deployment</a></li><li><a href="../COMPATIBILITY.html">Compatibility</a></li></ul></nav></aside>
   <main class="docs-main">
-    <article class="prose"><h1 id="google-adk-setup">Google ADK Setup</h1>
-<p>Capture every LLM call, tool use, cost, and error from a Google ADK agent.</p>
+    <article class="prose"><h1 id="pydantic-ai-setup">Pydantic AI Setup</h1>
+<p>Capture every model call and tool use from a Pydantic AI agent via OpenTelemetry spans.</p>
 <h2 id="install">Install</h2>
-<pre><code class="language-bash">pip install observra[adk]
+<pre><code class="language-bash">pip install observra[pydantic-ai]
 </code></pre>
 <h2 id="prerequisites">Prerequisites</h2>
 <p>observra observes your agent — it does not provide model credentials. Configure
-ADK's model access as you normally would before adding telemetry, e.g. for
-Gemini via AI Studio:</p>
-<pre><code class="language-bash">export GOOGLE_API_KEY=...          # or configure Vertex AI per the ADK docs
+your model provider credentials as you normally would before adding telemetry:</p>
+<pre><code class="language-bash">export OPENAI_API_KEY=...        # or ANTHROPIC_API_KEY, GEMINI_API_KEY, etc.
 </code></pre>
 <h2 id="usage">Usage</h2>
-<p>ADK captures telemetry through a <strong>plugin</strong> that you register with your
-<code>Runner</code>. This is two added lines plus one Runner argument — <code>initialize()</code>
-alone does <strong>not</strong> capture anything until the plugin is attached.</p>
-<pre><code class="language-python">from google.adk.runners import Runner
-from google.adk.sessions import InMemorySessionService
+<p>The Pydantic AI adapter is an OTel <code>SpanProcessor</code> that reads spans emitted by
+<code>Agent.instrument_all()</code>. Setup requires wiring the adapter into a
+<code>TracerProvider</code> before any agent runs.</p>
+<pre><code class="language-python">from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.trace import set_tracer_provider
+from pydantic_ai import Agent
 
 from observra import create_plugin, initialize
 
 # 1. Point telemetry at a backend (JSONL file shown here).
 initialize(backend=&quot;jsonl&quot;, path=&quot;telemetry.jsonl&quot;)
 
-# 2. Build the plugin connected to that pipeline.
-plugin = create_plugin()  # framework=&quot;adk&quot; is the default
+# 2. Create the adapter (wired to the pipeline).
+adapter = create_plugin(&quot;pydantic-ai&quot;)
 
-# 3. Register the plugin with your Runner.
-runner = Runner(
-    agent=root_agent,                 # your existing ADK agent, unchanged
-    app_name=&quot;my_app&quot;,
-    session_service=InMemorySessionService(),
-    plugins=[plugin],                 # &lt;-- the only change to your Runner
-)
+# 3. Wire into OpenTelemetry (order matters!).
+provider = TracerProvider()
+provider.add_span_processor(adapter)   # must happen BEFORE set_tracer_provider
+set_tracer_provider(provider)
 
-# Run the agent normally — every lifecycle event is now captured.
+# 4. Enable Pydantic AI span generation.
+Agent.instrument_all()                 # must call BEFORE any agent runs
+
+# 5. Run your agent normally — telemetry is captured automatically.
+agent = Agent(&quot;openai:gpt-4o&quot;)
+result = agent.run_sync(&quot;Hello&quot;)
 </code></pre>
 <p>Events are written to <code>telemetry.jsonl</code>, one JSON object per line:</p>
 <pre><code class="language-bash">cat telemetry.jsonl | jq   # install jq if it isn't already on your system
 </code></pre>
+<h2 id="setup-order-matters">Setup order matters</h2>
+<p>The setup steps must happen in this exact order:</p>
+<ol>
+<li><code>TracerProvider()</code> — create provider</li>
+<li><code>provider.add_span_processor(adapter)</code> — register adapter</li>
+<li><code>set_tracer_provider(provider)</code> — set as global</li>
+<li><code>Agent.instrument_all()</code> — enable span generation</li>
+<li><code>Agent(...)</code> — create and run agents</li>
+</ol>
+<p>Wrong order = missing events. The adapter must be registered before Pydantic AI
+starts emitting spans.</p>
 <h2 id="how-it-works">How it works</h2>
-<p><code>create_plugin()</code> returns a <code>BasePlugin</code> that ADK drives through its lifecycle.
-The plugin implements the run, agent, model, and tool callbacks — plus the
-model/tool error and user-message callbacks — and translates each into a
-normalized CIM event. It is <strong>observation-only</strong>: the callbacks never modify
-agent behavior or alter responses. Token counts come from the model's
-<code>usage_metadata</code>, and cost is computed from observra's per-model pricing catalog.</p>
-<h3 id="running-under-adk-web">Running under <code>adk web</code></h3>
-<p>When you launch with <code>adk web</code> instead of constructing your own <code>Runner</code>,
-expose a module-level plugin and pass it with <code>--extra_plugins</code>:</p>
-<pre><code class="language-python"># in your agent module
-from observra import create_plugin, initialize
-
-initialize(backend=&quot;jsonl&quot;, path=&quot;telemetry.jsonl&quot;)
-telemetry_plugin = create_plugin()
+<p>Pydantic AI's <code>instrument_all()</code> generates OTel spans for every model call and
+tool invocation. The adapter is a <code>SpanProcessor</code> that reads those completed
+spans in <code>on_end()</code> and converts them to observra telemetry events.</p>
+<p>There is <strong>no double-counting</strong>: <code>instrument_all()</code> generates the spans, the
+adapter reads them. Each model call produces exactly one <code>model_response</code> event.</p>
+<p>Span routing:
+- <code>chat *</code> spans → <code>model_response</code> events
+- <code>running tool</code> / <code>execute_tool *</code> spans → <code>tool_end</code> events
+- All other spans (agent run, etc.) → silently skipped</p>
+<h2 id="multi-provider-support">Multi-provider support</h2>
+<p>Works with any Pydantic AI model provider — OpenAI, Anthropic, Gemini, etc.
+Token counts and cost are extracted from span attributes regardless of provider.</p>
+<h2 id="capturing-tool-arguments">Capturing tool arguments</h2>
+<p>By default, tool inputs are <strong>not</strong> recorded (to avoid logging sensitive
+payloads). Opt in on the adapter:</p>
+<pre><code class="language-python">adapter = create_plugin(&quot;pydantic-ai&quot;, capture_tool_data=True)
 </code></pre>
-<pre><code class="language-bash">adk web . --extra_plugins your_module.telemetry_plugin
-</code></pre>
-<h2 id="capturing-tool-arguments-and-results">Capturing tool arguments and results</h2>
-<p>By default, tool inputs/outputs are <strong>not</strong> recorded (to avoid logging
-sensitive payloads). Opt in on the plugin — not on <code>initialize()</code>:</p>
-<pre><code class="language-python">plugin = create_plugin(capture_tool_data=True)
-</code></pre>
+<p>Payloads are truncated at 4KB and redacted for PII.</p>
 <h2 id="cost-tracking">Cost tracking</h2>
-<p>Each <code>model_response</code> carries <code>cost_usd</code> (computed from token counts and the
-per-model pricing catalog) plus a running <code>session_cost_usd</code>. To alert when a
-session crosses a budget, set a threshold on the plugin:</p>
-<pre><code class="language-python">plugin = create_plugin(cost_threshold_usd=5.00)
+<p>Token counts are extracted from OTel span attributes. Cost is computed using
+co-located pricing data. To alert when a call exceeds a threshold:</p>
+<pre><code class="language-python">adapter = create_plugin(&quot;pydantic-ai&quot;, cost_threshold_usd=5.00)
 </code></pre>
-<p>This emits a <code>cost_threshold_exceeded</code> event once per session when the total
+<p>This emits a <code>cost_threshold_exceeded</code> event when a model call's cost
 crosses the configured limit.</p>
 <h2 id="configuration">Configuration</h2>
-<p>All configuration is passed as arguments. observra does not read telemetry
-settings from environment variables (aside from <code>ABA_TELEMETRY_KEY</code> for
-encryption-at-rest), so set them explicitly:</p>
 <pre><code class="language-python">initialize(
     backend=&quot;jsonl&quot;,
     path=&quot;telemetry.jsonl&quot;,
     queue_size=1000,                  # bounded, drop-oldest queue
 )
-plugin = create_plugin(
-    capture_tool_data=False,          # opt in to record tool args/results
-    cost_threshold_usd=None,          # alert when session cost crosses this
+adapter = create_plugin(
+    &quot;pydantic-ai&quot;,
+    capture_tool_data=False,          # opt in to record tool args
+    cost_threshold_usd=None,          # cost alerting threshold
+    payload_max_bytes=4096,           # max serialized tool data size
 )
 </code></pre>
 <p>For OTel/Dynatrace/Datadog export and production tuning, see
 <a href="https://github.com/open-agent-ai-security/observra/blob/main/production-deployment.md">Production Deployment</a>.</p>
 <h2 id="captured-events">Captured Events</h2>
 <ul>
-<li><code>user_message</code> — user prompt submissions</li>
-<li><code>model_request</code> / <code>model_response</code> — LLM calls with token counts and cost</li>
-<li><code>turn_duration</code> — per-turn latency</li>
-<li><code>tool_start</code> / <code>tool_end</code> — tool invocations with duration</li>
-<li><code>agent_start</code> / <code>agent_end</code> — agent lifecycle with delegation depth</li>
-<li><code>depth_exceeded</code> — sub-agent delegation exceeded observra's safe depth limit</li>
-<li><code>model_error</code> / <code>tool_error</code> — failures with error classification</li>
-<li><code>cost_threshold_exceeded</code> — session cost crossed the configured threshold</li>
-<li><code>session_start</code> / <code>session_end</code> — session boundaries</li>
+<li><code>model_response</code> — model calls with input/output tokens and cost (any provider)</li>
+<li><code>tool_end</code> — tool invocations with tool name and optional args</li>
+<li><code>cost_threshold_exceeded</code> — cost alerting (if configured)</li>
 </ul>
-<p>All events have <code>framework="adk"</code> for SIEM filtering.</p>
+<p>All events have <code>framework="pydantic-ai"</code> for SIEM filtering.</p>
 <h2 id="full-example">Full example</h2>
-<p>See <a href="https://github.com/open-agent-ai-security/observra/blob/main/examples/sample_agent/"><code>examples/sample_agent/</code></a> for a complete
-<code>adk web</code> agent, and
-<a href="https://github.com/open-agent-ai-security/observra/blob/main/examples/add_telemetry_to_agent.py"><code>examples/add_telemetry_to_agent.py</code></a>
-for the programmatic <code>Runner</code> integration.</p></article>
-    <p class="docs-edit"><a href="https://github.com/open-agent-ai-security/observra/blob/main/docs/getting-started/adk.md" target="_blank" rel="noopener">Edit this page on GitHub ↗</a></p>
+<p>See <a href="https://github.com/open-agent-ai-security/observra/blob/main/examples/pydantic_ai_adapter.py"><code>examples/pydantic_ai_adapter.py</code></a> for
+a complete walkthrough including setup order and provider configuration.</p></article>
+    <p class="docs-edit"><a href="https://github.com/open-agent-ai-security/observra/blob/main/docs/getting-started/pydantic-ai.md" target="_blank" rel="noopener">Edit this page on GitHub ↗</a></p>
   </main>
 </div>
 

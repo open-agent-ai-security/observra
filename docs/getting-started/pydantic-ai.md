@@ -56,7 +56,7 @@ result = agent.run_sync("Hello")
 Events are written to `telemetry.jsonl`, one JSON object per line:
 
 ```bash
-cat telemetry.jsonl | python -m json.tool
+cat telemetry.jsonl | jq   # install jq if it isn't already on your system
 ```
 
 ## Setup order matters

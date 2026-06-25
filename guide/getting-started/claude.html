@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Google ADK Setup · observra Docs</title>
+<title>Claude Agent SDK Setup · observra Docs</title>
 <link rel="icon" type="image/png" sizes="32x32" href="../../graphics/web/favicon-32.png">
 <link rel="icon" type="image/png" sizes="256x256" href="../../graphics/web/favicon-256.png">
 <link rel="apple-touch-icon" sizes="180x180" href="../../graphics/web/favicon-180.png">
@@ -158,113 +158,98 @@ img { max-width: 100%; display: block; }
   </div>
 </header>
 <div class="docs-shell">
-  <aside class="docs-sidebar"><nav class="docs-nav"><div class="docs-nav-title">Documentation</div><ul><li><a href="../index.html">Overview</a></li><li><a href="adk.html" class="active">Quickstart · ADK</a><ul class="docs-subnav"><li><a href="#install">Install</a></li><li><a href="#prerequisites">Prerequisites</a></li><li><a href="#usage">Usage</a></li><li><a href="#how-it-works">How it works</a></li><li><a href="#capturing-tool-arguments-and-results">Capturing tool arguments and results</a></li><li><a href="#cost-tracking">Cost tracking</a></li><li><a href="#configuration">Configuration</a></li><li><a href="#captured-events">Captured Events</a></li><li><a href="#full-example">Full example</a></li></ul></li><li><a href="claude.html">Quickstart · Claude</a></li><li><a href="openai.html">Quickstart · OpenAI</a></li><li><a href="langchain.html">Quickstart · LangChain</a></li><li><a href="pydantic-ai.html">Quickstart · Pydantic AI</a></li><li><a href="../architecture.html">Architecture</a></li><li><a href="../event-schema.html">Event Schema</a></li><li><a href="../production-deployment.html">Production Deployment</a></li><li><a href="../COMPATIBILITY.html">Compatibility</a></li></ul></nav></aside>
+  <aside class="docs-sidebar"><nav class="docs-nav"><div class="docs-nav-title">Documentation</div><ul><li><a href="../index.html">Overview</a></li><li><a href="adk.html">Quickstart · ADK</a></li><li><a href="claude.html" class="active">Quickstart · Claude</a><ul class="docs-subnav"><li><a href="#install">Install</a></li><li><a href="#prerequisites">Prerequisites</a></li><li><a href="#usage">Usage</a></li><li><a href="#how-it-works">How it works</a></li><li><a href="#capturing-tool-arguments-and-results">Capturing tool arguments and results</a></li><li><a href="#cost-tracking">Cost tracking</a></li><li><a href="#configuration">Configuration</a></li><li><a href="#captured-events">Captured Events</a></li><li><a href="#full-example">Full example</a></li></ul></li><li><a href="openai.html">Quickstart · OpenAI</a></li><li><a href="langchain.html">Quickstart · LangChain</a></li><li><a href="pydantic-ai.html">Quickstart · Pydantic AI</a></li><li><a href="../architecture.html">Architecture</a></li><li><a href="../event-schema.html">Event Schema</a></li><li><a href="../production-deployment.html">Production Deployment</a></li><li><a href="../COMPATIBILITY.html">Compatibility</a></li></ul></nav></aside>
   <main class="docs-main">
-    <article class="prose"><h1 id="google-adk-setup">Google ADK Setup</h1>
-<p>Capture every LLM call, tool use, cost, and error from a Google ADK agent.</p>
+    <article class="prose"><h1 id="claude-agent-sdk-setup">Claude Agent SDK Setup</h1>
+<p>Capture every tool call, user prompt, model response, and session cost from a Claude Agent SDK agent.</p>
 <h2 id="install">Install</h2>
-<pre><code class="language-bash">pip install observra[adk]
+<pre><code class="language-bash">pip install observra[claude]
 </code></pre>
 <h2 id="prerequisites">Prerequisites</h2>
 <p>observra observes your agent — it does not provide model credentials. Configure
-ADK's model access as you normally would before adding telemetry, e.g. for
-Gemini via AI Studio:</p>
-<pre><code class="language-bash">export GOOGLE_API_KEY=...          # or configure Vertex AI per the ADK docs
+your Anthropic API key as you normally would before adding telemetry:</p>
+<pre><code class="language-bash">export ANTHROPIC_API_KEY=...
 </code></pre>
 <h2 id="usage">Usage</h2>
-<p>ADK captures telemetry through a <strong>plugin</strong> that you register with your
-<code>Runner</code>. This is two added lines plus one Runner argument — <code>initialize()</code>
-alone does <strong>not</strong> capture anything until the plugin is attached.</p>
-<pre><code class="language-python">from google.adk.runners import Runner
-from google.adk.sessions import InMemorySessionService
-
+<p>The Claude adapter hooks into the SDK's lifecycle events and wraps the message
+stream to capture model responses. This is three added lines plus two small
+changes to your existing client setup.</p>
+<pre><code class="language-python">from claude_agent_sdk import ClaudeSDKClient
 from observra import create_plugin, initialize
 
 # 1. Point telemetry at a backend (JSONL file shown here).
 initialize(backend=&quot;jsonl&quot;, path=&quot;telemetry.jsonl&quot;)
 
-# 2. Build the plugin connected to that pipeline.
-plugin = create_plugin()  # framework=&quot;adk&quot; is the default
+# 2. Create the adapter (wired to the pipeline).
+adapter = create_plugin(&quot;claude&quot;)
 
-# 3. Register the plugin with your Runner.
-runner = Runner(
-    agent=root_agent,                 # your existing ADK agent, unchanged
-    app_name=&quot;my_app&quot;,
-    session_service=InMemorySessionService(),
-    plugins=[plugin],                 # &lt;-- the only change to your Runner
-)
+# 3. Pass hooks to the SDK client.
+client = ClaudeSDKClient(options=adapter.get_hook_options())
 
-# Run the agent normally — every lifecycle event is now captured.
+# 4. Wrap the message stream to capture model responses.
+async for msg in adapter.wrap_stream(client.stream(&quot;Hello&quot;)):
+    print(msg)  # messages pass through unchanged
 </code></pre>
 <p>Events are written to <code>telemetry.jsonl</code>, one JSON object per line:</p>
 <pre><code class="language-bash">cat telemetry.jsonl | jq   # install jq if it isn't already on your system
 </code></pre>
 <h2 id="how-it-works">How it works</h2>
-<p><code>create_plugin()</code> returns a <code>BasePlugin</code> that ADK drives through its lifecycle.
-The plugin implements the run, agent, model, and tool callbacks — plus the
-model/tool error and user-message callbacks — and translates each into a
-normalized CIM event. It is <strong>observation-only</strong>: the callbacks never modify
-agent behavior or alter responses. Token counts come from the model's
-<code>usage_metadata</code>, and cost is computed from observra's per-model pricing catalog.</p>
-<h3 id="running-under-adk-web">Running under <code>adk web</code></h3>
-<p>When you launch with <code>adk web</code> instead of constructing your own <code>Runner</code>,
-expose a module-level plugin and pass it with <code>--extra_plugins</code>:</p>
-<pre><code class="language-python"># in your agent module
-from observra import create_plugin, initialize
-
-initialize(backend=&quot;jsonl&quot;, path=&quot;telemetry.jsonl&quot;)
-telemetry_plugin = create_plugin()
-</code></pre>
-<pre><code class="language-bash">adk web . --extra_plugins your_module.telemetry_plugin
-</code></pre>
+<p>The adapter integrates at two points:</p>
+<ol>
+<li>
+<p><strong>Hook callbacks</strong> (<code>get_hook_options()</code>) — intercepts <code>PreToolUse</code>,
+   <code>PostToolUse</code>, <code>UserPromptSubmit</code>, <code>Stop</code>, and <code>SubagentStop</code> events.
+   All callbacks return <code>{}</code> (observation-only, never modifies agent behavior).</p>
+</li>
+<li>
+<p><strong>Stream wrapper</strong> (<code>wrap_stream()</code>) — captures <code>model_response</code> events
+   from text content blocks and exact session cost from the <code>ResultMessage</code>.</p>
+</li>
+</ol>
 <h2 id="capturing-tool-arguments-and-results">Capturing tool arguments and results</h2>
 <p>By default, tool inputs/outputs are <strong>not</strong> recorded (to avoid logging
-sensitive payloads). Opt in on the plugin — not on <code>initialize()</code>:</p>
-<pre><code class="language-python">plugin = create_plugin(capture_tool_data=True)
+sensitive payloads). Opt in on the adapter:</p>
+<pre><code class="language-python">adapter = create_plugin(&quot;claude&quot;, capture_tool_data=True)
 </code></pre>
+<p>Payloads are truncated at 4KB and redacted for PII.</p>
 <h2 id="cost-tracking">Cost tracking</h2>
-<p>Each <code>model_response</code> carries <code>cost_usd</code> (computed from token counts and the
-per-model pricing catalog) plus a running <code>session_cost_usd</code>. To alert when a
-session crosses a budget, set a threshold on the plugin:</p>
-<pre><code class="language-python">plugin = create_plugin(cost_threshold_usd=5.00)
+<p>Token costs are estimated via tiktoken during hook callbacks (flagged
+<code>estimated=True</code>). Exact costs are available from <code>ResultMessage.total_cost_usd</code>
+when using <code>wrap_stream()</code> or <code>handle_result_message()</code> — these are flagged
+<code>estimated=False</code>.</p>
+<p>To alert when session cost exceeds a threshold:</p>
+<pre><code class="language-python">adapter = create_plugin(&quot;claude&quot;, cost_threshold_usd=5.00)
 </code></pre>
-<p>This emits a <code>cost_threshold_exceeded</code> event once per session when the total
-crosses the configured limit.</p>
+<p>This emits a <code>cost_threshold_exceeded</code> event when the session total crosses
+the configured limit.</p>
 <h2 id="configuration">Configuration</h2>
-<p>All configuration is passed as arguments. observra does not read telemetry
-settings from environment variables (aside from <code>ABA_TELEMETRY_KEY</code> for
-encryption-at-rest), so set them explicitly:</p>
 <pre><code class="language-python">initialize(
     backend=&quot;jsonl&quot;,
     path=&quot;telemetry.jsonl&quot;,
     queue_size=1000,                  # bounded, drop-oldest queue
 )
-plugin = create_plugin(
+adapter = create_plugin(
+    &quot;claude&quot;,
     capture_tool_data=False,          # opt in to record tool args/results
-    cost_threshold_usd=None,          # alert when session cost crosses this
+    cost_threshold_usd=None,          # cost alerting threshold
 )
 </code></pre>
 <p>For OTel/Dynatrace/Datadog export and production tuning, see
 <a href="https://github.com/open-agent-ai-security/observra/blob/main/production-deployment.md">Production Deployment</a>.</p>
 <h2 id="captured-events">Captured Events</h2>
 <ul>
-<li><code>user_message</code> — user prompt submissions</li>
-<li><code>model_request</code> / <code>model_response</code> — LLM calls with token counts and cost</li>
-<li><code>turn_duration</code> — per-turn latency</li>
+<li><code>user_message</code> — user prompts with estimated token count</li>
+<li><code>model_response</code> — model output with token counts and cost</li>
 <li><code>tool_start</code> / <code>tool_end</code> — tool invocations with duration</li>
-<li><code>agent_start</code> / <code>agent_end</code> — agent lifecycle with delegation depth</li>
-<li><code>depth_exceeded</code> — sub-agent delegation exceeded observra's safe depth limit</li>
-<li><code>model_error</code> / <code>tool_error</code> — failures with error classification</li>
-<li><code>cost_threshold_exceeded</code> — session cost crossed the configured threshold</li>
-<li><code>session_start</code> / <code>session_end</code> — session boundaries</li>
+<li><code>session_end</code> — session boundaries with exact total cost</li>
+<li><code>agent_end</code> — agent/subagent stop events</li>
+<li><code>cost_threshold_exceeded</code> — cost alerting (if configured)</li>
 </ul>
-<p>All events have <code>framework="adk"</code> for SIEM filtering.</p>
+<p>All events have <code>framework="claude"</code> for SIEM filtering.</p>
 <h2 id="full-example">Full example</h2>
-<p>See <a href="https://github.com/open-agent-ai-security/observra/blob/main/examples/sample_agent/"><code>examples/sample_agent/</code></a> for a complete
-<code>adk web</code> agent, and
-<a href="https://github.com/open-agent-ai-security/observra/blob/main/examples/add_telemetry_to_agent.py"><code>examples/add_telemetry_to_agent.py</code></a>
-for the programmatic <code>Runner</code> integration.</p></article>
-    <p class="docs-edit"><a href="https://github.com/open-agent-ai-security/observra/blob/main/docs/getting-started/adk.md" target="_blank" rel="noopener">Edit this page on GitHub ↗</a></p>
+<p>See <a href="https://github.com/open-agent-ai-security/observra/blob/main/examples/claude_adapter.py"><code>examples/claude_adapter.py</code></a> for
+a complete before/after walkthrough.</p></article>
+    <p class="docs-edit"><a href="https://github.com/open-agent-ai-security/observra/blob/main/docs/getting-started/claude.md" target="_blank" rel="noopener">Edit this page on GitHub ↗</a></p>
   </main>
 </div>
 
