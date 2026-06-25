@@ -165,29 +165,29 @@ img { max-width: 100%; display: block; }
 <h2 id="schema-source">Schema Source</h2>
 <p>The single source of truth is <a href="https://github.com/open-agent-ai-security/observra/blob/main/schema/cim_schema.toml"><code>schema/cim_schema.toml</code></a>.</p>
 <h2 id="versioning">Versioning</h2>
-<p>Events carry two independent version identifiers:</p>
+<p>observra has two independently-versioned surfaces (see <a href="https://github.com/open-agent-ai-security/observra/blob/main/STABILITY.md">STABILITY.md</a>):</p>
 <table>
 <thead>
 <tr>
-<th>Field</th>
+<th>Surface</th>
 <th>Source</th>
-<th>Purpose</th>
+<th>How it reaches a record</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>library_version</code></td>
-<td>Package <code>__version__</code> (semver)</td>
-<td>Identifies the observra release that emitted the event</td>
+<td>Library / package version</td>
+<td><code>__version__</code> (semver)</td>
+<td>the <code>library_version</code> field on every emitted record</td>
 </tr>
 <tr>
-<td><code>cim_version</code></td>
-<td><code>CIM_VERSION</code> in <code>core/cim.py</code></td>
-<td>Identifies which CIM schema the event conforms to</td>
+<td>CIM / event-schema version</td>
+<td><code>CIM_VERSION</code> in <code>core/cim.py</code> (from <code>schema/cim_schema.toml</code>)</td>
+<td>the <code>schema</code> anchor (<code>observra:&lt;major&gt;.&lt;minor&gt;</code>) on the OTel backends; on native JSONL/webhook records, inferred from <code>library_version</code></td>
 </tr>
 </tbody>
 </table>
-<p>These move independently. A library patch release does not change the schema version; a new optional CIM field bumps the schema minor without requiring a library major.</p>
+<p>These move independently: a library patch release does not change the schema version, and a new optional CIM field bumps the schema minor without requiring a library major.</p>
 <h2 id="event-envelope">Event Envelope</h2>
 <p>Every event serialized by observra contains:</p>
 <table>
@@ -273,12 +273,6 @@ img { max-width: 100%; display: block; }
 <td>Event-specific payload (CIM fields, detection annotations)</td>
 </tr>
 <tr>
-<td><code>cim_version</code></td>
-<td>string</td>
-<td>yes</td>
-<td>CIM schema version (e.g. "1.0")</td>
-</tr>
-<tr>
 <td><code>host</code></td>
 <td>string</td>
 <td>no</td>
@@ -319,7 +313,7 @@ img { max-width: 100%; display: block; }
 <li><strong>OTel Logs</strong> (<code>backends/otel_log.py</code>): Maps event fields to OTel LogRecord body</li>
 <li><strong>Exabeam</strong> (<code>senders/exabeam.py</code>): Curated field subset via <code>build_payload()</code> / <code>build_raw_payload()</code></li>
 </ul>
-<p>The <code>cim_version</code> field is present in all serializations that use <code>asdict()</code> (JSONL, webhook). The Exabeam sender includes it only if explicitly added to its canonical field set.</p>
+<p>The schema version is carried as a <code>schema</code> anchor (<code>observra:&lt;major&gt;.&lt;minor&gt;</code>) by the OTel backends (spans and logs). The native <code>asdict()</code> serializations (JSONL, webhook) do not stamp it — those records carry <code>library_version</code>, from which the schema version can be inferred. See <a href="https://github.com/open-agent-ai-security/observra/blob/main/STABILITY.md">STABILITY.md</a> for the consumer contract.</p>
 <h2 id="event-types">Event Types</h2>
 <p>See <a href="CIM_SCHEMA_SPEC.html">CIM Schema Spec</a> for the full catalog of event types, actions, and classification rules.</p></article>
     <p class="docs-edit"><a href="https://github.com/open-agent-ai-security/observra/blob/main/docs/event-schema.md" target="_blank" rel="noopener">Edit this page on GitHub ↗</a></p>
