@@ -46,21 +46,32 @@ pip install observra[all]
 
 ## Quick Start
 
+Attach observra to your agent framework — no manual logging calls. For Google ADK:
+
 ```python
 import observra
-from observra import log
+from google.adk.runners import Runner
+from google.adk.sessions import InMemorySessionService
 
-observra.initialize(backend="jsonl", path="telemetry.jsonl")
-log.session_start(agent_name="my-agent")
-log.model_response("gpt-4o", input_tokens=500, output_tokens=200)
-log.session_end(agent_name="my-agent")
+observra.initialize(backend="jsonl", path="telemetry.jsonl")  # pip install observra[adk]
+plugin = observra.create_plugin("adk")
+
+runner = Runner(
+    agent=root_agent,                 # your existing ADK agent, unchanged
+    app_name="my-agent",
+    session_service=InMemorySessionService(),
+    plugins=[plugin],                 # the only change — telemetry is now automatic
+)
 ```
 
-Sample output (one line per event in `telemetry.jsonl`):
+Every LLM call, tool use, and cost lands in `telemetry.jsonl`, one event per line
+(representative `model_response`; real records also carry `event_id`, `trace_id`, and host context):
 
 ```json
-{"ts": "2025-01-15T10:23:45Z", "event_type": "model_response", "framework": "generic", "data": {"model": "gpt-4o", "in": 500, "out": 200, "cost_usd": 0.0035}}
+{"timestamp": 1718115781.882, "event_type": "model_response", "framework": "adk", "agent_name": "research-agent", "model_name": "gemini-2.0-flash", "session_id": "s-a1f6c2e3", "library_version": "1.0.3", "data": {"input_tokens": 1240, "output_tokens": 387, "cost_usd": 0.0019, "action": "call_llm", "result": "success"}}
 ```
+
+Other frameworks follow the same two-step pattern — see the [getting-started guides](docs/getting-started/) for Claude, OpenAI, LangChain, and Pydantic AI.
 
 ## Supported Frameworks
 
@@ -69,8 +80,8 @@ Sample output (one line per event in `telemetry.jsonl`):
 | [Google ADK](docs/getting-started/adk.md) | `[adk]` | Stable | LLM calls, tool calls, delegation depth, cost |
 | [Claude SDK](docs/getting-started/claude.md) | `[claude]` | Stable | Tool calls, model responses, session cost |
 | [OpenAI Agents SDK](docs/getting-started/openai.md) | `[openai-agents]` | Stable | Spans, tool calls, agent handoffs, cost |
-| LangChain / LangGraph | `[langchain]` | Stable | Chain runs, tool calls, LLM calls, cost |
-| Pydantic AI | `[pydantic-ai]` | Stable | Agent runs, tool calls, model calls |
+| [LangChain / LangGraph](docs/getting-started/langchain.md) | `[langchain]` | Stable | Chain runs, tool calls, LLM calls, cost |
+| [Pydantic AI](docs/getting-started/pydantic-ai.md) | `[pydantic-ai]` | Stable | Agent runs, tool calls, model calls |
 
 ## Backends
 
