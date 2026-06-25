@@ -94,25 +94,18 @@ observra.initialize(
 Best for: teams that need both real-time observability AND a local audit trail.
 
 ```python
+import observra
 from observra.backends.otel_log import OTelLogBackend
 from observra.backends.jsonl import JSONLBackend
-from observra.backends.multi import MultiBackend
 
-import observra
-
-# OTel leg: real-time dashboards and alerting
 otel = OTelLogBackend(
     endpoint="https://your-instance.live.dynatrace.com/api/v2/otlp/v1/logs",
     headers={"Authorization": "Api-Token dt0c01.XXXX"},
     service_name="my-agent-svc",
 )
-
-# JSONL leg: local debugging and compliance audits
 local = JSONLBackend(path="/data/telemetry.jsonl")
 
-multi = MultiBackend([otel, local])
-
-observra.initialize(backend=multi)
+observra.initialize(backend="multi", backends=[otel, local])
 ```
 
 ### 4. MultiBackend — OTel + Webhook (SIEM forwarding)
@@ -120,24 +113,18 @@ observra.initialize(backend=multi)
 Best for: teams that need both observability push AND SIEM ingestion via webhook.
 
 ```python
+import observra
 from observra.backends.otel_log import OTelLogBackend
 from observra.backends.webhook import WebhookBackend
-from observra.backends.multi import MultiBackend
-
-import observra
 
 otel = OTelLogBackend(
     endpoint="https://your-instance.live.dynatrace.com/api/v2/otlp/v1/logs",
     headers={"Authorization": "Api-Token dt0c01.XXXX"},
     service_name="my-agent-svc",
 )
-
-# Webhook for SIEM ingestion
 siem = WebhookBackend(url="https://your-siem/api/v1/events")
 
-multi = MultiBackend([otel, siem])
-
-observra.initialize(backend=multi)
+observra.initialize(backend="multi", backends=[otel, siem])
 ```
 
 ### 5. stdout/Cloud Logging (GCP-native path)
@@ -283,7 +270,7 @@ observra.initialize(
 - [ ] **Configure cost thresholds** — get alerted on runaway LLM spend
 - [ ] **Test with `backend="jsonl"` first** — verify events are captured before adding OTel
 - [ ] **Use MultiBackend for dual-consumer** — don't force one schema on both observability and SIEM
-- [ ] **Handle graceful shutdown** — call `observra.shutdown()` or use atexit hooks to flush buffered events
+- [ ] **Handle graceful shutdown** — use atexit hooks or framework lifecycle to flush buffered events
 - [ ] **Set appropriate batch sizes** — larger batches reduce network calls but increase data-loss window on crash
 
 ---
@@ -291,7 +278,9 @@ observra.initialize(
 ## Graceful Shutdown
 
 OTel backends use `BatchLogRecordProcessor` / `BatchSpanProcessor` which buffer
-events. Ensure they flush on container shutdown:
+events. The `BackgroundWorker` flushes automatically via `atexit`, but for
+containers that receive SIGTERM (Cloud Run, Kubernetes), explicit shutdown
+ensures no events are lost:
 
 ```python
 import atexit
@@ -299,8 +288,9 @@ import observra
 
 observra.initialize(backend="otel_log", ...)
 
-# Flush on shutdown (Cloud Run SIGTERM, K8s preStop)
-atexit.register(observra.shutdown)
+# The worker registers its own atexit handler automatically.
+# For explicit control (e.g., signal handlers), access the worker directly:
+atexit.register(observra._worker.shutdown)
 ```
 
 For frameworks with lifecycle hooks (FastAPI, Flask):
@@ -312,10 +302,15 @@ from fastapi import FastAPI
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     yield
-    observra.shutdown()
+    if observra._worker is not None:
+        observra._worker.shutdown()
 
 app = FastAPI(lifespan=lifespan)
 ```
+
+> **Note:** `observra._worker` is an internal — a public `observra.shutdown()`
+> API is planned but not yet exposed. The worker's atexit handler covers most
+> deployments without explicit shutdown calls.
 
 ---
 
