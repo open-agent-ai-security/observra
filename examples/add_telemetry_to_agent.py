@@ -90,7 +90,6 @@ runner = Runner(
 #     backend="jsonl",
 #     path="telemetry.jsonl",
 #     cost_threshold_usd=5.00,             # alert when session > $5
-#     max_delegation_depth=3,              # alert on deep delegation
 #     custom_patterns=[                    # redact org-specific secrets
 #         (r"ACME_TOKEN_\w+", "ACME_TOKEN"),
 #     ],

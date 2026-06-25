@@ -83,7 +83,6 @@ class TelemetryPlugin(BasePlugin):
         queue=None,
         cost_calculator: CostCalculator | None = None,
         cost_threshold_usd: Decimal | None = None,
-        max_delegation_depth: int | None = None,
         capture_tool_data: bool = False,
         max_sequence_length: int = 100,
     ):
@@ -96,8 +95,6 @@ class TelemetryPlugin(BasePlugin):
                            If None, creates default calculator with bundled pricing.
             cost_threshold_usd: Optional cost threshold in USD. When exceeded, emits
                               cost_threshold_exceeded event (once per session).
-            max_delegation_depth: Optional maximum delegation depth. If not provided,
-                                uses module-level constant from detection.py.
             capture_tool_data: If True, capture tool arguments and results in events.
                              Data goes through cold path redaction. Default False.
             max_sequence_length: Maximum number of tool call entries to include in the
@@ -112,7 +109,6 @@ class TelemetryPlugin(BasePlugin):
         self._enabled: bool = True
         self._cost_calculator = cost_calculator or CostCalculator()
         self._cost_threshold = cost_threshold_usd
-        self._max_delegation_depth = max_delegation_depth
         self._capture_tool_data = capture_tool_data
         self._max_sequence_length = max_sequence_length
         # Error / drop tracking for FrameworkAdapter Protocol conformance
