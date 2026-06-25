@@ -64,8 +64,8 @@ add_trace_processor(adapter)  # register alongside default processors
 # The adapter captures these events automatically:
 #   - session_start / session_end (from agent spans)
 #   - model_response (with input/output tokens, cost)
-#   - tool_call (with tool name, duration)
-#   - handoff (multi-agent transitions with source/target)
+#   - tool_end (with tool name, duration)
+#   - agent_handoff / agent_handoff_error (multi-agent transitions with source/target)
 #   - cost_threshold_exceeded (if configured)
 #
 # All events have framework="openai" for SIEM filtering.

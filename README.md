@@ -149,7 +149,6 @@ backend = MultiBackend([span_backend, log_backend])
 ## Documentation
 
 - [Getting Started](docs/getting-started/) — per-framework setup guides
-- [API Reference](docs/api/) — public callables, config options, event examples
 - [Event Schema](docs/event-schema.md) — CIM event contract
 - [Architecture](docs/architecture.md) — system design overview
 - [Compatibility](docs/COMPATIBILITY.md) — supported versions

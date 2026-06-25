@@ -57,11 +57,11 @@ adapter = create_plugin("claude")
 #     handle_message(msg)  # messages pass through unchanged
 #
 # The adapter captures these events automatically:
-#   - user_prompt (with estimated token count)
-#   - before_tool / after_tool (with tool name, duration)
+#   - user_message (with estimated token count)
+#   - tool_start / tool_end (with tool name, duration)
 #   - model_response (from wrap_stream, with response text)
 #   - session_end (with exact total cost from ResultMessage)
-#   - agent_stop / subagent_stop
+#   - agent_end (emitted on Stop / SubagentStop)
 #   - cost_threshold_exceeded (if configured)
 #
 # All events have framework="claude" for SIEM filtering.

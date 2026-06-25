@@ -59,4 +59,4 @@ The schema version is carried as a `schema` anchor (`observra:<major>.<minor>`) 
 
 ## Event Types
 
-See [CIM Schema Spec](CIM_SCHEMA_SPEC.md) for the full catalog of event types, actions, and classification rules.
+See [`schema/cim_schema.toml`](../schema/cim_schema.toml) for the full catalog of event types, actions, and classification rules.
