@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # Copyright 2026 Exabeam, Inc.
 # SPDX-License-Identifier: Apache-2.0
-"""Unified 6-framework demo: every framework, same telemetry, same fields.
+"""Unified 5-framework demo: every framework, same telemetry, same fields.
 
-Runs mock sessions through all 6 REAL adapters (ADK, OpenAI, Claude,
-LangGraph, Pydantic AI, Copilot) and writes all events to a shared JSONL
+Runs mock sessions through all 5 REAL adapters (ADK, OpenAI, Claude,
+LangGraph, Pydantic AI) and writes all events to a shared JSONL
 file. Prints cross-framework normalization table proving field identity.
 
 No API keys needed. No GCP needed. Just run it.
@@ -37,21 +37,19 @@ logging.basicConfig(level=logging.WARNING)
 from observra.core.context import (  # noqa: E402
     initialize_session,
     initialize_trace,
-    new_span,
 )
-from observra.core.events import EventType, TelemetryEvent, create_event  # noqa: E402
+from observra.core.events import EventType, TelemetryEvent  # noqa: E402
 
 # ── Shared state ────────────────────────────────────────────────────────
 _all_events: list[TelemetryEvent] = []
 
-FRAMEWORK_ORDER = ["adk", "claude", "openai", "langgraph", "pydantic-ai", "copilot"]
+FRAMEWORK_ORDER = ["adk", "claude", "openai", "langgraph", "pydantic-ai"]
 FRAMEWORK_LABELS = {
     "adk": "ADK",
     "claude": "Claude",
     "openai": "OpenAI",
     "langgraph": "LangGraph",
     "pydantic-ai": "PydanticAI",
-    "copilot": "Copilot",
 }
 
 
@@ -414,9 +412,13 @@ def run_langgraph_session(verbose: bool = False) -> list[TelemetryEvent]:
 
 
 def _ensure_otel_stubs():
-    """Inject opentelemetry.sdk.trace stubs if not installed."""
-    if "opentelemetry.sdk.trace" in sys.modules:
-        return
+    """Inject opentelemetry.sdk.trace stubs only if OpenTelemetry isn't installed."""
+    try:
+        import opentelemetry.sdk.trace  # noqa: F401
+
+        return  # real OpenTelemetry present — don't shadow it (would break google-adk)
+    except ImportError:
+        pass
 
     class _SP:
         def on_start(self, s, parent_context=None):
@@ -473,101 +475,6 @@ def run_pydantic_ai_session(verbose: bool = False) -> list[TelemetryEvent]:
     adapter.on_end(tool_span)
 
     events = adapter._events.copy()
-    if verbose:
-        for e in events:
-            print(f"  [{e.framework:>11}] {e.event_type}")
-    return events
-
-
-# ========================================================================
-# 6. Copilot — CopilotAdapter (stub, emit via create_event)
-# ========================================================================
-
-
-def run_copilot_session(verbose: bool = False) -> list[TelemetryEvent]:
-    """Run Copilot session through the real CopilotAdapter."""
-    print("\n── Copilot (Azure GPT-4o) ──")
-    from observra.adapters.copilot.adapter import CopilotAdapter
-
-    initialize_trace()
-    initialize_session()
-    adapter = CopilotAdapter(queue=None)
-
-    adapter.emit(create_event(EventType.SESSION_START, agent_name="customer_support_copilot", framework="copilot"))
-    adapter.emit(
-        create_event(
-            EventType.USER_MESSAGE,
-            agent_name="customer_support_copilot",
-            framework="copilot",
-            has_injection_patterns=False,
-        )
-    )
-
-    new_span()
-    adapter.emit(create_event(EventType.AGENT_START, agent_name="customer_support_copilot", framework="copilot"))
-    adapter.emit(create_event(EventType.MODEL_REQUEST, model_name="gpt-4o", framework="copilot"))
-    adapter.emit(
-        create_event(
-            EventType.MODEL_RESPONSE,
-            model_name="gpt-4o",
-            framework="copilot",
-            input_tokens=420,
-            output_tokens=180,
-            total_tokens=600,
-            cost_usd=0.00285,
-        )
-    )
-
-    new_span()
-    adapter.emit(
-        create_event(
-            EventType.TOOL_START, tool_name="search_knowledge_base", framework="copilot", tool_type="connector"
-        )
-    )
-    adapter.emit(
-        create_event(
-            EventType.TOOL_END,
-            tool_name="search_knowledge_base",
-            framework="copilot",
-            tool_type="connector",
-            duration_ms=890.3,
-            tool_result="KB article: Reset password via SSO portal",
-        )
-    )
-
-    new_span()
-    adapter.emit(
-        create_event(
-            EventType.TOOL_START, tool_name="enrich_customer_context", framework="copilot", tool_type="power-automate"
-        )
-    )
-    adapter.emit(
-        create_event(
-            EventType.TOOL_END,
-            tool_name="enrich_customer_context",
-            framework="copilot",
-            tool_type="power-automate",
-            duration_ms=1450.7,
-        )
-    )
-
-    adapter.emit(
-        create_event(
-            EventType.MODEL_RESPONSE,
-            model_name="gpt-4o",
-            framework="copilot",
-            input_tokens=680,
-            output_tokens=220,
-            cached_tokens=50,
-            total_tokens=900,
-            cost_usd=0.00388,
-        )
-    )
-    adapter.emit(create_event(EventType.AGENT_END, agent_name="customer_support_copilot", framework="copilot"))
-    adapter.emit(create_event(EventType.SESSION_END, agent_name="customer_support_copilot", framework="copilot"))
-    adapter.emit(create_event(EventType.ADAPTER_CLOSE, framework="copilot"))
-
-    events = adapter.events
     if verbose:
         for e in events:
             print(f"  [{e.framework:>11}] {e.event_type}")
@@ -696,13 +603,13 @@ def print_normalization_table(events: list[TelemetryEvent]):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Unified 6-framework telemetry demo")
+    parser = argparse.ArgumentParser(description="Unified 5-framework telemetry demo")
     parser.add_argument("--verbose", action="store_true", help="Show per-event detail")
     parser.add_argument("--output", default=None, help="JSONL output path (default: temp file)")
     args = parser.parse_args()
 
     print("╔═══════════════════════════════════════════════════════════╗")
-    print("║  UNIFIED TELEMETRY DEMO — 6 Frameworks, 1 Schema        ║")
+    print("║  UNIFIED TELEMETRY DEMO — 5 Frameworks, 1 Schema        ║")
     print("╚═══════════════════════════════════════════════════════════╝")
 
     # Pre-inject stubs that must be available before adapter imports
@@ -716,7 +623,6 @@ def main():
         ("Claude", run_claude_session),
         ("LangGraph", run_langgraph_session),
         ("Pydantic AI", run_pydantic_ai_session),
-        ("Copilot", run_copilot_session),
     ]
 
     _all_events.clear()
