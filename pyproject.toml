@@ -79,7 +79,7 @@ all = [
 ]
 
 # Single source of truth for the version: src/observra/__init__.py __version__.
-# Bump it with `python scripts/bump_version.py {major|minor|patch}` — see RELEASING.md.
+# Bump it with `python scripts/bump_version.py {major|minor|patch}` — see docs/RELEASING.md.
 [tool.setuptools.dynamic]
 version = {attr = "observra.__version__"}
 

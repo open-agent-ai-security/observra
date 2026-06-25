@@ -14,7 +14,7 @@ Updates `__version__` in src/observra/__init__.py and rolls the CHANGELOG
 version dynamically from `__version__`, so it is never edited.
 
 After running, review the diff, commit, and push to main — the "Auto Release"
-workflow tags v<version> and cuts the GitHub Release. See RELEASING.md.
+workflow tags v<version> and cuts the GitHub Release. See docs/RELEASING.md.
 """
 
 from __future__ import annotations
