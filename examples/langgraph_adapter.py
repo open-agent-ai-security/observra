@@ -4,7 +4,7 @@
 """How to add telemetry to a LangGraph / LangChain agent.
 
 Install:
-    pip install observra[langchain]
+    pip install observra[langchain] langchain-openai   # Step 0 below uses ChatOpenAI as the LLM
 
 BEFORE (your existing agent):
     from langgraph.graph import StateGraph, MessagesState
@@ -29,25 +29,29 @@ Works with any LLM provider (OpenAI, Anthropic, Gemini, etc.).
 """
 
 # ── Step 0: Your existing LangGraph agent (unchanged) ───────────
+#
+# Building the graph needs `langchain-openai` + OPENAI_API_KEY (see Install).
+# Wrapped in a function so this file imports for inspection without credentials.
 
-from langchain_openai import ChatOpenAI
 from langgraph.graph import MessagesState, StateGraph
 
-llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
 
-graph = StateGraph(MessagesState)
+def build_app():
+    from langchain_openai import ChatOpenAI
+
+    llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+    graph = StateGraph(MessagesState)
+
+    def llm_node(state):
+        return {"messages": [llm.invoke(state["messages"])]}
+
+    graph.add_node("llm", llm_node)
+    graph.set_entry_point("llm")
+    graph.set_finish_point("llm")
+    return graph.compile()
 
 
-def llm_node(state):
-    messages = state["messages"]
-    response = llm.invoke(messages)
-    return {"messages": [response]}
-
-
-graph.add_node("llm", llm_node)
-graph.set_entry_point("llm")
-graph.set_finish_point("llm")
-app = graph.compile()
+# app = build_app()   # uncomment to run (needs the deps + key above)
 
 
 # ── Step 1: Add telemetry (3 lines) ─────────────────────────────
@@ -75,9 +79,10 @@ adapter = create_plugin("langchain")
 # result = app_with_telemetry.invoke({"messages": [...]})
 
 # The adapter captures these events automatically:
-#   - chain_start / chain_end (graph lifecycle)
+#   - session_start / session_end (top-level graph lifecycle)
+#   - agent_start / agent_end (nested chains / sub-graphs)
 #   - model_response (with input/output tokens, cost per model)
-#   - tool_call / tool_call_end (with tool name, duration)
+#   - tool_start / tool_end (with tool name, duration)
 #   - tool_error (with error classification)
 #   - cost_threshold_exceeded (if configured)
 #

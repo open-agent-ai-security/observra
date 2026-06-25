@@ -67,7 +67,7 @@ Agent.instrument_all()  # must call BEFORE any agent runs
 
 # The adapter captures these events automatically:
 #   - model_response (with input/output tokens, cost per model)
-#   - tool_call (with tool name and optional args)
+#   - tool_end (with tool name and optional args)
 #   - cost_threshold_exceeded (if configured)
 #
 # All events have framework="pydantic-ai" for SIEM filtering.

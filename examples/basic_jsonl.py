@@ -11,7 +11,8 @@ create a plugin, and inspect captured events. No running agent required —
 uses the plugin's in-memory mode to demonstrate event creation.
 """
 
-from observra import create_plugin, get_session_cost, initialize
+from observra import create_plugin, initialize
+from observra.core import get_session_cost
 
 # Initialize telemetry with JSONL storage
 initialize(

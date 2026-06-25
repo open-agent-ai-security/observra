@@ -61,12 +61,14 @@ runner = Runner(
 # ── That's it. Now run your agent normally. ────────────────────────
 #
 # Events are captured automatically:
-#   - before_run / after_run
-#   - before_model / after_model (with token counts + cost)
-#   - before_tool / after_tool
-#   - before_agent / after_agent (with delegation depth)
+#   - session_start / session_end
+#   - model_request / model_response (with token counts + cost)
+#   - tool_start / tool_end
+#   - agent_start / agent_end (with delegation depth)
+#   - turn_duration / depth_exceeded
 #   - model_error / tool_error (with error classification)
 #   - user_message (with injection pattern detection)
+#   - cost_threshold_exceeded (if configured)
 #
 # View your telemetry:
 #   cat telemetry.jsonl | python -m json.tool
