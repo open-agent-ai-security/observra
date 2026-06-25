@@ -8,7 +8,7 @@ from __future__ import annotations
 import logging
 from typing import Optional
 
-__version__ = "1.0.3"
+__version__ = "1.0.4"
 
 logger = logging.getLogger(__name__)
 
