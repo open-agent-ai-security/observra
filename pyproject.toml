@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "observra"
-version = "1.0.4"
+dynamic = ["version"]
 description = "Framework-agnostic agent behavior analytics — CIM-based telemetry for AI agents"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -77,6 +77,11 @@ test = [
 all = [
     "observra[adk,claude,openai-agents,langchain,pydantic-ai,otel,exabeam,encryption,safe-regex]",
 ]
+
+# Single source of truth for the version: src/observra/__init__.py __version__.
+# Bump it with `python scripts/bump_version.py {major|minor|patch}` — see docs/RELEASING.md.
+[tool.setuptools.dynamic]
+version = {attr = "observra.__version__"}
 
 [tool.setuptools.packages.find]
 where = ["src"]

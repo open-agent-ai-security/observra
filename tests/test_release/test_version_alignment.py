@@ -31,7 +31,15 @@ PLATFORM_PACKAGES = [
 def _pyproject_version() -> str:
     with open(PYPROJECT, "rb") as fh:
         data = tomllib.load(fh)
-    return data["project"]["version"]
+    version = data["project"].get("version")
+    if version is None:
+        # Version is declared dynamic (setuptools attr) — read the single source
+        # of truth, src/observra/__init__.py __version__.
+        init_text = (REPO_ROOT / "src" / "observra" / "__init__.py").read_text()
+        match = re.search(r'^__version__ = "([^"]+)"', init_text, re.MULTILINE)
+        assert match, "Could not find __version__ in src/observra/__init__.py"
+        version = match.group(1)
+    return version
 
 
 def _cargo_version() -> str:
