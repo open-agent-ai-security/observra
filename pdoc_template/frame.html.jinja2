@@ -1,0 +1,11 @@
+{% extends "default/frame.html.jinja2" %}
+{#
+  Observra API reference — inject the same web analytics the rest of the docs
+  site uses: GoatCounter (self-hosted count.js, shared community endpoint) and
+  the Cloudflare beacon. count.js is referenced by ABSOLUTE URL so it resolves
+  at every API-page depth (guide/api/observra.html ... guide/api/observra/backends/jsonl.html).
+#}
+{% block head %}
+<script data-goatcounter="https://open-agent-ai-security.goatcounter.com/count" async src="https://open-agent-ai-security.github.io/observra/assets/count.js"></script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "223642421cad463daf91bd9429a5f9a0"}'></script>
+{% endblock %}
