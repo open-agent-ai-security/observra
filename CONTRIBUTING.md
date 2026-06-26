@@ -8,6 +8,12 @@
 Thanks for your interest in improving observra. Contributions are welcome via
 pull request.
 
+## Releasing
+
+Maintainers: see [docs/RELEASING.md](docs/RELEASING.md) for how releases are cut —
+bump the version with `python scripts/bump_version.py`, push to `main`, and the
+**Auto Release** workflow tags the commit and publishes the GitHub Release.
+
 ## License
 
 observra is licensed under the [Apache License, Version 2.0](LICENSE.md). By
