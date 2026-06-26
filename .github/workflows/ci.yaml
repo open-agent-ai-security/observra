@@ -62,3 +62,33 @@ jobs:
 
       - name: Format check
         run: ruff format --check .
+
+  docs-freshness:
+    # Regenerate the GitHub Pages site (guide/) from docs/ and fail if the
+    # committed HTML is stale — i.e. docs/*.md changed without re-running
+    # docs_build.py. markdown is pinned in requirements-dev.txt so a fresh build
+    # is byte-for-byte reproducible. See RFE #25.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install docs build deps
+        run: pip install -r requirements-dev.txt
+
+      - name: Rebuild the docs site
+        run: python docs_build.py
+
+      - name: Check guide/ is in sync with docs/
+        run: |
+          if [ -n "$(git status --porcelain -- guide/)" ]; then
+            echo "::error::guide/ is out of sync with docs/. Run 'pip install -r requirements-dev.txt && python docs_build.py' and commit the regenerated guide/ HTML."
+            git status --porcelain -- guide/
+            git diff -- guide/
+            exit 1
+          fi
+          echo "guide/ is up to date with docs/."
