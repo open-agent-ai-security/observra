@@ -1,0 +1,40 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+/*
+  Copyright 2026 Exabeam, Inc.
+  SPDX-License-Identifier: Apache-2.0
+
+  Observra theme for pdoc — matches assets/observra-theme.css / index.html hero.
+  Generated API reference; keep in sync with the site's dark palette + fonts.
+*/
+
+:root { --pdoc-background: #070F1A; }
+.pdoc {
+  --text:       #EEF4FF;
+  --muted:      #8FAFC8;
+  --link:       #4DA3FF;
+  --link-hover: #1E6FE0;
+  --code:       #040C16;
+  --active:     rgba(30,111,224,0.22);
+  --accent:     #0F2035;
+  --accent2:    #1A3050;
+  --nav-hover:  rgba(30,111,224,0.12);
+  --name:       #4DA3FF;
+  --def:        #28C840;
+  --annotation: #7EC8E3;
+}
+body { font-family: 'Inter', sans-serif; color: #EEF4FF; }
+.pdoc h1, .pdoc h2, .pdoc h3, .pdoc .modulename { font-family: 'Space Grotesk', sans-serif; letter-spacing: -0.01em; }
+.pdoc code, .pdoc pre, .pdoc .signature, .pdoc .attr, nav.pdoc { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+nav.pdoc { box-shadow: none; border-right: 1px solid var(--accent2); }
+nav.pdoc .logo { margin-top: 0.4rem; }
+
+/* Dark code theme (override pygments light defaults) */
+.pdoc-code { background: #040C16 !important; color: #CBD8E6; }
+.pdoc .pdoc-code .c, .pdoc .pdoc-code .c1, .pdoc .pdoc-code .cm, .pdoc .pdoc-code .ch { color: #6A8AA6; font-style: italic; }
+.pdoc .pdoc-code .k, .pdoc .pdoc-code .kn, .pdoc .pdoc-code .kd, .pdoc .pdoc-code .kc, .pdoc .pdoc-code .kr, .pdoc .pdoc-code .ow { color: #4DA3FF; font-weight: 600; }
+.pdoc .pdoc-code .s, .pdoc .pdoc-code .s1, .pdoc .pdoc-code .s2, .pdoc .pdoc-code .sd, .pdoc .pdoc-code .sb { color: #28C840; }
+.pdoc .pdoc-code .nf, .pdoc .pdoc-code .fm { color: #7EC8E3; }
+.pdoc .pdoc-code .nc, .pdoc .pdoc-code .nn, .pdoc .pdoc-code .nb { color: #4DA3FF; }
+.pdoc .pdoc-code .m, .pdoc .pdoc-code .mi, .pdoc .pdoc-code .mf { color: #E5C07B; }
+.pdoc .pdoc-code .o, .pdoc .pdoc-code .p { color: #8FAFC8; }
+.pdoc .pdoc-code .nd { color: #B07CFF; }
