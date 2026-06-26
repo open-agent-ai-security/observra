@@ -177,6 +177,11 @@ def left_nav(active_src: str, active_toc: str, page_dir: str) -> str:
         if is_active and active_toc:
             out.append(active_toc)
         out.append("</li>")
+    out.append("</ul>")
+    # Reference group → the pdoc-generated API reference (under guide/api/).
+    api_target = posixpath.relpath("api/observra.html", start)
+    out.append('<div class="docs-nav-title">Reference</div><ul>')
+    out.append(f'<li><a href="{html.escape(api_target)}">API Reference</a></li>')
     out.append("</ul></nav>")
     return "".join(out)
 

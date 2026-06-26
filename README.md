@@ -153,6 +153,7 @@ backend = MultiBackend([span_backend, log_backend])
 - [Architecture](docs/architecture.md) — system design overview
 - [Compatibility](docs/COMPATIBILITY.md) — supported versions
 - [Stability Contract](STABILITY.md) — API + event/CIM-schema stability guarantees
+- [API Reference](https://open-agent-ai-security.github.io/observra/guide/api/observra.html) — auto-generated reference for the public Python SDK
 
 ## Project sponsor
 

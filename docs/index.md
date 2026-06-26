@@ -17,6 +17,7 @@ framework.
 - [Event Schema](event-schema.md) — the Common Information Model (CIM) event contract
 - [Production Deployment](production-deployment.md) — backends, OTel export, and operational guidance
 - [Compatibility](COMPATIBILITY.md) — supported Python and framework versions
+- [API Reference](api/observra.html) — auto-generated reference for the public Python SDK
 
 ## How it works
 
