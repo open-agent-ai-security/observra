@@ -12,6 +12,8 @@ for how releases are cut.
 
 ## [Unreleased]
 
+## [1.0.5] — 2026-06-27
+
 ### Added
 - Release tooling: the version is single-sourced from `observra.__version__`
   (pyproject reads it dynamically), `scripts/bump_version.py` bumps it and rolls
