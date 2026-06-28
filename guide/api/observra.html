@@ -152,7 +152,46 @@
                     <h1 class="modulename">
 observra    </h1>
 
-                        <div class="docstring"><p>Observra — Framework-agnostic agent behavior analytics.</p>
+                        <div class="docstring"><p>Observra — framework-agnostic telemetry for AI agents.</p>
+
+<p>Observra captures what your agents do — model calls, tool use, cost, latency,
+and errors — normalizes every event into a common schema (CIM), and routes it
+to the backends you already use (JSONL, webhooks, OpenTelemetry, or a SIEM such
+as Exabeam). Your agent code runs unmodified: framework adapters emit events
+through a non-blocking background pipeline.</p>
+
+<p>The public API is intentionally small:</p>
+
+<ul>
+<li><code><a href="#initialize">initialize</a></code> — start the global pipeline and choose a backend.</li>
+<li><code><a href="#create_plugin">create_plugin</a></code> — wire a framework adapter (ADK, Claude, OpenAI, LangChain,
+Pydantic AI) into that pipeline.</li>
+<li><code><a href="#create_logging_handler">create_logging_handler</a></code> — capture standard-library logs as telemetry.</li>
+<li><code><a href="#get_stats">get_stats</a></code> / <code><a href="#get_metrics">get_metrics</a></code> — inspect pipeline health.</li>
+</ul>
+
+<h6 id="example">Example:</h6>
+
+<blockquote>
+  <div class="pdoc-code codehilite">
+<pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">observra</span>
+
+<span class="c1"># 1. Start the pipeline (newline-delimited JSON by default)</span>
+<span class="n"><a href="#initialize">observra.initialize</a></span><span class="p">(</span><span class="n">backend</span><span class="o">=</span><span class="s2">&quot;jsonl&quot;</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s2">&quot;telemetry.jsonl&quot;</span><span class="p">)</span>
+
+<span class="c1"># 2. Attach the adapter for your agent framework</span>
+<span class="n">plugin</span> <span class="o">=</span> <span class="n"><a href="#create_plugin">observra.create_plugin</a></span><span class="p">(</span><span class="s2">&quot;adk&quot;</span><span class="p">)</span>
+
+<span class="c1"># ...run your agent as usual; events stream in the background...</span>
+
+<span class="c1"># 3. Inspect pipeline health</span>
+<span class="nb">print</span><span class="p">(</span><span class="n"><a href="#get_stats">observra.get_stats</a></span><span class="p">())</span>
+</code></pre>
+  </div>
+</blockquote>
+
+<p>For framework-specific setup, see the
+<a href="https://open-agent-ai-security.github.io/observra/guide/index.html">Getting Started guides</a>.</p>
 </div>
 
                 
@@ -183,22 +222,47 @@ observra    </h1>
     
             <div class="docstring"><p>Initialize the global telemetry pipeline with a named backend.</p>
 
-<p>Tears down any existing pipeline and replaces it with a new one.
-Existing adapters continue working via the queue proxy.</p>
+<p>Tears down any existing pipeline and replaces it with a new one. Adapters
+created with <code><a href="#create_plugin">create_plugin</a></code> keep working across re-initialization — they
+hold a proxy whose target is swapped to the new queue.</p>
 
 <h6 id="arguments">Arguments:</h6>
 
 <ul>
-<li><strong>backend:</strong>  Backend type name. Supported: "jsonl", "webhook", "otel",
-"otel_log", "multi", "exabeam".</li>
-<li>**<strong>kwargs:</strong>  Arguments passed to the backend constructor.</li>
+<li><strong>backend:</strong>  Backend type name. One of <code>"jsonl"</code> (newline-delimited JSON,
+the default), <code>"webhook"</code>, <code>"otel"</code> (OpenTelemetry spans),
+<code>"otel_log"</code> (OpenTelemetry logs), <code>"multi"</code> (fan out to several
+backends at once), or <code>"exabeam"</code> (Exabeam SIEM).</li>
+<li>**<strong>kwargs:</strong>  Passed through to the backend constructor — e.g. <code>path=</code> for
+<code>"jsonl"</code>. <code>queue_size</code> (default <code>1000</code>) caps the in-memory
+event buffer.</li>
 </ul>
 
 <h6 id="raises">Raises:</h6>
 
 <ul>
-<li><strong>ValueError:</strong>  If backend type is not recognized.</li>
+<li><strong>ValueError:</strong>  If <code>backend</code> is not a recognized name.</li>
 </ul>
+
+<h6 id="example">Example:</h6>
+
+<blockquote>
+  <div class="pdoc-code codehilite">
+<pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">observra</span>
+
+<span class="c1"># Local file (default backend)</span>
+<span class="n"><a href="#initialize">observra.initialize</a></span><span class="p">(</span><span class="n">backend</span><span class="o">=</span><span class="s2">&quot;jsonl&quot;</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s2">&quot;telemetry.jsonl&quot;</span><span class="p">)</span>
+</code></pre>
+  </div>
+</blockquote>
+
+<h6 id="note">Note:</h6>
+
+<blockquote>
+  <p>Call this once at application startup, before creating adapters. The
+  pipeline runs on a background worker, so this never blocks your agent's
+  hot path.</p>
+</blockquote>
 </div>
 
 
@@ -213,26 +277,52 @@ Existing adapters continue working via the queue proxy.</p>
     </div>
     <a class="headerlink" href="#create_plugin"></a>
     
-            <div class="docstring"><p>Create a framework adapter plugin connected to the global pipeline.</p>
+            <div class="docstring"><p>Create a framework adapter connected to the global pipeline.</p>
+
+<p>The adapter forwards your agent framework's callbacks into the pipeline
+started by <code><a href="#initialize">initialize</a></code>. Attach the returned object the way each framework
+expects — e.g. as an ADK plugin, or registered as a callback handler.</p>
 
 <h6 id="arguments">Arguments:</h6>
 
 <ul>
-<li><strong>framework:</strong>  One of "adk", "claude", "openai", "langchain", "pydantic-ai".</li>
-<li>**<strong>kwargs:</strong>  Additional arguments passed to the adapter constructor.</li>
+<li><strong>framework:</strong>  One of <code>"adk"</code>, <code>"claude"</code>, <code>"openai"</code>,
+<code>"langchain"</code>, or <code>"pydantic-ai"</code>.</li>
+<li>**<strong>kwargs:</strong>  Passed to the adapter constructor (framework-specific).</li>
 </ul>
 
 <h6 id="returns">Returns:</h6>
 
 <blockquote>
-  <p>The framework-specific adapter/plugin instance.</p>
+  <p>The framework-specific adapter instance.</p>
 </blockquote>
 
 <h6 id="raises">Raises:</h6>
 
 <ul>
-<li><strong>ValueError:</strong>  If framework is not recognized.</li>
+<li><strong>ValueError:</strong>  If <code>framework</code> is not recognized.</li>
 </ul>
+
+<h6 id="example">Example:</h6>
+
+<blockquote>
+  <div class="pdoc-code codehilite">
+<pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">observra</span>
+<span class="n"><a href="#initialize">observra.initialize</a></span><span class="p">(</span><span class="n">backend</span><span class="o">=</span><span class="s2">&quot;jsonl&quot;</span><span class="p">)</span>
+
+<span class="c1"># Google ADK: pass the plugin when constructing your agent</span>
+<span class="n">plugin</span> <span class="o">=</span> <span class="n"><a href="#create_plugin">observra.create_plugin</a></span><span class="p">(</span><span class="s2">&quot;adk&quot;</span><span class="p">)</span>
+<span class="c1"># agent = Agent(..., plugins=[plugin])</span>
+</code></pre>
+  </div>
+</blockquote>
+
+<h6 id="note">Note:</h6>
+
+<blockquote>
+  <p>Requires the matching extra to be installed, e.g.
+  <code>pip install observra[adk]</code>.</p>
+</blockquote>
 </div>
 
 
@@ -247,18 +337,34 @@ Existing adapters continue working via the queue proxy.</p>
     </div>
     <a class="headerlink" href="#create_logging_handler"></a>
     
-            <div class="docstring"><p>Create a TelemetryLoggingHandler bridging stdlib logging to telemetry.</p>
+            <div class="docstring"><p>Bridge Python's standard <code>logging</code> into the telemetry pipeline.</p>
+
+<p>Returns a <code>logging.Handler</code> that converts each log record into a telemetry
+event on the global pipeline. Attach it to any logger to capture application
+logs alongside agent events.</p>
 
 <h6 id="arguments">Arguments:</h6>
 
 <ul>
-<li><strong>level:</strong>  Minimum log level to capture (default: NOTSET).</li>
+<li><strong>level:</strong>  Minimum log level to capture (default: <code>logging.NOTSET</code> — the
+handler inherits the logger's effective level).</li>
 </ul>
 
 <h6 id="returns">Returns:</h6>
 
 <blockquote>
-  <p>A logging.Handler that converts log records to telemetry events.</p>
+  <p>A <code>logging.Handler</code> that emits telemetry events.</p>
+</blockquote>
+
+<h6 id="example">Example:</h6>
+
+<blockquote>
+  <div class="pdoc-code codehilite">
+<pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">logging</span><span class="o">,</span><span class="w"> </span><span class="nn">observra</span>
+<span class="n"><a href="#initialize">observra.initialize</a></span><span class="p">(</span><span class="n">backend</span><span class="o">=</span><span class="s2">&quot;jsonl&quot;</span><span class="p">)</span>
+<span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n"><a href="#create_logging_handler">observra.create_logging_handler</a></span><span class="p">())</span>
+</code></pre>
+  </div>
 </blockquote>
 </div>
 
@@ -274,10 +380,25 @@ Existing adapters continue working via the queue proxy.</p>
     </div>
     <a class="headerlink" href="#get_stats"></a>
     
-            <div class="docstring"><p>Get pipeline statistics.</p>
+            <div class="docstring"><p>Return live pipeline statistics.</p>
 
-<p>Returns a dict with queue and worker stats. Returns empty dict
-if initialize() hasn't been called.</p>
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>A dict of queue and worker counters — <code>enqueued</code>, <code>dropped</code>,
+  <code>depth</code> (current queue size), <code>events_processed</code> and <code>errors</code>.
+  Returns an empty dict if <code><a href="#initialize">initialize</a></code> has not been called yet.</p>
+</blockquote>
+
+<h6 id="example">Example:</h6>
+
+<blockquote>
+  <div class="pdoc-code codehilite">
+<pre><span></span><code><span class="n">stats</span> <span class="o">=</span> <span class="n"><a href="#get_stats">observra.get_stats</a></span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">stats</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;dropped&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="s2">&quot;events dropped&quot;</span><span class="p">)</span>
+</code></pre>
+  </div>
+</blockquote>
 </div>
 
 
