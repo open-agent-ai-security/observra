@@ -92,3 +92,33 @@ jobs:
             exit 1
           fi
           echo "guide/ is up to date with docs/."
+
+  api-docs-freshness:
+    # NON-BLOCKING (continue-on-error): regenerate the pdoc API reference
+    # (guide/api/) and report if it drifted from the docstrings — WITHOUT failing
+    # the run. The pdoc pipeline (`make api-docs`) is newer than the markdown
+    # docs-freshness gate above, so this stays informational for now: a stale
+    # build surfaces as a red job + a warning annotation but does not fail CI.
+    # Promote to a hard gate later by deleting `continue-on-error`. See RFE #25 / #63.
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Regenerate the API reference (pdoc, pinned)
+        run: make api-docs
+
+      - name: Check guide/api/ is in sync with the docstrings
+        run: |
+          if [ -n "$(git status --porcelain -- guide/api/)" ]; then
+            echo "::warning::guide/api/ is out of sync with the docstrings — run 'make api-docs' and commit guide/api/."
+            git status --porcelain -- guide/api/
+            git diff --stat -- guide/api/
+            exit 1
+          fi
+          echo "guide/api/ is up to date with the docstrings."
