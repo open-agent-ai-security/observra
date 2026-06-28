@@ -23,8 +23,14 @@ PY="${PYTHON:-python3}"
 VENV=".venv-apidocs"
 [ -d "$VENV" ] || "$PY" -m venv "$VENV"
 "$VENV/bin/python" -m pip install -q --upgrade pip
-# Framework + backend extras → all five adapters import cleanly for introspection.
-"$VENV/bin/python" -m pip install -q -e ".[adk,claude,openai-agents,langchain,pydantic-ai,otel,exabeam]" "pdoc==16.0.0"
+# Framework + backend extras that pdoc must IMPORT to introspect every rendered
+# module. `claude` and `pydantic-ai` are intentionally omitted: the claude
+# adapter imports its SDK lazily (inside a method) and the pydantic_ai adapter
+# only needs opentelemetry (from `otel`), so both adapter pages still render —
+# verified byte-identical — without ~480 MB of SDKs (mostly the Claude SDK). If a
+# refactor moves either import to module top level, re-add the matching extra.
+# pdoc is pinned to match requirements-dev.txt — keep the two versions in sync.
+"$VENV/bin/python" -m pip install -q -e ".[adk,openai-agents,langchain,otel,exabeam]" "pdoc==16.0.0"
 
 # Brand assets are referenced by absolute URL so they resolve at any page depth,
 # both locally and on the deployed Pages site.
