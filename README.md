@@ -3,7 +3,11 @@
   SPDX-License-Identifier: Apache-2.0
 -->
 <p align="center">
-  <img src="assets/hero-banner-light.png" alt="Observra — agent telemetry &amp; observability. Observes, captures, and normalizes agent signals in real time." width="840">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/hero-banner-dark.png">
+    <source media="(prefers-color-scheme: light)" srcset="assets/hero-banner-light.png">
+    <img src="assets/hero-banner-light.png" alt="Observra — agent telemetry &amp; observability. Observes, captures, and normalizes agent signals in real time." width="840">
+  </picture>
 </p>
 
 # observra
