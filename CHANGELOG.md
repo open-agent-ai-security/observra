@@ -12,6 +12,8 @@ for how releases are cut.
 
 ## [Unreleased]
 
+## [1.0.6] — 2026-06-29
+
 ## [1.0.5] — 2026-06-27
 
 ### Added
