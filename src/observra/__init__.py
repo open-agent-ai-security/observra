@@ -249,7 +249,7 @@ def get_stats() -> dict:
 
     Returns:
         A dict of queue and worker counters — ``enqueued``, ``dropped``,
-        ``depth`` (current queue size), ``events_processed`` and ``errors``.
+        ``current_size`` (current queue depth), ``events_processed`` and ``errors``.
         Returns an empty dict if `initialize` has not been called yet.
 
     Example:
