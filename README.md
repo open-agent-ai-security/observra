@@ -3,7 +3,7 @@
   SPDX-License-Identifier: Apache-2.0
 -->
 <p align="center">
-  <img src="assets/hero.png" alt="observra — framework-agnostic agent behavior analytics" width="840">
+  <img src="assets/hero-banner-light.png" alt="Observra — agent telemetry &amp; observability. Observes, captures, and normalizes agent signals in real time." width="840">
 </p>
 
 # observra
