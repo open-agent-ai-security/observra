@@ -999,6 +999,24 @@ footer {
     opacity: 1 !important; transform: none !important;
   }
 }
+
+/* ═══════════════════════════════ "IN THE NEWS" TICKER ═══════════════════════════════ */
+.press-strip { border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); background: rgba(255,255,255,0.012); }
+.press-inner { max-width: 1080px; margin: 0 auto; padding: 14px 24px; display: flex; align-items: center; gap: 22px; }
+.press-lbl { font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-muted); font-weight: 600; white-space: nowrap; flex: none; }
+.ticker { position: relative; overflow: hidden; flex: 1 1 auto; min-width: 0;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent); }
+.ticker-track { display: flex; width: max-content; animation: ticker 48s linear infinite; will-change: transform; }
+.ticker:hover .ticker-track { animation-play-state: paused; }
+.ticker-group { display: flex; align-items: center; gap: 40px; padding-right: 40px; }
+.ticker-group a { color: var(--text-sub); font-weight: 600; font-size: 15px; font-family: 'Space Grotesk', 'Inter', sans-serif; letter-spacing: -0.01em; white-space: nowrap; text-decoration: none; transition: color .18s ease; }
+.ticker-group a:hover { color: var(--text); }
+@keyframes ticker { to { transform: translateX(-50%); } }
+.press-all { white-space: nowrap; font-weight: 600; font-size: 14.5px; color: var(--blue-lt); flex: none; text-decoration: none; }
+.press-all:hover { color: var(--blue); }
+@media (prefers-reduced-motion: reduce) { .ticker { overflow-x: auto; } }
+@media (max-width: 720px) { .press-lbl { display: none; } }
 </style>
 <!-- Cookieless web analytics — two tools side by side (temporary A/B comparison):
      (1) GoatCounter — self-hosted count.js (assets/count.js, ISC), shared community endpoint.
@@ -1055,6 +1073,44 @@ footer {
     </div>
   </div>
 </header>
+
+<!-- ═══════════════════════════════ IN THE NEWS (ticker) ═══════════════════════════════ -->
+<section class="press-strip">
+  <div class="press-inner">
+    <span class="press-lbl">In the news</span>
+    <div class="ticker">
+      <div class="ticker-track">
+        <div class="ticker-group">
+          <a href="https://siliconangle.com/2026/07/01/exabeam-doubles-ai-detection-coverage-adds-anthropic-claude-support/" target="_blank" rel="noopener">SiliconANGLE</a>
+          <a href="https://www.scworld.com/brief/exabeam-expands-security-platform-to-monitor-ai-agents" target="_blank" rel="noopener">SC World</a>
+          <a href="https://www.thefastmode.com/technology-solutions/49437-exabeam-expands-ai-detection-coverage-and-launches-observra-open-source-agent-telemetry" target="_blank" rel="noopener">The Fast Mode</a>
+          <a href="https://www.channelinsider.com/security/tools-and-platforms/exabeam-ai-agent-security-observra/" target="_blank" rel="noopener">Channel Insider</a>
+          <a href="https://www.enterprisetimes.co.uk/2026/07/01/behavioural-intelligence-powers-exabeams-ai-defence/" target="_blank" rel="noopener">Enterprise Times</a>
+          <a href="https://securitybrief.com.au/story/exabeam-expands-ai-agent-security-tools-with-claude" target="_blank" rel="noopener">SecurityBrief Australia</a>
+          <a href="https://digitalitnews.com/exabeam-expands-ai-agent-detection-and-security-capabilities/" target="_blank" rel="noopener">Digital IT News</a>
+          <a href="https://aitech365.com/business-technology/cybersecurity/exabeam-pioneers-cyber-defense-for-autonomous-workflows-with-advanced-behavior-intelligence-features/" target="_blank" rel="noopener">AI Tech365</a>
+          <a href="https://enterpriseitworldmea.com/exabeam-expands-ai-security-platform-to-strengthen-agentic-enterprise-protection/" target="_blank" rel="noopener">Enterprise IT World MEA</a>
+          <a href="https://letsdatascience.com/news/exabeam-expands-ai-agent-detection-and-adds-claude-support-3052ef7e" target="_blank" rel="noopener">Let's Data Science</a>
+          <a href="https://www.secureitworld.com/news-post/exabeam-expands-behavior-intelligence-to-secure-agentic-enterprise/" target="_blank" rel="noopener">SecureITWorld</a>
+        </div>
+        <div class="ticker-group" aria-hidden="true">
+          <a href="https://siliconangle.com/2026/07/01/exabeam-doubles-ai-detection-coverage-adds-anthropic-claude-support/" target="_blank" rel="noopener" tabindex="-1">SiliconANGLE</a>
+          <a href="https://www.scworld.com/brief/exabeam-expands-security-platform-to-monitor-ai-agents" target="_blank" rel="noopener" tabindex="-1">SC World</a>
+          <a href="https://www.thefastmode.com/technology-solutions/49437-exabeam-expands-ai-detection-coverage-and-launches-observra-open-source-agent-telemetry" target="_blank" rel="noopener" tabindex="-1">The Fast Mode</a>
+          <a href="https://www.channelinsider.com/security/tools-and-platforms/exabeam-ai-agent-security-observra/" target="_blank" rel="noopener" tabindex="-1">Channel Insider</a>
+          <a href="https://www.enterprisetimes.co.uk/2026/07/01/behavioural-intelligence-powers-exabeams-ai-defence/" target="_blank" rel="noopener" tabindex="-1">Enterprise Times</a>
+          <a href="https://securitybrief.com.au/story/exabeam-expands-ai-agent-security-tools-with-claude" target="_blank" rel="noopener" tabindex="-1">SecurityBrief Australia</a>
+          <a href="https://digitalitnews.com/exabeam-expands-ai-agent-detection-and-security-capabilities/" target="_blank" rel="noopener" tabindex="-1">Digital IT News</a>
+          <a href="https://aitech365.com/business-technology/cybersecurity/exabeam-pioneers-cyber-defense-for-autonomous-workflows-with-advanced-behavior-intelligence-features/" target="_blank" rel="noopener" tabindex="-1">AI Tech365</a>
+          <a href="https://enterpriseitworldmea.com/exabeam-expands-ai-security-platform-to-strengthen-agentic-enterprise-protection/" target="_blank" rel="noopener" tabindex="-1">Enterprise IT World MEA</a>
+          <a href="https://letsdatascience.com/news/exabeam-expands-ai-agent-detection-and-adds-claude-support-3052ef7e" target="_blank" rel="noopener" tabindex="-1">Let's Data Science</a>
+          <a href="https://www.secureitworld.com/news-post/exabeam-expands-behavior-intelligence-to-secure-agentic-enterprise/" target="_blank" rel="noopener" tabindex="-1">SecureITWorld</a>
+        </div>
+      </div>
+    </div>
+    <a class="press-all" href="news.html">See all coverage →</a>
+  </div>
+</section>
 
 <!-- ═══════════════════════════════ WHY OBSERVRA ═══════════════════════════════ -->
 <section id="why">
@@ -1438,6 +1494,7 @@ runner = Runner(
       <ul>
         <li><a href="https://github.com/open-agent-ai-security/observra" target="_blank" rel="noopener">GitHub</a></li>
         <li><a href="https://github.com/open-agent-ai-security/observra/releases" target="_blank" rel="noopener">Releases</a></li>
+        <li><a href="news.html">In the news</a></li>
         <li><a href="https://github.com/open-agent-ai-security/observra/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener">Contributing</a></li>
         <li><a href="https://github.com/open-agent-ai-security/observra/blob/main/LICENSE.md" target="_blank" rel="noopener">License (Apache 2.0)</a></li>
       </ul>
