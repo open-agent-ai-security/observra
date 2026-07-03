@@ -342,6 +342,7 @@ class LangChainAdapter(BaseCallbackHandler):
             run_id: UUID for this tool invocation
         """
         try:
+            serialized = serialized or {}
             tool_name = serialized.get("name") or "unknown"
             self._tool_starts[str(run_id)] = (tool_name, time.monotonic())
 
@@ -444,6 +445,7 @@ class LangChainAdapter(BaseCallbackHandler):
             parent_run_id: UUID of parent chain, or None if top-level
         """
         try:
+            serialized = serialized or {}
             chain_name = serialized.get("name") or serialized.get("id", ["unknown"])[-1] or "unknown"
 
             # Initialize trace context only for top-level graph invocation
