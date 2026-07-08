@@ -44,9 +44,9 @@ Guaranteed for the life of the `1.x` **package** line. A breaking change require
 the next package MAJOR.
 
 1. **Public callables and their signatures**, as exported from `observra/__init__.py`
-   `__all__`: `initialize`, `create_plugin`, `create_logging_handler`, `get_stats`,
-   `get_metrics`, `observability`, plus the types `TelemetryEvent` and
-   `StorageBackend`.
+   `__all__`: `initialize`, `create_plugin`, `create_logging_handler`, `emit`,
+   `initialize_session`, `get_stats`, `get_metrics`, `observability`, plus the
+   types `TelemetryEvent` and `StorageBackend`.
 2. **Backend name strings** accepted by `initialize(backend=...)`:
    `jsonl`, `webhook`, `otel`, `otel_log`, `multi`, `exabeam`.
 3. **Framework name strings** accepted by `create_plugin(framework=...)`:

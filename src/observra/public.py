@@ -15,8 +15,10 @@ from observra import (
     TelemetryEvent,
     create_logging_handler,
     create_plugin,
+    emit,
     get_stats,
     initialize,
+    initialize_session,
     observability,
 )
 from observra.core.storage import StorageBackend
@@ -60,6 +62,8 @@ __all__ = [
     "initialize",
     "create_plugin",
     "create_logging_handler",
+    "emit",
+    "initialize_session",
     "get_stats",
     "get_metrics",
     "observability",

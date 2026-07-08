@@ -108,6 +108,46 @@ def _emit(event) -> None:
         logger.warning(f"log._emit failed for {event.event_type}: {exc}")
 
 
+def _model_response_metrics(
+    model_name: str,
+    input_tokens: int,
+    output_tokens: int,
+    cached_tokens: int,
+    framework: str,
+) -> dict:
+    """Calculate the metrics shared by model-response emitters."""
+    total_tokens = input_tokens + output_tokens
+    cost = session_total = tokens_per_minute = Decimal("0")
+    calculator = _get_cost_calculator()
+    if calculator is not None:
+        cost = calculator.calculate_cost(model_name, input_tokens, output_tokens, cached_tokens)
+        session_total = add_to_session_cost(cost)
+        tokens_per_minute = record_token_usage(total_tokens)
+
+        threshold = _get_cost_threshold()
+        if threshold is not None and not _threshold_emitted_var.get() and session_total >= threshold:
+            _threshold_emitted_var.set(True)
+            _emit(
+                create_event(
+                    event_type=EventType.COST_THRESHOLD_EXCEEDED,
+                    framework=framework,
+                    session_cost_usd=float(session_total),
+                    threshold_usd=float(threshold),
+                    message=f"Session cost ${session_total:.6f} exceeded threshold ${threshold:.2f}",
+                )
+            )
+
+    return {
+        "input_tokens": input_tokens,
+        "output_tokens": output_tokens,
+        "cached_tokens": cached_tokens or None,
+        "total_tokens": total_tokens,
+        "cost_usd": float(cost),
+        "session_cost_usd": float(session_total),
+        "tokens_per_minute": float(tokens_per_minute),
+    }
+
+
 def _get_sequence_payload(raw_sequence: list) -> dict:
     """Build tool_sequence payload with truncation — mirrors TelemetryPlugin."""
     max_len = _get_max_sequence_length()
@@ -265,42 +305,13 @@ def model_response(
         if not register_emission(EventType.MODEL_RESPONSE, span_id, source="log"):
             return
 
-        total_tokens = input_tokens + output_tokens
-        cost = Decimal("0")
-        session_total = Decimal("0")
-        tokens_per_minute = Decimal("0")
-
-        calculator = _get_cost_calculator()
-        if calculator is not None:
-            cost = calculator.calculate_cost(model_name, input_tokens, output_tokens, cached_tokens)
-            session_total = add_to_session_cost(cost)
-            tokens_per_minute = record_token_usage(total_tokens)
-
-            # Check cost threshold (once per session)
-            threshold = _get_cost_threshold()
-            if threshold is not None and not _threshold_emitted_var.get() and session_total >= threshold:
-                _threshold_emitted_var.set(True)
-                threshold_event = create_event(
-                    event_type=EventType.COST_THRESHOLD_EXCEEDED,
-                    framework=_framework,
-                    session_cost_usd=float(session_total),
-                    threshold_usd=float(threshold),
-                    message=f"Session cost ${session_total:.6f} exceeded threshold ${threshold:.2f}",
-                )
-                _emit(threshold_event)
-
+        metrics = _model_response_metrics(model_name, input_tokens, output_tokens, cached_tokens, _framework)
         event = create_event(
             event_type=EventType.MODEL_RESPONSE,
             model_name=model_name,
             framework=_framework,
-            input_tokens=input_tokens,
-            output_tokens=output_tokens,
-            cached_tokens=cached_tokens if cached_tokens else None,
-            reasoning_tokens=reasoning_tokens if reasoning_tokens else None,
-            total_tokens=total_tokens,
-            cost_usd=float(cost),
-            session_cost_usd=float(session_total),
-            tokens_per_minute=float(tokens_per_minute),
+            reasoning_tokens=reasoning_tokens or None,
+            **metrics,
         )
         _emit(event)
     except Exception as exc:
@@ -469,3 +480,54 @@ def agent_handoff(source_agent: str, target_agent: str) -> None:
         _emit(event)
     except Exception as exc:
         logger.warning(f"log.agent_handoff failed: {exc}")
+
+
+def emit(
+    event_type: str,
+    *,
+    agent_name: Optional[str] = None,
+    tool_name: Optional[str] = None,
+    model_name: Optional[str] = None,
+    framework: Optional[str] = None,
+    **data,
+) -> None:
+    """Emit an event from a host without a shipped adapter."""
+    try:
+        framework = framework or _framework
+        if not register_emission(event_type, get_span_id(), source="log"):
+            return
+
+        text = data.get("user_message_text")
+        if isinstance(text, str) and text:
+            patterns = detect_injection_patterns(text)
+            data["has_injection_patterns"] = bool(patterns)
+            data["injection_patterns"] = patterns or None
+
+        if (
+            event_type == EventType.MODEL_RESPONSE
+            and data.get("cost_usd") is None
+            and isinstance(data.get("input_tokens"), int)
+            and isinstance(data.get("output_tokens"), int)
+        ):
+            data.update(
+                _model_response_metrics(
+                    model_name or "unknown",
+                    data["input_tokens"],
+                    data["output_tokens"],
+                    data.get("cached_tokens") or 0,
+                    framework,
+                )
+            )
+
+        _emit(
+            create_event(
+                event_type=event_type,
+                agent_name=agent_name,
+                tool_name=tool_name,
+                model_name=model_name,
+                framework=framework,
+                **data,
+            )
+        )
+    except Exception as exc:
+        logger.warning(f"log.emit failed: {exc}")
