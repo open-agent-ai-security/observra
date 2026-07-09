@@ -891,6 +891,9 @@ footer {
 }
 .footer-bottom a { color: var(--text-sub); transition: color 0.18s; }
 .footer-bottom a:hover { color: var(--text); text-decoration: none; }
+/* License link takes the project accent (matches Praxen); the community link beside it stays muted. */
+.footer-bottom .legal a { color: var(--blue-lt); }
+.footer-bottom .legal a:hover { color: var(--text); }
 /* Link back to the parent community (logo swaps with theme via .logo-on-*) */
 .footer-community { display: inline-flex; align-items: center; gap: 10px; opacity: 0.9; transition: opacity 0.18s; }
 .footer-community:hover { opacity: 1; }
@@ -1493,11 +1496,12 @@ runner = Runner(
     <div class="footer-col">
       <h5>Project</h5>
       <ul>
+        <li><a href="news.html">In the news</a></li>
         <li><a href="https://github.com/open-agent-ai-security/observra" target="_blank" rel="noopener">GitHub</a></li>
         <li><a href="https://github.com/open-agent-ai-security/observra/releases" target="_blank" rel="noopener">Releases</a></li>
-        <li><a href="news.html">In the news</a></li>
+        <li><a href="https://github.com/open-agent-ai-security/observra/blob/main/SECURITY.md" target="_blank" rel="noopener">Security</a></li>
         <li><a href="https://github.com/open-agent-ai-security/observra/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener">Contributing</a></li>
-        <li><a href="https://github.com/open-agent-ai-security/observra/blob/main/LICENSE.md" target="_blank" rel="noopener">License (Apache 2.0)</a></li>
+        <li><a href="https://www.linkedin.com/company/open-agent-and-ai-security-community/" target="_blank" rel="noopener">Join on LinkedIn</a></li>
       </ul>
     </div>
   </div>
@@ -1509,7 +1513,7 @@ runner = Runner(
     <p class="spb-note">Exabeam contributed the initial code and continues to support Observra with ongoing development — part of its commitment to security in an increasingly agentic world.</p>
   </div>
   <div class="footer-bottom">
-    <span>Apache 2.0 License · © 2026 Exabeam, Inc.</span>
+    <span class="legal">All use and distribution is governed by the <a href="https://github.com/open-agent-ai-security/observra/blob/main/LICENSE.md" target="_blank" rel="noopener">Apache 2.0 License</a> · © 2026 Exabeam, Inc.</span>
     <a class="footer-community" href="https://open-agent-ai-security.github.io/" target="_blank" rel="noopener" aria-label="Part of the Open Agent AI Security community">
       <span>Part of the</span>
       <img class="logo-on-dark" src="graphics/brand/community-logo-dark-background.svg" alt="Open Agent AI Security community">
