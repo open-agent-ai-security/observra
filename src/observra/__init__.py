@@ -42,7 +42,7 @@ from __future__ import annotations
 import logging
 from typing import Optional
 
-__version__ = "1.0.7"
+__version__ = "1.0.8"
 
 logger = logging.getLogger(__name__)
 
@@ -135,7 +135,8 @@ def _create_backend(backend_type: str, **kwargs):
     if backend_type == "jsonl":
         from observra.backends.jsonl import JSONLBackend
 
-        return JSONLBackend(path=kwargs.get("path", "telemetry.jsonl"))
+        kwargs.setdefault("path", "telemetry.jsonl")
+        return JSONLBackend(**kwargs)
     elif backend_type == "webhook":
         from observra.backends.webhook import WebhookBackend
 
