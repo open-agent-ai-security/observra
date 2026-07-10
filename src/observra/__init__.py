@@ -117,12 +117,25 @@ def initialize(backend: str = "jsonl", **kwargs) -> None:
 
     global _worker, _queue
 
+    _MISROUTED_KWARGS = {"custom_patterns", "cost_threshold_usd", "session_id", "pricing_config"}
+    misrouted = set(kwargs) & _MISROUTED_KWARGS
+    if misrouted:
+        logger.warning(
+            f"initialize() does not handle {misrouted!r} — these kwargs are silently ignored. "
+            f"Use configure_redactor() for custom_patterns, create_plugin(..., cost_threshold_usd=...) "
+            f"for cost config, and initialize_session() for session identity."
+        )
+
+    queue_size = kwargs.pop("queue_size", 1000)
+    for key in _MISROUTED_KWARGS:
+        kwargs.pop(key, None)
+
     storage = _create_backend(backend, **kwargs)
 
     if _worker is not None:
         _worker._shutdown()
 
-    event_queue = DropOldestQueue(maxsize=kwargs.pop("queue_size", 1000) if "queue_size" in kwargs else 1000)
+    event_queue = DropOldestQueue(maxsize=queue_size)
     worker = BackgroundWorker(event_queue=event_queue, storage_backend=storage)
 
     _queue = event_queue

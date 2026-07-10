@@ -15,11 +15,7 @@ from observra import create_plugin, initialize
 from observra.core import get_session_cost
 
 # Initialize telemetry with JSONL storage
-initialize(
-    backend="jsonl",
-    path="example_telemetry.jsonl",
-    session_id="example-session-001",
-)
+initialize(backend="jsonl", path="example_telemetry.jsonl")
 
 # Create the plugin (pass to Runner in real usage)
 plugin = create_plugin()
