@@ -42,7 +42,7 @@ from __future__ import annotations
 import logging
 from typing import Optional
 
-__version__ = "1.0.6"
+__version__ = "1.0.7"
 
 logger = logging.getLogger(__name__)
 
