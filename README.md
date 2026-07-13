@@ -13,6 +13,7 @@
 # observra
 **Framework-agnostic agent behavior analytics.**
 
+[![Latest release](https://img.shields.io/github/v/release/open-agent-ai-security/observra?label=release&color=blue)](https://github.com/open-agent-ai-security/observra/releases)
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache_2.0-blue.svg)](LICENSE.md)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
 
