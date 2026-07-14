@@ -9,9 +9,16 @@ Usage:
     python scripts/bump_version.py major     # 1.0.4 -> 2.0.0
     python scripts/bump_version.py 1.2.3     # explicit
 
-Updates `__version__` in src/observra/__init__.py and rolls the CHANGELOG
-`[Unreleased]` section into a dated `[X.Y.Z]` heading. pyproject.toml reads the
-version dynamically from `__version__`, so it is never edited.
+Updates `__version__` in src/observra/__init__.py, rolls the CHANGELOG
+`[Unreleased]` section into a dated `[X.Y.Z]` heading, and regenerates the
+GitHub Pages docs (guide/ + sitemap.xml) so the release commit publishes docs
+that match the released code. pyproject.toml reads the version dynamically from
+`__version__`, so it is never edited.
+
+The docs site tracks *releases*, not `main`: it is refreshed here at bump time
+(and out-of-band via the "Rebuild docs" workflow), never gated per-PR — so a
+contributor edits docs/*.md and never has to regenerate guide/ by hand. See
+docs/RELEASING.md and CONTRIBUTING.md.
 
 After running, review the diff, commit, and push to main — the "Auto Release"
 workflow tags v<version> and cuts the GitHub Release. See docs/RELEASING.md.
@@ -21,12 +28,14 @@ from __future__ import annotations
 
 import datetime
 import re
+import subprocess
 import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 INIT = ROOT / "src" / "observra" / "__init__.py"
 CHANGELOG = ROOT / "CHANGELOG.md"
+DOCS_BUILD = ROOT / "docs_build.py"
 _VERSION_RE = re.compile(r'^__version__ = "(\d+)\.(\d+)\.(\d+)"$', re.MULTILINE)
 
 
@@ -68,6 +77,24 @@ def roll_changelog(new: str) -> None:
     CHANGELOG.write_text(text, encoding="utf-8")
 
 
+def rebuild_docs() -> bool:
+    """Regenerate guide/ + sitemap.xml so the release ships fresh docs.
+
+    Returns True on success. Needs the pinned docs toolchain
+    (`pip install -r requirements-dev.txt`); if it isn't installed we warn and
+    tell the maintainer to regenerate before committing, rather than shipping a
+    release with stale docs or aborting the version bump.
+    """
+    try:
+        subprocess.run([sys.executable, str(DOCS_BUILD)], cwd=ROOT, check=True)
+        return True
+    except (subprocess.CalledProcessError, OSError) as exc:
+        print(f"  warning: docs regeneration failed ({exc}).")
+        print("  install the docs toolchain and rebuild before committing:")
+        print("    pip install -r requirements-dev.txt && python docs_build.py")
+        return False
+
+
 def main() -> None:
     if len(sys.argv) != 2:
         sys.exit(__doc__)
@@ -79,9 +106,15 @@ def main() -> None:
 
     bump_init(new)
     roll_changelog(new)
+    docs_ok = rebuild_docs()
 
     print(f"Bumped {cur_str} -> {new}")
+    if docs_ok:
+        print("Regenerated guide/ + sitemap.xml (docs now match the release).")
     print("Next steps:")
+    if not docs_ok:
+        print("  # regenerate the docs first (see the warning above), then:")
+    print("  # (optional) refresh the pdoc API reference too: make api-docs")
     print(f'  git add -A && git commit -m "bump version to {new}"')
     print(f"  git push origin main   # 'Auto Release' tags v{new} and cuts the GitHub Release")
 

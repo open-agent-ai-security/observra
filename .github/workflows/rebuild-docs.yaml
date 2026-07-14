@@ -1,0 +1,74 @@
+# Copyright 2026 Exabeam, Inc.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Rebuild & publish the GitHub Pages docs (guide/ + sitemap.xml) OUT OF BAND.
+#
+# The docs site tracks releases, not `main`: it is normally refreshed at version-
+# bump time (scripts/bump_version.py). This workflow is the manual escape hatch —
+# use it to publish a doc fix to already-released content (a typo, a clarified
+# example) without cutting a whole new release.
+#
+# It builds from the LATEST TAG's doc sources — not `main` — and commits only the
+# rendered output onto `main`, so the published site can never advertise an
+# unreleased API even if `main` is ahead of the release. (For pdoc API docs, run
+# `make api-docs` at release; this workflow covers the markdown guide/ + sitemap.)
+name: Rebuild docs
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: write # commit the regenerated docs back to main (Pages serves main)
+
+concurrency:
+  group: rebuild-docs
+  cancel-in-progress: false
+
+jobs:
+  rebuild:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0 # need tags + full history to check out the latest tag's sources
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Resolve the latest release tag
+        id: tag
+        run: |
+          latest="$(git describe --tags --abbrev=0)"
+          echo "latest=$latest" >> "$GITHUB_OUTPUT"
+          echo "Building docs from released sources at $latest"
+
+      - name: Bring the released doc sources into the worktree
+        # Overlay the tag's docs/*.md, theme, builder, and pinned deps onto the
+        # main checkout, WITHOUT moving HEAD — we then render guide/ from those
+        # released sources and restore main's sources before committing, so only
+        # the rendered output (guide/, sitemap.xml) lands on main.
+        run: |
+          git checkout "${{ steps.tag.outputs.latest }}" -- \
+            docs/ docs_build.py assets/ requirements-dev.txt
+
+      - name: Install the pinned docs toolchain
+        run: pip install -r requirements-dev.txt
+
+      - name: Render the docs site
+        run: python docs_build.py
+
+      - name: Restore main's sources (keep only the rendered output)
+        run: git checkout HEAD -- docs/ docs_build.py assets/ requirements-dev.txt
+
+      - name: Commit & publish if the rendered docs changed
+        run: |
+          git config user.name "observra-docs-bot"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add guide/ sitemap.xml
+          if git diff --cached --quiet; then
+            echo "Published docs already match the latest release — nothing to do."
+          else
+            git commit -s -m "docs: rebuild guide/ + sitemap.xml from ${{ steps.tag.outputs.latest }} [skip ci]"
+            git push
+          fi

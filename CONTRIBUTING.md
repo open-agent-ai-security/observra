@@ -8,6 +8,49 @@
 Thanks for your interest in improving observra. Contributions are welcome via
 pull request.
 
+## Branching & pull requests
+
+observra is a **versioned PyPI library**: consumers install a pinned release
+(`pip install observra==X.Y.Z`), so `main` moving never affects anyone until they
+choose to upgrade. That makes `main` a safe staging line — **the published *tag* is
+the product; `main` is where the next one is assembled.**
+
+Because of that, the flow is single-track and lightweight:
+
+- **Branch from `main`, target `main`.** There is no long-lived `dev` branch —
+  open your PR against `main` directly.
+- **Squash-merge, and delete the branch on merge.** Keep each PR to one logical
+  change; write the squash summary as the changelog-worthy description.
+- Releases are cut *from* `main` by bumping the version — see
+  [docs/RELEASING.md](docs/RELEASING.md). A normal PR needs nothing special; just
+  land your change on `main`.
+
+### Before you open a PR
+
+- **Green locally:** `pytest tests/unit/`, `ruff check .`, `ruff format --check .`.
+- **Sign your commits** (DCO — see below): every non-merge commit needs a
+  `Signed-off-by` line (`git commit -s`).
+- **Update `CHANGELOG.md`'s `[Unreleased]` section** for anything user-facing.
+- **For a new or changed public API,** update
+  [`STABILITY.md`](STABILITY.md) — it lists the guaranteed `1.x` surface.
+
+### Docs — you don't regenerate them
+
+The GitHub Pages docs site (`guide/` + `sitemap.xml`, rendered from `docs/*.md`
+by `docs_build.py`, plus the pdoc `guide/api/`) **tracks releases, not `main`.**
+
+- **Edit `docs/*.md` only.** Do **not** run `docs_build.py` or commit `guide/` in
+  your PR — the rendered output is refreshed **at release time**
+  (`scripts/bump_version.py` regenerates it as part of the version bump), so the
+  published site always matches the released package rather than bleeding-edge
+  `main`. This is deliberate: publishing `main`'s docs immediately would advertise
+  APIs that aren't in any installable release yet.
+- Between releases, `main`'s `docs/*.md` may be **ahead** of what's live on Pages —
+  that's expected. Your doc change goes live with the next release.
+- Need a doc fix published to **already-released** content sooner? A maintainer can
+  run the **Rebuild docs** workflow (Actions → *Rebuild docs*), which rebuilds from
+  the latest tag and publishes to Pages — no full release required.
+
 ## Releasing
 
 Maintainers: see [docs/RELEASING.md](docs/RELEASING.md) for how releases are cut —
