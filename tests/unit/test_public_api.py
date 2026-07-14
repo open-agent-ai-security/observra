@@ -92,6 +92,26 @@ def test_plugin_survives_reinit(tmp_path):
     assert new_queue.get_stats()["enqueued"] >= 1
 
 
+def test_initialize_misrouted_kwargs_warning(tmp_path, caplog):
+    """initialize() must warn if it receives kwargs meant for other APIs (e.g. adapters)."""
+    import logging
+
+    path1 = tmp_path / "telemetry1.jsonl"
+
+    # Valid kwargs should not emit a warning
+    with caplog.at_level(logging.WARNING):
+        telemetry.initialize(backend="jsonl", path=str(path1), queue_size=10, max_bytes=1000)
+    assert not caplog.records
+
+    caplog.clear()
+
+    # Misrouted kwarg must trigger a warning
+    with caplog.at_level(logging.WARNING):
+        telemetry.initialize(backend="jsonl", path=str(path1), cost_threshold_usd=5)
+
+    assert any("cost_threshold_usd" in record.message for record in caplog.records if record.levelname == "WARNING")
+
+
 # ── Public API Surface Stability ─────────────────────────────────────────────
 
 _PUBLIC_API_STABLE_SURFACE = frozenset(
