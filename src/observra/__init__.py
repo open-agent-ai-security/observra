@@ -14,6 +14,8 @@ The public API is intentionally small:
 - `initialize` — start the global pipeline and choose a backend.
 - `create_plugin` — wire a framework adapter (ADK, Claude, OpenAI, LangChain,
   Pydantic AI) into that pipeline.
+- `emit` — send events from hosts without a shipped adapter.
+- `initialize_session` — set host-provided session identity.
 - `create_logging_handler` — capture standard-library logs as telemetry.
 - `get_stats` / `get_metrics` — inspect pipeline health.
 
@@ -286,8 +288,10 @@ def get_stats() -> dict:
 
 
 from observra import observability  # noqa: E402
+from observra.core.context import initialize_session  # noqa: E402
 from observra.core.events import TelemetryEvent  # noqa: E402
 from observra.core.storage import StorageBackend  # noqa: E402
+from observra.log import emit  # noqa: E402
 
 get_metrics = observability.get_metrics
 
@@ -296,6 +300,8 @@ __all__ = [
     "initialize",
     "create_plugin",
     "create_logging_handler",
+    "emit",
+    "initialize_session",
     "get_stats",
     "get_metrics",
     "observability",

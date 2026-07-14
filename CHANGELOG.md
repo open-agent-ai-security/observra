@@ -12,6 +12,9 @@ for how releases are cut.
 
 ## [Unreleased]
 
+### Added
+- Public `emit()` and `initialize_session()` APIs for custom hosts.
+
 ## [1.0.6] — 2026-06-29
 
 ## [1.0.5] — 2026-06-27

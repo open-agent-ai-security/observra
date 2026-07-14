@@ -99,6 +99,8 @@ _PUBLIC_API_STABLE_SURFACE = frozenset(
         "initialize",
         "create_plugin",
         "create_logging_handler",
+        "emit",
+        "initialize_session",
         "get_stats",
         "get_metrics",  # Phase 38 OBS-01: stable self-metrics API
         "observability",  # Phase 38 OBS-01: observability module
