@@ -1,0 +1,43 @@
+# Observra
+
+> Framework-agnostic agent behavior analytics. Observra captures every
+> meaningful AI agent action — token usage, tool calls, cost, errors — as
+> CIM-normalized telemetry, with zero custom instrumentation per agent.
+> Open source (Apache-2.0), published to PyPI as `observra`, maintained by
+> the Open Agent and AI Security Community (Exabeam-sponsored).
+
+Observra answers three questions for any AI agent, on any framework: what
+happened, how much did it cost, and was it normal? An adapter for the host
+framework feeds events into a non-blocking queue; a background worker drains
+them to one or more backends (JSONL, webhook, OpenTelemetry spans/logs, or a
+SIEM), normalized to a single Common Information Model (CIM) event schema so
+the same query works regardless of which framework produced the agent's
+actions.
+
+## Docs
+
+- [Overview](https://open-agent-ai-security.github.io/observra/guide/index.html): what Observra is and how the pieces fit together
+- [Architecture](https://open-agent-ai-security.github.io/observra/guide/architecture.html): capture → queue → backend pipeline
+- [Event Schema](https://open-agent-ai-security.github.io/observra/guide/event-schema.html): the CIM event contract every adapter normalizes to
+- [Production Deployment](https://open-agent-ai-security.github.io/observra/guide/production-deployment.html): backends, OTel export, operational guidance
+- [Compatibility](https://open-agent-ai-security.github.io/observra/guide/COMPATIBILITY.html): supported Python and framework versions
+- [API Reference](https://open-agent-ai-security.github.io/observra/guide/api/index.html): auto-generated reference for the public Python SDK
+
+## Quickstarts
+
+- [Google ADK](https://open-agent-ai-security.github.io/observra/guide/getting-started/adk.html)
+- [Claude Agent SDK](https://open-agent-ai-security.github.io/observra/guide/getting-started/claude.html)
+- [OpenAI Agents SDK](https://open-agent-ai-security.github.io/observra/guide/getting-started/openai.html)
+- [LangChain / LangGraph](https://open-agent-ai-security.github.io/observra/guide/getting-started/langchain.html)
+- [Pydantic AI](https://open-agent-ai-security.github.io/observra/guide/getting-started/pydantic-ai.html)
+
+## Source
+
+- [GitHub repository](https://github.com/open-agent-ai-security/observra)
+- [PyPI package](https://pypi.org/project/observra/)
+- [Changelog](https://github.com/open-agent-ai-security/observra/blob/main/CHANGELOG.md)
+
+## Optional
+
+- [In the news](https://open-agent-ai-security.github.io/observra/news.html): third-party press and editorial coverage
+- [Open Agent and AI Security Community](https://open-agent-ai-security.github.io/): the org publishing Observra and its sibling project, Praxen
