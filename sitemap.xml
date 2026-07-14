@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://open-agent-ai-security.github.io/observra/</loc></url>
+  <url><loc>https://open-agent-ai-security.github.io/observra/news.html</loc></url>
+  <url><loc>https://open-agent-ai-security.github.io/observra/guide/index.html</loc></url>
+  <url><loc>https://open-agent-ai-security.github.io/observra/guide/getting-started/adk.html</loc></url>
+  <url><loc>https://open-agent-ai-security.github.io/observra/guide/getting-started/claude.html</loc></url>
+  <url><loc>https://open-agent-ai-security.github.io/observra/guide/getting-started/openai.html</loc></url>
+  <url><loc>https://open-agent-ai-security.github.io/observra/guide/getting-started/langchain.html</loc></url>
+  <url><loc>https://open-agent-ai-security.github.io/observra/guide/getting-started/pydantic-ai.html</loc></url>
+  <url><loc>https://open-agent-ai-security.github.io/observra/guide/architecture.html</loc></url>
+  <url><loc>https://open-agent-ai-security.github.io/observra/guide/event-schema.html</loc></url>
+  <url><loc>https://open-agent-ai-security.github.io/observra/guide/production-deployment.html</loc></url>
+  <url><loc>https://open-agent-ai-security.github.io/observra/guide/COMPATIBILITY.html</loc></url>
+  <url><loc>https://open-agent-ai-security.github.io/observra/guide/api/index.html</loc></url>
+</urlset>
