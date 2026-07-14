@@ -12,16 +12,17 @@ This example shows how to add custom patterns for organization-specific secrets.
 
 from observra import initialize
 from observra.core.context import initialize_trace
-from observra.core.events import create_event
+from observra.core.events import configure_redactor, create_event
 
-# Initialize with custom redaction patterns
-initialize(
-    backend="jsonl",
-    path="redaction_demo.jsonl",
+# Initialize the pipeline
+initialize(backend="jsonl", path="redaction_demo.jsonl")
+
+# Configure custom redaction patterns (in addition to built-in ones)
+configure_redactor(
     custom_patterns=[
         (r"ACME_TOKEN_\w+", "ACME_TOKEN"),  # Internal tokens
         (r"proj_[a-z0-9]{20,}", "PROJECT_KEY"),  # Project keys
-    ],
+    ]
 )
 
 # Initialize trace context for event creation

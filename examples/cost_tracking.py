@@ -12,14 +12,11 @@ cost exceeds the threshold, a `cost_threshold_exceeded` event is emitted.
 
 from observra import create_plugin, initialize
 
-# Initialize with cost threshold at $5.00
-initialize(
-    backend="jsonl",
-    path="cost_tracking.jsonl",
-    cost_threshold_usd=5.00,
-)
+# Initialize the pipeline
+initialize(backend="jsonl", path="cost_tracking.jsonl")
 
-plugin = create_plugin()
+# Configure cost threshold on the adapter (not initialize)
+plugin = create_plugin("adk", cost_threshold_usd=5.00)
 
 print("Cost tracking configured:")
 print("  Threshold: $5.00")
