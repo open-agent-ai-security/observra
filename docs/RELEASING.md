@@ -25,34 +25,26 @@ Before cutting a release:
 The version is single-source. Bump it with the script (never hand-edit two files):
 
 ```bash
-pip install -r requirements-dev.txt          # once, for the docs regen below
 python scripts/bump_version.py patch         # or: minor | major | X.Y.Z
 ```
 
-This updates `__version__` in `src/observra/__init__.py`, rolls the
+This updates `__version__` in `src/observra/__init__.py` and rolls the
 `CHANGELOG.md` `[Unreleased]` section into a dated `[X.Y.Z]` heading (leaving a
-fresh `[Unreleased]` on top), and **regenerates the docs site** (`guide/` +
-`sitemap.xml`) so the release commit publishes docs that match the released code.
-`pyproject.toml` needs no edit — it derives the version from `__version__`.
+fresh `[Unreleased]` on top). `pyproject.toml` needs no edit — it derives the
+version from `__version__`. **You do not regenerate the docs** — the release
+automation republishes them for you (see below).
 
-> **Why the docs regen lives here.** The GitHub Pages site tracks *releases*, not
-> `main` (Pages serves `main`, but we only refresh the rendered `guide/` at
-> release time). Between releases `main`'s `docs/*.md` may be ahead of what's
-> published — intentionally, so the site never advertises an unreleased API.
-> There is no per-PR docs-freshness gate; contributors edit `docs/*.md` and never
-> regenerate. See [CONTRIBUTING.md](../CONTRIBUTING.md).
-
-If the API surface or docstrings changed, also refresh the pdoc API reference
-(it isn't run by the bump script — it builds a heavier throwaway venv):
-
-```bash
-make api-docs
-```
+> **Docs track releases, not `main`.** The GitHub Pages site (`guide/` +
+> `sitemap.xml` and the pdoc `guide/api/`) is republished from the freshly-tagged
+> code by the release automation, so the live site always matches the released
+> package. Between releases `main`'s sources may be ahead of what's published —
+> intentionally, so the site never advertises an unreleased API. There is no
+> per-PR docs-freshness gate; contributors edit `docs/*.md` and never regenerate.
+> See [CONTRIBUTING.md](../CONTRIBUTING.md).
 
 ## Tag Push Flow
 
-Commit the bump (version + CHANGELOG + regenerated `guide/`/`sitemap.xml`, and
-`guide/api/` if you ran `make api-docs`) and push to `main`:
+Commit the bump (version + CHANGELOG) and push to `main`:
 
 ```bash
 git add -A && git commit -m "bump version to X.Y.Z"
@@ -63,7 +55,15 @@ The **Auto Release** workflow (`.github/workflows/auto-release.yaml`) runs on th
 push (it watches `src/observra/__init__.py`), reads `__version__`, and — if the
 tag doesn't already exist — creates the git tag `vX.Y.Z` plus a GitHub Release
 with generated notes. It is **idempotent**: re-runs do nothing once the tag
-exists.
+exists. When it cuts a new release it then chains the **Rebuild docs** workflow,
+which republishes both Pages doc artifacts (`guide/` + `sitemap.xml` and
+`guide/api/`) from the freshly-tagged code and commits them to `main` — so the
+docs site tracks the release with no manual step.
+
+To publish a **doc-only** fix to already-released content between releases, run
+the **Rebuild docs** workflow by hand (Actions → *Rebuild docs*) — it rebuilds
+from the latest tag, so it never leaks unreleased-API docs. (See CONTRIBUTING.md
+for the manual by-hand alternative.)
 
 Publishing to PyPI is a **deliberate, manual** step: run the **Publish to PyPI**
 workflow (`.github/workflows/publish.yaml`, `workflow_dispatch`; it also supports

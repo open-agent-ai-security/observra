@@ -1,20 +1,24 @@
 # Copyright 2026 Exabeam, Inc.
 # SPDX-License-Identifier: Apache-2.0
 #
-# Rebuild & publish the GitHub Pages docs (guide/ + sitemap.xml) OUT OF BAND.
+# Rebuild & publish BOTH Pages doc artifacts from the latest release:
+#   - the narrative guide (docs/*.md -> docs_build.py -> guide/ + sitemap.xml)
+#   - the pdoc API reference (docstrings -> make api-docs -> guide/api/)
 #
-# The docs site tracks releases, not `main`: it is normally refreshed at version-
-# bump time (scripts/bump_version.py). This workflow is the manual escape hatch —
-# use it to publish a doc fix to already-released content (a typo, a clarified
-# example) without cutting a whole new release.
+# The docs site tracks releases, not `main`. This renders from the LATEST TAG's
+# code and commits only the rendered output onto `main` (which Pages serves), so
+# the published site always matches the released package and can never advertise
+# an unreleased API even when `main` is ahead.
 #
-# It builds from the LATEST TAG's doc sources — not `main` — and commits only the
-# rendered output onto `main`, so the published site can never advertise an
-# unreleased API even if `main` is ahead of the release. (For pdoc API docs, run
-# `make api-docs` at release; this workflow covers the markdown guide/ + sitemap.)
+# Entry points:
+#   - workflow_call: invoked by Auto Release right after a release is cut, so the
+#     just-tagged version's docs publish automatically (no manual step).
+#   - workflow_dispatch: the manual escape hatch — publish a doc fix to already-
+#     released content between releases without cutting a new release.
 name: Rebuild docs
 
 on:
+  workflow_call: {}
   workflow_dispatch: {}
 
 permissions:
@@ -30,7 +34,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
-          fetch-depth: 0 # need tags + full history to check out the latest tag's sources
+          fetch-depth: 0 # need all tags + history to check out the latest tag
 
       - uses: actions/setup-python@v6
         with:
@@ -41,34 +45,33 @@ jobs:
         run: |
           latest="$(git describe --tags --abbrev=0)"
           echo "latest=$latest" >> "$GITHUB_OUTPUT"
-          echo "Building docs from released sources at $latest"
+          echo "Rebuilding docs from released code at $latest"
 
-      - name: Bring the released doc sources into the worktree
-        # Overlay the tag's docs/*.md, theme, builder, and pinned deps onto the
-        # main checkout, WITHOUT moving HEAD — we then render guide/ from those
-        # released sources and restore main's sources before committing, so only
-        # the rendered output (guide/, sitemap.xml) lands on main.
+      - name: Render both doc artifacts from the released code
+        # Detach to the tag so the working tree IS the released code, build both
+        # artifacts there, then stash the rendered output aside. guide/ holds the
+        # narrative pages AND guide/api/; sitemap.xml sits at the root.
         run: |
-          git checkout "${{ steps.tag.outputs.latest }}" -- \
-            docs/ docs_build.py assets/ requirements-dev.txt
+          git checkout --detach "${{ steps.tag.outputs.latest }}"
+          pip install -r requirements-dev.txt
+          python docs_build.py          # -> guide/*.html + sitemap.xml
+          make api-docs                 # -> guide/api/*.html
+          rm -rf /tmp/rendered && mkdir -p /tmp/rendered
+          cp -R guide /tmp/rendered/guide
+          cp sitemap.xml /tmp/rendered/sitemap.xml
 
-      - name: Install the pinned docs toolchain
-        run: pip install -r requirements-dev.txt
-
-      - name: Render the docs site
-        run: python docs_build.py
-
-      - name: Restore main's sources (keep only the rendered output)
-        run: git checkout HEAD -- docs/ docs_build.py assets/ requirements-dev.txt
-
-      - name: Commit & publish if the rendered docs changed
+      - name: Publish the rendered output onto main
         run: |
+          git checkout main
+          rm -rf guide sitemap.xml
+          cp -R /tmp/rendered/guide guide
+          cp /tmp/rendered/sitemap.xml sitemap.xml
           git config user.name "observra-docs-bot"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add guide/ sitemap.xml
+          git add guide sitemap.xml
           if git diff --cached --quiet; then
-            echo "Published docs already match the latest release — nothing to do."
+            echo "Published docs already match ${{ steps.tag.outputs.latest }} — nothing to do."
           else
-            git commit -s -m "docs: rebuild guide/ + sitemap.xml from ${{ steps.tag.outputs.latest }} [skip ci]"
+            git commit -s -m "docs: rebuild guide/ + guide/api/ + sitemap.xml from ${{ steps.tag.outputs.latest }} [skip ci]"
             git push
           fi
