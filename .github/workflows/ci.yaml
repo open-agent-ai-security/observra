@@ -66,9 +66,10 @@ jobs:
   # NOTE: there is deliberately no per-PR docs-freshness gate. observra is a
   # versioned PyPI library, and the GitHub Pages docs (guide/ + sitemap.xml,
   # and guide/api/) track *releases*, not `main` — so between releases `main`'s
-  # docs/*.md may legitimately be ahead of the published guide/. Docs are
-  # regenerated at release time (scripts/bump_version.py) and out-of-band by the
-  # "Rebuild docs" workflow (.github/workflows/rebuild-docs.yaml), which builds
-  # from the latest tag so the site never advertises unreleased APIs. Gating
-  # guide/ against `main` per-PR would force publishing unreleased-feature docs
-  # early — the opposite of what we want. See CONTRIBUTING.md ("Docs") and #25.
+  # docs/*.md may legitimately be ahead of the published guide/. Both artifacts
+  # are republished from the latest tag by the "Rebuild docs" workflow
+  # (.github/workflows/rebuild-docs.yaml) — chained automatically by Auto Release
+  # after a release, and runnable on demand — so the site never advertises
+  # unreleased APIs. Gating guide/ against `main` per-PR would force publishing
+  # unreleased-feature docs early — the opposite of what we want. See
+  # CONTRIBUTING.md ("Docs") and #25.
