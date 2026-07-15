@@ -13,8 +13,14 @@ Updates `__version__` in src/observra/__init__.py and rolls the CHANGELOG
 `[Unreleased]` section into a dated `[X.Y.Z]` heading. pyproject.toml reads the
 version dynamically from `__version__`, so it is never edited.
 
+The Pages docs (guide/ + sitemap.xml and the pdoc guide/api/) are NOT rebuilt
+here — they track *releases* and are regenerated + published by the release
+automation (the "Auto Release" workflow, via "Rebuild docs") from the tagged
+code, never gated per-PR. So a contributor edits docs/*.md and never regenerates
+guide/ by hand. See docs/RELEASING.md and CONTRIBUTING.md.
+
 After running, review the diff, commit, and push to main — the "Auto Release"
-workflow tags v<version> and cuts the GitHub Release. See docs/RELEASING.md.
+workflow tags v<version>, cuts the GitHub Release, and republishes the docs.
 """
 
 from __future__ import annotations
@@ -83,7 +89,7 @@ def main() -> None:
     print(f"Bumped {cur_str} -> {new}")
     print("Next steps:")
     print(f'  git add -A && git commit -m "bump version to {new}"')
-    print(f"  git push origin main   # 'Auto Release' tags v{new} and cuts the GitHub Release")
+    print(f"  git push origin main   # 'Auto Release' tags v{new}, cuts the release, republishes docs")
 
 
 if __name__ == "__main__":

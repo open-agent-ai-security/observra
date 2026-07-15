@@ -1,0 +1,89 @@
+# Copyright 2026 Exabeam, Inc.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Rebuild & publish BOTH Pages doc artifacts from the latest release:
+#   - the narrative guide (docs/*.md -> docs_build.py -> guide/ + sitemap.xml)
+#   - the pdoc API reference (docstrings -> make api-docs -> guide/api/)
+#
+# The docs site tracks releases, not `main`. This renders from the LATEST TAG's
+# code and commits only the rendered output onto `main` (which Pages serves), so
+# the published site always matches the released package and can never advertise
+# an unreleased API even when `main` is ahead.
+#
+# Entry points:
+#   - workflow_call: invoked by Auto Release right after a release is cut, so the
+#     just-tagged version's docs publish automatically (no manual step).
+#   - workflow_dispatch: the manual escape hatch — publish a doc fix to already-
+#     released content between releases without cutting a new release.
+name: Rebuild docs
+
+on:
+  workflow_call: {}
+  workflow_dispatch: {}
+
+permissions:
+  contents: write # commit the regenerated docs back to main (Pages serves main)
+
+concurrency:
+  group: rebuild-docs
+  cancel-in-progress: false
+
+jobs:
+  rebuild:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0 # need all tags + history to check out the latest tag
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Resolve the latest release tag
+        id: tag
+        run: |
+          latest="$(git describe --tags --abbrev=0)"
+          echo "latest=$latest" >> "$GITHUB_OUTPUT"
+          echo "Rebuilding docs from released code at $latest"
+
+      - name: Render both doc artifacts from the released code
+        # Detach to the tag so the working tree IS the released code, build both
+        # artifacts there, then stash the rendered output aside. guide/ holds the
+        # narrative pages AND guide/api/; sitemap.xml sits at the root.
+        run: |
+          git checkout --detach "${{ steps.tag.outputs.latest }}"
+          pip install -r requirements-dev.txt
+          python docs_build.py          # -> guide/*.html + sitemap.xml
+          make api-docs                 # -> guide/api/*.html
+          rm -rf /tmp/rendered && mkdir -p /tmp/rendered
+          cp -R guide /tmp/rendered/guide
+          cp sitemap.xml /tmp/rendered/sitemap.xml
+
+      - name: Publish the rendered output onto main
+        run: |
+          # -f: the render dirtied the tracked guide/ + sitemap.xml at the tag,
+          # and when main is ahead of the tag those files differ, so a plain
+          # `git checkout main` would abort. The working-tree state is disposable
+          # (we saved the rendered output to /tmp), so force the switch.
+          git checkout -f main
+          rm -rf guide sitemap.xml
+          cp -R /tmp/rendered/guide guide
+          cp /tmp/rendered/sitemap.xml sitemap.xml
+          git config user.name "observra-docs-bot"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add guide sitemap.xml
+          if git diff --cached --quiet; then
+            echo "Published docs already match ${{ steps.tag.outputs.latest }} — nothing to do."
+            exit 0
+          fi
+          git commit -s -m "docs: rebuild guide/ + guide/api/ + sitemap.xml from ${{ steps.tag.outputs.latest }} [skip ci]"
+          # Another push to main can land between our checkout and push; rebase
+          # our docs-only commit on top and retry rather than failing the job.
+          for attempt in 1 2 3; do
+            if git push; then exit 0; fi
+            echo "push rejected (attempt $attempt) — rebasing on origin/main and retrying"
+            git pull --rebase origin main
+          done
+          echo "::error::could not push regenerated docs after 3 attempts"
+          exit 1
