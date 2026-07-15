@@ -63,6 +63,7 @@ class ClaudeAdapter:
         cost_threshold_usd: Optional[Decimal] = None,
         capture_tool_data: bool = False,
         payload_max_bytes: int = 4096,
+        agent_name: Optional[str] = None,
     ) -> None:
         """Initialize ClaudeAdapter.
 
@@ -77,6 +78,9 @@ class ClaudeAdapter:
             capture_tool_data: If True, serialize tool_input and tool_response
                                 into events. Default False for privacy.
             payload_max_bytes: Max bytes for tool data serialization (default 4096).
+            agent_name: Optional agent name for attribution in events. If None,
+                        events will have agent_name=None unless enriched from
+                        SDK context (e.g. agent_type on subagent hooks).
         """
         global _startup_warned
 
@@ -86,6 +90,7 @@ class ClaudeAdapter:
         self._cost_threshold = cost_threshold_usd
         self._capture_tool_data = capture_tool_data
         self._payload_max_bytes = payload_max_bytes
+        self._agent_name = agent_name
         self._error_count: int = 0
         self._dropped_events: int = 0
         self._events_captured: int = 0
@@ -273,6 +278,7 @@ class ClaudeAdapter:
                 event_type="tool_start",
                 tool_name=tool_name,
                 framework="claude",
+                agent_name=input_data.get("agent_type") or self._agent_name,
             )
 
             if self._capture_tool_data:
@@ -325,6 +331,7 @@ class ClaudeAdapter:
                 event_type="tool_end",
                 tool_name=tool_name,
                 framework="claude",
+                agent_name=input_data.get("agent_type") or self._agent_name,
                 estimated=is_estimated,
             )
 
@@ -369,6 +376,7 @@ class ClaudeAdapter:
             event = create_event(
                 event_type="user_message",
                 framework="claude",
+                agent_name=self._agent_name,
                 user_message_text=prompt,
                 input_tokens=token_count,
                 estimated=is_estimated,
@@ -398,6 +406,7 @@ class ClaudeAdapter:
             event = create_event(
                 event_type="agent_end",
                 framework="claude",
+                agent_name=self._agent_name,
                 stop_hook_active=input_data.get("stop_hook_active"),
             )
             self.emit(event)
@@ -425,6 +434,7 @@ class ClaudeAdapter:
             event = create_event(
                 event_type="agent_end",
                 framework="claude",
+                agent_name=input_data.get("agent_type") or self._agent_name,
                 stop_hook_active=input_data.get("stop_hook_active"),
                 agent_id=input_data.get("agent_id"),
             )
@@ -456,6 +466,7 @@ class ClaudeAdapter:
             event_kwargs: dict[str, Any] = dict(
                 event_type="session_end",
                 framework="claude",
+                agent_name=self._agent_name,
                 estimated=False,
             )
 
@@ -493,6 +504,7 @@ class ClaudeAdapter:
                 threshold_event = create_event(
                     event_type="cost_threshold_exceeded",
                     framework="claude",
+                    agent_name=self._agent_name,
                     session_cost_usd=float(total_cost_usd),
                     threshold_usd=float(self._cost_threshold),
                     exceeded=True,
@@ -553,6 +565,7 @@ class ClaudeAdapter:
                             event = create_event(
                                 event_type="model_response",
                                 framework="claude",
+                                agent_name=self._agent_name,
                                 response_text=truncated_text,
                                 estimated=True,
                             )
