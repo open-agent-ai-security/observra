@@ -24,8 +24,9 @@ from pathlib import Path
 from typing import Any, Optional
 
 from observra.adapters.utils import estimate_tokens, safe_serialize
+from observra.core.context import initialize_session, initialize_trace
 from observra.core.cost import CostCalculator
-from observra.core.dedup import register_emission
+from observra.core.dedup import register_emission, reset_dedup
 from observra.core.events import TelemetryEvent, create_event
 
 logger = logging.getLogger(__name__)
@@ -188,6 +189,12 @@ class ClaudeAdapter:
         """
         # Lazy import — not at module top level to avoid ImportError on base install
         from claude_agent_sdk import ClaudeAgentOptions, HookMatcher
+
+        # Seed trace/session context in the caller's task before the SDK spawns
+        # detached hook tasks. Copy-at-spawn propagates the session_id to all hooks.
+        initialize_trace()
+        initialize_session()
+        reset_dedup()
 
         # hooks is a dict mapping hook name -> list[HookMatcher].
         # Each HookMatcher wraps a list of callback functions.
