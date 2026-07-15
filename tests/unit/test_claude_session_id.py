@@ -3,12 +3,15 @@
 
 """Tests for Claude adapter session_id seeding and agent_name attribution."""
 
-import asyncio
-
 import pytest
 
-from observra.adapters.claude import ClaudeAdapter
-from observra.core.context import get_session_id
+# These tests build ClaudeAgentOptions via get_hook_options(), which lazily
+# imports claude_agent_sdk — skip the module on base installs (the [claude] extra
+# is only present in the test-extras CI job), matching test_examples_smoke.py.
+pytest.importorskip("claude_agent_sdk", reason="requires the [claude] extra")
+
+from observra.adapters.claude import ClaudeAdapter  # noqa: E402
+from observra.core.context import get_session_id  # noqa: E402
 
 
 @pytest.fixture
