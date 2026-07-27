@@ -146,6 +146,7 @@ def create_backend(backend_type: str, **kwargs) -> StorageBackend:
         backends_list = kwargs.pop("backends", [])
         return MultiBackend(backends_list)
     else:
+        supported = "jsonl, sqlite, otel, otel_log, webhook, multi"
         raise ValueError(
-            f"Unknown backend type: {backend_type}. Supported types: 'jsonl', 'sqlite', 'otel', 'otel_log', 'webhook', 'multi'"
+            f"Unknown backend type: {backend_type}. Supported: {supported}"
         )
