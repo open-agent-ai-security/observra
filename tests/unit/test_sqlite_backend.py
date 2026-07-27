@@ -119,9 +119,7 @@ def test_get_stats(backend):
 
 def test_indexes_exist(backend, db_path):
     conn = sqlite3.connect(str(db_path))
-    indexes = conn.execute(
-        "SELECT name FROM sqlite_master WHERE type='index' AND tbl_name='events'"
-    ).fetchall()
+    indexes = conn.execute("SELECT name FROM sqlite_master WHERE type='index' AND tbl_name='events'").fetchall()
     conn.close()
 
     index_names = {row[0] for row in indexes}
