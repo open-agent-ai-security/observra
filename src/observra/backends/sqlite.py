@@ -6,8 +6,8 @@
 import json
 import logging
 import os
+import re
 import sqlite3
-from dataclasses import asdict
 from pathlib import Path
 from typing import Iterator, Optional
 
@@ -38,9 +38,13 @@ class SQLiteBackend:
         table_name: str = "events",
         max_rows: Optional[int] = None,
     ):
+        if not re.match(r"^[a-zA-Z_][a-zA-Z0-9_]*$", table_name):
+            raise ValueError(f"Invalid table_name: {table_name!r} — must be a valid SQL identifier")
+
         self._path = Path(path)
         self._table = table_name
         self._max_rows = max_rows
+        self._closed = False
         self._event_count: int = 0
         self._bytes_written: int = 0
         self._oldest_ts: Optional[float] = None
@@ -140,6 +144,9 @@ class SQLiteBackend:
         self._conn.commit()
 
     def close(self) -> None:
+        if self._closed:
+            return
+        self._closed = True
         self.flush()
         self._conn.close()
 
