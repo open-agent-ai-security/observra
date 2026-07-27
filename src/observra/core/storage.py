@@ -88,7 +88,7 @@ def create_backend(backend_type: str, **kwargs) -> StorageBackend:
     """Factory function to create storage backends.
 
     Args:
-        backend_type: Type of backend ('jsonl', 'otel', 'otel_log', 'webhook', or 'multi')
+        backend_type: Type of backend ('jsonl', 'sqlite', 'otel', 'otel_log', 'webhook', or 'multi')
         **kwargs: Backend-specific configuration passed to constructor.
             For 'otel': endpoint, service_name, headers, timeout
             For 'multi': backends (list of StorageBackend instances)
@@ -102,6 +102,7 @@ def create_backend(backend_type: str, **kwargs) -> StorageBackend:
 
     Examples:
         >>> backend = create_backend('jsonl', path='telemetry.jsonl', max_bytes=10_485_760)
+        >>> backend = create_backend('sqlite', path='telemetry.db', max_rows=100_000)
         >>> backend = create_backend('otel', endpoint='http://localhost:4318/v1/traces')
         >>> backend = create_backend('webhook', url='http://localhost:8080/events')
         >>> otel = create_backend('otel')
@@ -135,6 +136,10 @@ def create_backend(backend_type: str, **kwargs) -> StorageBackend:
         from observra.backends.webhook import WebhookBackend
 
         return WebhookBackend(**kwargs)
+    elif backend_type == "sqlite":
+        from observra.backends.sqlite import SQLiteBackend
+
+        return SQLiteBackend(**kwargs)
     elif backend_type == "multi":
         from observra.backends.multi import MultiBackend
 
@@ -142,5 +147,5 @@ def create_backend(backend_type: str, **kwargs) -> StorageBackend:
         return MultiBackend(backends_list)
     else:
         raise ValueError(
-            f"Unknown backend type: {backend_type}. Supported types: 'jsonl', 'otel', 'otel_log', 'webhook', 'multi'"
+            f"Unknown backend type: {backend_type}. Supported types: 'jsonl', 'sqlite', 'otel', 'otel_log', 'webhook', 'multi'"
         )
