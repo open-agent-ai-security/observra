@@ -25,8 +25,8 @@ Every framework follows the same shape:
 ```python
 from observra import initialize, create_plugin
 
-initialize(backend="jsonl", path="telemetry.jsonl")   # 1. choose a backend
-plugin = create_plugin(framework="adk")               # 2. build the adapter
+initialize(backend="jsonl", path="telemetry.jsonl")  # 1. choose a backend
+plugin = create_plugin(framework="adk")  # 2. build the adapter
 # 3. attach `plugin` to your framework (Runner/hooks/callbacks)
 ```
 

@@ -95,12 +95,12 @@ the configured limit.
 initialize(
     backend="jsonl",
     path="telemetry.jsonl",
-    queue_size=1000,                  # bounded, drop-oldest queue
+    queue_size=1000,  # bounded, drop-oldest queue
 )
 adapter = create_plugin(
     "claude",
-    capture_tool_data=False,          # opt in to record tool args/results
-    cost_threshold_usd=None,          # cost alerting threshold
+    capture_tool_data=False,  # opt in to record tool args/results
+    cost_threshold_usd=None,  # cost alerting threshold
 )
 ```
 
