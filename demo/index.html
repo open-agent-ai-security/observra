@@ -1,0 +1,637 @@
+<!--
+  Copyright 2026 Exabeam, Inc.
+  SPDX-License-Identifier: Apache-2.0
+-->
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Observra — Sample Telemetry Viewer</title>
+<meta name="description" content="A searchable, filterable look at what observra telemetry actually looks like — synthetic sample sessions from fictional agents across three frameworks.">
+<meta name="robots" content="noindex, follow">
+<link rel="icon" type="image/png" sizes="32x32" href="../graphics/web/favicon-32.png">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  --bg:          #070F1A;
+  --panel:       #0F2035;
+  --panel-2:     #122438;
+  --border:      #1A3050;
+  --border-hi:   rgba(77, 163, 255, 0.45);
+  --text:        #EEF4FF;
+  --muted:       #8FAFC8;
+  --muted-2:     #4D6E8A;
+  --accent:      #1E6FE0;
+  --accent-2:    #4DA3FF;
+  --accent-dim:  rgba(30, 111, 224, 0.12);
+  --mono-bg:     #040C16;
+  --mono-text:   #CBD8E6;
+  --mono: 'JetBrains Mono', ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  /* Categorical — action family (fixed order, never reused for status) */
+  --cat-llm:     #4DA3FF;
+  --cat-tool:    #9B7BFF;
+  --cat-agent:   #2FD1B0;
+  --cat-prompt:  #E8618C;
+  --cat-session: #8FAFC8;
+  --cat-policy:  #C9A257;
+
+  /* Status — severity (reserved, never reused as a category color) */
+  --sev-high:    #FF5C5C;
+  --sev-medium:  #FFA53D;
+  --sev-low:     #7C93B3;
+  --sev-none:    #3A506E;
+
+  --ok:          #2FD16B;
+  --fail:        #FF5C5C;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3 { font-family: 'Space Grotesk', 'Inter', sans-serif; letter-spacing: -0.01em; margin: 0; }
+a { color: var(--accent-2); text-decoration: none; }
+a:hover { color: var(--accent); }
+code, .mono { font-family: var(--mono); }
+button { font-family: inherit; }
+
+/* ---------- Top bar ---------- */
+.top {
+  position: sticky; top: 0; z-index: 60;
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  background: rgba(7, 15, 26, 0.82); border-bottom: 1px solid var(--border);
+}
+.top-inner {
+  max-width: 1320px; margin: 0 auto; padding: 0 24px; height: 58px;
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+}
+.brand { display: flex; align-items: center; gap: 12px; }
+.brand img { height: 24px; width: auto; display: block; }
+.badge {
+  font-size: 11.5px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase;
+  color: var(--accent-2); background: var(--accent-dim); border: 1px solid var(--border-hi);
+  padding: 3px 9px; border-radius: 100px;
+}
+.top-links { display: flex; gap: 20px; }
+.top-links a { color: var(--muted); font-weight: 500; font-size: 14px; }
+.top-links a:hover { color: var(--text); }
+
+/* ---------- Shell ---------- */
+.wrap { max-width: 1320px; margin: 0 auto; padding: 34px 24px 80px; }
+.intro { max-width: 760px; margin-bottom: 28px; }
+.intro h1 { font-size: 28px; margin-bottom: 8px; }
+.intro p { color: var(--muted); font-size: 15px; margin: 0; }
+.intro .note {
+  margin-top: 12px; font-size: 13px; color: var(--muted-2);
+  border-left: 2px solid var(--border); padding-left: 10px;
+}
+
+/* ---------- Stat cards ---------- */
+.stats { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin-bottom: 22px; }
+.stat {
+  background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+  padding: 14px 16px;
+}
+.stat b { display: block; font-size: 24px; font-weight: 700; font-family: 'Space Grotesk', sans-serif; }
+.stat span { font-size: 12px; color: var(--muted); }
+.stat.alert b { color: var(--sev-high); }
+
+/* ---------- Distribution bar ---------- */
+.dist-card {
+  background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+  padding: 16px 18px; margin-bottom: 22px;
+}
+.dist-card h3 { font-size: 13px; color: var(--muted); font-weight: 600; margin-bottom: 12px;
+  text-transform: uppercase; letter-spacing: .04em; }
+.dist-bar { display: flex; height: 10px; border-radius: 6px; overflow: hidden; background: var(--panel-2); gap: 2px; }
+.dist-bar i { display: block; height: 100%; }
+.dist-legend { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 12px; }
+.dist-legend span { font-size: 12.5px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+.dist-legend i { width: 9px; height: 9px; border-radius: 3px; display: inline-block; }
+
+/* ---------- Session cards ---------- */
+.sessions-head { margin-bottom: 12px; }
+.sessions-head h3 { font-size: 13px; color: var(--muted); font-weight: 600; margin-bottom: 4px;
+  text-transform: uppercase; letter-spacing: .04em; }
+.sessions-head p { font-size: 13px; color: var(--muted-2); margin: 0; max-width: 640px; }
+.sessions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 22px; }
+.session-card {
+  background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+  padding: 14px 16px; text-align: left; cursor: pointer; color: var(--text);
+  transition: border-color .12s ease, transform .12s ease;
+}
+.session-card:hover { border-color: var(--border-hi); }
+.session-card.active { border-color: var(--accent-2); background: var(--panel-2); }
+.session-card .agents-label {
+  font-size: 10.5px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase;
+  color: var(--muted-2); margin-bottom: 4px;
+}
+/* Real data (the agent identity) leads; the hand-written summary below is
+   deliberately smaller and unbolded so it never outweighs the actual field. */
+.session-card .agents {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 7px;
+  font-size: 15px; font-weight: 700; font-family: var(--mono); color: var(--accent-2); margin-bottom: 8px;
+}
+.session-card .agents .agent-name { white-space: nowrap; }
+.session-card .agents .arrow {
+  font-family: 'Inter', sans-serif; color: var(--muted-2); font-size: 11.5px; font-weight: 500;
+  font-style: italic; white-space: nowrap;
+}
+.session-card .story { font-size: 13px; color: var(--muted); margin-bottom: 12px; line-height: 1.5; }
+.session-card .kv { border-top: 1px solid var(--border); padding-top: 4px; }
+.session-card .kv-row {
+  display: flex; justify-content: space-between; align-items: baseline; gap: 12px;
+  padding: 5px 0; font-size: 12.5px;
+}
+.session-card .kv-row + .kv-row { border-top: 1px dashed rgba(26, 48, 80, 0.6); }
+.session-card .kv-key {
+  color: var(--muted-2); font-size: 11px; font-weight: 600; letter-spacing: .04em;
+  text-transform: uppercase; flex-shrink: 0;
+}
+.session-card .kv-val { color: var(--text); text-align: right; }
+.session-card .kv-val i { color: var(--muted-2); font-size: 11.5px; }
+.session-card .kv-muted { color: var(--muted-2); }
+.session-card .sev-hi { color: var(--sev-high); font-weight: 600; }
+.session-card .sev-md { color: var(--sev-medium); font-weight: 600; }
+.outcome { font-weight: 600; }
+.outcome.success { color: var(--ok); }
+.outcome.failure { color: var(--fail); }
+
+/* ---------- Filters ---------- */
+.filters {
+  display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
+  background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+  padding: 12px 14px; margin-bottom: 16px; position: sticky; top: 58px; z-index: 40;
+}
+.filters input[type="search"] {
+  flex: 1 1 220px; min-width: 180px; background: var(--mono-bg); border: 1px solid var(--border);
+  color: var(--text); border-radius: 8px; padding: 8px 12px; font-size: 14px; font-family: var(--mono);
+}
+.filters input[type="search"]:focus { outline: none; border-color: var(--accent-2); }
+.filters select {
+  background: var(--mono-bg); border: 1px solid var(--border); color: var(--text);
+  border-radius: 8px; padding: 8px 10px; font-size: 13.5px;
+}
+.filters .reset {
+  background: none; border: 1px solid var(--border); color: var(--muted);
+  border-radius: 8px; padding: 8px 12px; font-size: 13px; cursor: pointer;
+}
+.filters .reset:hover { color: var(--text); border-color: var(--border-hi); }
+.result-count { font-size: 13px; color: var(--muted-2); margin: 0 0 10px 2px; }
+
+/* ---------- Event table ---------- */
+.table-wrap {
+  border: 1px solid var(--border); border-radius: 12px; overflow: hidden; background: var(--panel);
+}
+.row {
+  display: grid;
+  grid-template-columns: 92px 122px 96px 150px 1fr 90px;
+  gap: 10px; align-items: center;
+  padding: 10px 14px; border-bottom: 1px solid var(--border);
+  cursor: pointer; font-size: 13.5px;
+  border-left: 3px solid transparent;
+}
+.row:last-child { border-bottom: none; }
+.row:hover { background: var(--panel-2); }
+.row.selected { background: var(--accent-dim); }
+.row.failure { border-left-color: var(--fail); }
+.row.head {
+  font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted-2);
+  cursor: default; font-weight: 600; background: var(--panel-2);
+}
+.row.head:hover { background: var(--panel-2); }
+.t { font-family: var(--mono); color: var(--muted); font-size: 12.5px; }
+.pill {
+  display: inline-block; max-width: 110px; padding: 2px 9px; border-radius: 12px; font-size: 11px;
+  font-weight: 600; color: #06101E; white-space: normal; line-height: 1.35; text-align: center;
+}
+.who { color: var(--text); font-size: 13px; min-width: 0; }
+.who, .who .sub { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.who .sub { color: var(--muted-2); font-size: 12px; }
+.summary { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; }
+.sev { font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+.sev.high { color: var(--sev-high); }
+.sev.medium { color: var(--sev-medium); }
+.sev.low { color: var(--sev-low); }
+.empty { padding: 40px; text-align: center; color: var(--muted-2); }
+
+/* ---------- Detail drawer ---------- */
+.overlay {
+  position: fixed; inset: 0; background: rgba(4, 8, 16, 0.55); z-index: 90;
+  opacity: 0; pointer-events: none; transition: opacity .15s ease;
+}
+.overlay.open { opacity: 1; pointer-events: auto; }
+.drawer {
+  position: fixed; top: 0; right: 0; height: 100%; width: min(520px, 92vw);
+  background: var(--panel); border-left: 1px solid var(--border); z-index: 91;
+  transform: translateX(100%); transition: transform .18s ease;
+  display: flex; flex-direction: column;
+}
+.drawer.open { transform: translateX(0); }
+.drawer-head {
+  padding: 16px 18px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+}
+.drawer-head h3 { font-size: 15px; }
+.drawer-head .x {
+  background: none; border: 1px solid var(--border); color: var(--muted);
+  border-radius: 8px; width: 30px; height: 30px; cursor: pointer; font-size: 15px;
+}
+.drawer-head .x:hover { color: var(--text); border-color: var(--border-hi); }
+.drawer-body { padding: 16px 18px; overflow-y: auto; flex: 1; }
+.drawer-body .copy {
+  background: var(--accent-dim); border: 1px solid var(--border-hi); color: var(--accent-2);
+  border-radius: 8px; padding: 6px 12px; font-size: 12.5px; cursor: pointer; margin-bottom: 12px;
+}
+.drawer-body pre {
+  background: var(--mono-bg); border: 1px solid var(--border); border-radius: 10px;
+  padding: 14px; font-family: var(--mono); font-size: 12.5px; color: var(--mono-text);
+  white-space: pre-wrap; word-break: break-word; margin: 0;
+}
+
+@media (max-width: 1080px) {
+  .stats { grid-template-columns: repeat(3, 1fr); }
+  .sessions { grid-template-columns: 1fr; }
+}
+@media (max-width: 720px) {
+  .stats { grid-template-columns: repeat(2, 1fr); }
+  .row { grid-template-columns: 96px 106px 1fr; }
+  .row .col-agent, .row .col-sev, .row .col-result { display: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <div class="top-inner">
+    <div class="brand">
+      <a href="../"><img src="../graphics/brand/observra-wordmark-dark-background.svg" alt="observra"></a>
+      <span class="badge">Sample data</span>
+    </div>
+    <div class="top-links">
+      <a href="../">Observra</a>
+      <a href="../guide/event-schema.html">Event schema</a>
+      <a href="https://github.com/open-agent-ai-security/observra" target="_blank" rel="noopener">GitHub ↗</a>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="intro">
+    <h1>What observra telemetry looks like</h1>
+    <p>Synthetic telemetry from three agent sessions at a fictional company, "Atlas" — a clean run, a flagged run, and a failed run, each on a different framework. The session cards below tell each story; search or filter the table, and click any row for the raw event JSON.</p>
+    <p class="note">Generated sample data (see <code>demo/generate_data.py</code>), not a live agent run — shaped to match observra's real event schema. Framework, model vendor, and agent identity are independent fields, and the sample exercises that: one agent runs Claude on Google's ADK, another splits models by role within a single session.</p>
+  </div>
+
+  <div class="stats" id="stats"></div>
+
+  <div class="dist-card">
+    <h3>Events by action</h3>
+    <div class="dist-bar" id="distBar"></div>
+    <div class="dist-legend" id="distLegend"></div>
+  </div>
+
+  <div class="sessions-head">
+    <h3>Sessions</h3>
+    <p>The same events counted above, grouped into the 3 sessions that produced them. Click a card to filter the table below to just that session; click again to clear it.</p>
+  </div>
+  <div class="sessions" id="sessions"></div>
+
+  <div class="filters">
+    <input type="search" id="q" placeholder="Search event type, agent, tool, model, or payload…">
+    <select id="fEventType"><option value="all">All event types</option></select>
+    <select id="fFramework"><option value="all">All frameworks</option></select>
+    <select id="fSeverity">
+      <option value="all">All severities</option>
+      <option value="high">High</option>
+      <option value="medium">Medium</option>
+      <option value="low">Low</option>
+      <option value="none">No findings</option>
+    </select>
+    <button class="reset" id="reset">Reset filters</button>
+  </div>
+
+  <p class="result-count" id="resultCount"></p>
+
+  <div class="table-wrap">
+    <div class="row head">
+      <span>Time</span>
+      <span>Event</span>
+      <span class="col-sev">Severity</span>
+      <span class="col-agent">Agent / Actor</span>
+      <span>Summary</span>
+      <span class="col-result">Result</span>
+    </div>
+    <div id="rows"></div>
+  </div>
+</div>
+
+<div class="overlay" id="overlay"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-head">
+    <h3 id="drawerTitle">Event</h3>
+    <button class="x" id="drawerClose">✕</button>
+  </div>
+  <div class="drawer-body">
+    <button class="copy" id="drawerCopy">Copy JSON</button>
+    <pre id="drawerJson"></pre>
+  </div>
+</div>
+
+<script src="data.js"></script>
+<script>
+const EVENTS = OBSERVRA_DEMO_EVENTS.slice().sort((a, b) => a.timestamp - b.timestamp);
+
+const CAT_COLOR = {
+  call_llm: 'var(--cat-llm)',
+  tool_call: 'var(--cat-tool)',
+  invoke_agent: 'var(--cat-agent)',
+  prompt_submit: 'var(--cat-prompt)',
+  start_session: 'var(--cat-session)',
+  end_session: 'var(--cat-session)',
+  policy_event: 'var(--cat-policy)',
+};
+const CAT_LABEL = {
+  call_llm: 'Model call', tool_call: 'Tool call', invoke_agent: 'Agent lifecycle',
+  prompt_submit: 'User input', start_session: 'Session', end_session: 'Session',
+  policy_event: 'Policy signal',
+};
+const SEV_COLOR = { high: 'var(--sev-high)', medium: 'var(--sev-medium)', low: 'var(--sev-low)' };
+
+const SESSION_META = {};
+for (const e of EVENTS) {
+  const s = (SESSION_META[e.session_id] ||= {
+    id: e.session_id, framework: e.framework, count: 0, cost: 0, outcome: 'success',
+    agents: [], models: [], findings: { high: 0, medium: 0, low: 0 },
+  });
+  s.count++;
+  if (e.agent_name && !s.agents.includes(e.agent_name)) s.agents.push(e.agent_name);
+  if (e.model_name && !s.models.includes(e.model_name)) s.models.push(e.model_name);
+  if (e.data) {
+    if (typeof e.data.cost_usd === 'number') s.cost += e.data.cost_usd;
+    if (typeof e.data.session_cost_usd === 'number') s.cost = e.data.session_cost_usd;
+    if (e.data.max_severity) s.findings[e.data.max_severity]++;
+    // Session outcome: an agent that ends with result "failure" fails the session.
+    // (agent_end's data.result is a CIM enum that survives hot-path stripping;
+    // session_end.error_message does NOT — it's nulled in real telemetry. A
+    // retried-and-recovered 429 mid-session doesn't fail anything: model_error
+    // is event-level, not agent-level.)
+    if (e.event_type === 'agent_end' && e.data.result === 'failure') s.outcome = 'failure';
+  }
+}
+// Plain-English story + model annotation per session, in session order.
+const ids = Object.keys(SESSION_META);
+const SESSION_STORY = {
+  [ids[0]]: 'Diagnosed a VPN ticket, reissued the expired cert, emailed the user.',
+  [ids[1]]: 'A fetched KB article carried a hidden injection attempt — detected and not obeyed. One oversized model call then blew the session cost budget.',
+  [ids[2]]: 'The refund timed out twice at the payment gateway; escalating was blocked by the delegation-depth limit.',
+};
+const MODEL_NOTES = {
+  [ids[1]]: 'claude-sonnet-5 <i>(on model-agnostic ADK)</i>',
+  [ids[2]]: 'gpt-5.1 <i>(router)</i> · gpt-5.1-mini <i>(refund)</i>',
+};
+function findingsLabel(f) {
+  const parts = [];
+  if (f.high) parts.push(f.high + ' high');
+  if (f.medium) parts.push(f.medium + ' medium');
+  if (f.low) parts.push(f.low + ' low');
+  return parts.length ? parts.join(' · ') : 'None';
+}
+
+const filters = { q: '', session: 'all', eventType: 'all', framework: 'all', severity: 'all' };
+
+function fmtTime(ts) {
+  const d = new Date(ts * 1000);
+  const hms = d.toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  return hms + '.' + String(d.getMilliseconds()).padStart(3, '0');
+}
+function fmtMoney(n) { return '$' + n.toFixed(4); }
+function esc(v) {
+  return String(v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function summaryFor(e) {
+  const d = e.data || {};
+  if (d.user_message_text) return '“' + d.user_message_text + '”';
+  if (d.error_message) return d.error_message;
+  if (d.message) return d.message;
+  if (d.tool_result) return String(d.tool_result);
+  if (d.source_agent && d.target_agent) return d.source_agent + ' → ' + d.target_agent;
+  if (typeof d.total_tokens === 'number') return `${d.total_tokens.toLocaleString()} tokens · ${fmtMoney(d.cost_usd || 0)}`;
+  if (e.event_type === 'cost_threshold_exceeded' && typeof d.threshold_usd === 'number')
+    return `session ${fmtMoney(d.session_cost_usd)} exceeded budget ${fmtMoney(d.threshold_usd)}`;
+  if (typeof d.session_cost_usd === 'number') return `session total ${fmtMoney(d.session_cost_usd)}`;
+  if (e.event_type === 'tool_start' && d.tool_args) return 'args: ' + JSON.stringify(d.tool_args);
+  if (e.event_type === 'session_start' || e.event_type === 'session_end')
+    return `host ${e.host} · user ${e.user} · observra ${e.library_version}`;
+  if (e.tool_name) return e.tool_name;
+  return e.event_type.replace(/_/g, ' ');
+}
+
+function actorFor(e) {
+  if (e.tool_name) return { main: e.agent_name || '—', sub: e.tool_name };
+  if (e.model_name) return { main: e.agent_name || '—', sub: e.model_name };
+  if (e.agent_name) return { main: e.agent_name, sub: e.framework };
+  return { main: e.framework, sub: '' };
+}
+
+function populateSelects() {
+  const types = [...new Set(EVENTS.map(e => e.event_type))].sort();
+  const fEventType = document.getElementById('fEventType');
+  for (const t of types) {
+    const o = document.createElement('option');
+    o.value = t; o.textContent = t.replace(/_/g, ' ');
+    fEventType.appendChild(o);
+  }
+  const fws = [...new Set(EVENTS.map(e => e.framework))].sort();
+  const fFramework = document.getElementById('fFramework');
+  for (const f of fws) {
+    const o = document.createElement('option');
+    o.value = f; o.textContent = f;
+    fFramework.appendChild(o);
+  }
+}
+
+function renderStats() {
+  const alerts = EVENTS.filter(e => e.data && (e.data.max_severity === 'high' || e.data.max_severity === 'medium')).length;
+  const tools = EVENTS.filter(e => e.event_type === 'tool_start').length;
+  const models = new Set(EVENTS.map(e => e.model_name).filter(Boolean)).size;
+  const stats = [
+    [EVENTS.length, 'Total events'],
+    [Object.keys(SESSION_META).length, 'Sessions'],
+    [new Set(EVENTS.map(e => e.framework)).size, 'Frameworks'],
+    [models, 'Models used'],
+    [tools, 'Tool calls'],
+  ];
+  const el = document.getElementById('stats');
+  el.innerHTML = stats.map(([v, l]) => `<div class="stat"><b>${v}</b><span>${l}</span></div>`).join('')
+    + `<div class="stat alert"><b>${alerts}</b><span>High/medium findings</span></div>`;
+}
+
+function renderDist() {
+  const counts = {};
+  for (const e of EVENTS) {
+    const action = (e.data && e.data.action) || 'unknown';
+    counts[action] = (counts[action] || 0) + 1;
+  }
+  const order = ['call_llm', 'tool_call', 'invoke_agent', 'prompt_submit', 'start_session', 'end_session', 'policy_event'];
+  const bar = document.getElementById('distBar');
+  const legend = document.getElementById('distLegend');
+  bar.innerHTML = ''; legend.innerHTML = '';
+  const byLabel = new Map();
+  for (const action of order) {
+    const n = counts[action] || 0;
+    if (!n) continue;
+    const pct = (n / EVENTS.length * 100).toFixed(2);
+    const color = CAT_COLOR[action] || 'var(--muted-2)';
+    bar.insertAdjacentHTML('beforeend', `<i style="width:${pct}%;background:${color}"></i>`);
+    const label = CAT_LABEL[action] || action;
+    const cur = byLabel.get(label) || { color, n: 0 };
+    cur.n += n;
+    byLabel.set(label, cur);
+  }
+  for (const [label, { color, n }] of byLabel)
+    legend.insertAdjacentHTML('beforeend', `<span><i style="background:${color}"></i>${label} · ${n}</span>`);
+}
+
+const FRAMEWORK_LABEL = { claude: 'Claude Agent SDK', adk: 'Google ADK', openai: 'OpenAI Agents SDK' };
+
+function renderSessions() {
+  const el = document.getElementById('sessions');
+  el.innerHTML = Object.values(SESSION_META).map(s => `
+    <button class="session-card ${filters.session === s.id ? 'active' : ''}" data-session="${s.id}">
+      <div class="agents-label">${s.agents.length > 1 ? 'Agents (handoff chain)' : 'Agent'}</div>
+      <div class="agents">${s.agents.map(a => `<span class="agent-name">${a}</span>`).join('<span class="arrow">hands off to</span>')}</div>
+      <div class="story">${SESSION_STORY[s.id] || ''}</div>
+      <div class="kv">
+        <div class="kv-row"><span class="kv-key">Outcome</span>
+          <span class="kv-val outcome ${s.outcome}">${s.outcome === 'success' ? 'Succeeded' : 'Failed'}</span></div>
+        <div class="kv-row"><span class="kv-key">Security related events</span>
+          <span class="kv-val ${s.findings.high ? 'sev-hi' : (s.findings.medium || s.findings.low) ? 'sev-md' : 'kv-muted'}">${findingsLabel(s.findings)}</span></div>
+        <div class="kv-row"><span class="kv-key">Framework</span>
+          <span class="kv-val">${FRAMEWORK_LABEL[s.framework] || s.framework}</span></div>
+        <div class="kv-row"><span class="kv-key">Models</span>
+          <span class="kv-val">${MODEL_NOTES[s.id] || s.models.join(' · ')}</span></div>
+        <div class="kv-row"><span class="kv-key">Activity</span>
+          <span class="kv-val">${s.count} events · ${fmtMoney(s.cost)}</span></div>
+      </div>
+    </button>
+  `).join('');
+  el.querySelectorAll('.session-card').forEach(btn => {
+    btn.addEventListener('click', () => {
+      filters.session = filters.session === btn.dataset.session ? 'all' : btn.dataset.session;
+      renderAll();
+    });
+  });
+}
+
+function matches(e) {
+  if (filters.session !== 'all' && e.session_id !== filters.session) return false;
+  if (filters.eventType !== 'all' && e.event_type !== filters.eventType) return false;
+  if (filters.framework !== 'all' && e.framework !== filters.framework) return false;
+  if (filters.severity !== 'all') {
+    const sev = (e.data && e.data.max_severity) || 'none';
+    if (sev !== filters.severity) return false;
+  }
+  if (filters.q) {
+    const hay = [e.event_type, e.agent_name, e.tool_name, e.model_name, e.framework, JSON.stringify(e.data || {})]
+      .join(' ').toLowerCase();
+    if (!hay.includes(filters.q)) return false;
+  }
+  return true;
+}
+
+function renderRows() {
+  const rowsEl = document.getElementById('rows');
+  const filtered = EVENTS.filter(matches);
+  document.getElementById('resultCount').textContent =
+    `${filtered.length} of ${EVENTS.length} events`;
+
+  if (!filtered.length) {
+    rowsEl.innerHTML = '<div class="empty">No events match these filters.</div>';
+    return;
+  }
+
+  rowsEl.innerHTML = filtered.map(e => {
+    const actor = actorFor(e);
+    const sev = e.data && e.data.max_severity;
+    const failed = e.data && e.data.result === 'failure';
+    const catColor = CAT_COLOR[(e.data && e.data.action)] || 'var(--muted-2)';
+    return `
+    <div class="row ${failed ? 'failure' : ''}" data-id="${e.event_id}">
+      <span class="t">${fmtTime(e.timestamp)}</span>
+      <span><span class="pill" style="background:${catColor}">${e.event_type.replace(/_/g, ' ')}</span></span>
+      <span class="sev col-sev ${sev || ''}">${sev ? sev : ''}</span>
+      <span class="who col-agent">${esc(actor.main)}<div class="sub">${esc(actor.sub)}</div></span>
+      <span class="summary" title="${esc(summaryFor(e))}">${esc(summaryFor(e))}</span>
+      <span class="col-result" style="color:${failed ? 'var(--fail)' : 'var(--muted-2)'}">${e.data && e.data.result || ''}</span>
+    </div>`;
+  }).join('');
+
+  rowsEl.querySelectorAll('.row').forEach(row => {
+    row.addEventListener('click', () => openDrawer(row.dataset.id));
+  });
+}
+
+function openDrawer(id) {
+  const e = EVENTS.find(ev => ev.event_id === id);
+  if (!e) return;
+  document.getElementById('drawerTitle').textContent = e.event_type.replace(/_/g, ' ');
+  document.getElementById('drawerJson').textContent = JSON.stringify(e, null, 2);
+  document.getElementById('drawer').classList.add('open');
+  document.getElementById('overlay').classList.add('open');
+  document.querySelectorAll('.row').forEach(r => r.classList.toggle('selected', r.dataset.id === id));
+}
+function closeDrawer() {
+  document.getElementById('drawer').classList.remove('open');
+  document.getElementById('overlay').classList.remove('open');
+  document.querySelectorAll('.row.selected').forEach(r => r.classList.remove('selected'));
+}
+
+function renderAll() {
+  renderSessions();
+  renderRows();
+}
+
+document.getElementById('q').addEventListener('input', (ev) => {
+  filters.q = ev.target.value.trim().toLowerCase();
+  renderRows();
+});
+document.getElementById('fEventType').addEventListener('change', (ev) => { filters.eventType = ev.target.value; renderRows(); });
+document.getElementById('fFramework').addEventListener('change', (ev) => { filters.framework = ev.target.value; renderRows(); });
+document.getElementById('fSeverity').addEventListener('change', (ev) => { filters.severity = ev.target.value; renderRows(); });
+document.getElementById('reset').addEventListener('click', () => {
+  filters.q = ''; filters.session = 'all'; filters.eventType = 'all'; filters.framework = 'all'; filters.severity = 'all';
+  document.getElementById('q').value = '';
+  document.getElementById('fEventType').value = 'all';
+  document.getElementById('fFramework').value = 'all';
+  document.getElementById('fSeverity').value = 'all';
+  renderAll();
+});
+document.getElementById('drawerClose').addEventListener('click', closeDrawer);
+document.getElementById('overlay').addEventListener('click', closeDrawer);
+document.getElementById('drawerCopy').addEventListener('click', () => {
+  const btn = document.getElementById('drawerCopy');
+  const orig = btn.textContent;
+  navigator.clipboard.writeText(document.getElementById('drawerJson').textContent)
+    .then(() => { btn.textContent = 'Copied!'; })
+    .catch(() => { btn.textContent = 'Copy failed — select the text instead'; })
+    .finally(() => setTimeout(() => { btn.textContent = orig; }, 1600));
+});
+document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape') closeDrawer(); });
+
+populateSelects();
+renderStats();
+renderDist();
+renderAll();
+</script>
+</body>
+</html>
