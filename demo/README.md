@@ -7,8 +7,8 @@
 A static, searchable/filterable viewer for what observra's event output looks like — useful for
 showing people the shape of the data without needing a live agent + API keys.
 
-- `generate_data.py` — produces `data.js` and `data.jsonl`. 64 synthetic events across three
-  *different* agents at a fictional company ("Atlas"), matching the real event envelope
+- `generate_data.py` — produces `data.js` and `data.jsonl`. Synthetic events from three sessions
+  at a fictional company ("Atlas"), each run by a different agent, matching the real event envelope
   (`docs/event-schema.md`) and CIM `data` fields (`schema/cim_schema.toml`) — deliberately built so
   framework, model vendor, and agent identity don't collapse into one another:
   - `vpn-support-agent` (Claude Agent SDK, claude-sonnet-5) — a clean run.

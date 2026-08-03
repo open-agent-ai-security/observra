@@ -8,7 +8,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Observra — Sample Telemetry Viewer</title>
-<meta name="description" content="A searchable, filterable look at what observra telemetry actually looks like — synthetic sample data from a fictional IT-ops agent, across three frameworks.">
+<meta name="description" content="A searchable, filterable look at what observra telemetry actually looks like — synthetic sample sessions from fictional agents across three frameworks.">
 <meta name="robots" content="noindex, follow">
 <link rel="icon" type="image/png" sizes="32x32" href="../graphics/web/favicon-32.png">
 <style>
@@ -263,8 +263,8 @@ button { font-family: inherit; }
 }
 @media (max-width: 720px) {
   .stats { grid-template-columns: repeat(2, 1fr); }
-  .row { grid-template-columns: 70px 1fr 70px; }
-  .row .col-agent, .row .col-severity { display: none; }
+  .row { grid-template-columns: 96px 106px 1fr; }
+  .row .col-agent, .row .col-sev, .row .col-result { display: none; }
 }
 </style>
 </head>
@@ -287,7 +287,7 @@ button { font-family: inherit; }
 <div class="wrap">
   <div class="intro">
     <h1>What observra telemetry looks like</h1>
-    <p>64 synthetic events from three agents at a fictional company, "Atlas" — a clean run, a flagged run, and a failed run, each on a different framework. The session cards below tell each story; search or filter the table, and click any row for the raw event JSON.</p>
+    <p>Synthetic telemetry from three agent sessions at a fictional company, "Atlas" — a clean run, a flagged run, and a failed run, each on a different framework. The session cards below tell each story; search or filter the table, and click any row for the raw event JSON.</p>
     <p class="note">Generated sample data (see <code>demo/generate_data.py</code>), not a live agent run — shaped to match observra's real event schema. Framework, model vendor, and agent identity are independent fields, and the sample exercises that: one agent runs Claude on Google's ADK, another splits models by role within a single session.</p>
   </div>
 
@@ -301,7 +301,7 @@ button { font-family: inherit; }
 
   <div class="sessions-head">
     <h3>Sessions</h3>
-    <p>The same 64 events above, grouped into the 3 sessions that produced them. Click a card to filter the table below to just that session; click again to clear it.</p>
+    <p>The same events counted above, grouped into the 3 sessions that produced them. Click a card to filter the table below to just that session; click again to clear it.</p>
   </div>
   <div class="sessions" id="sessions"></div>
 
@@ -325,10 +325,10 @@ button { font-family: inherit; }
     <div class="row head">
       <span>Time</span>
       <span>Event</span>
-      <span>Severity</span>
+      <span class="col-sev">Severity</span>
       <span class="col-agent">Agent / Actor</span>
       <span>Summary</span>
-      <span>Result</span>
+      <span class="col-result">Result</span>
     </div>
     <div id="rows"></div>
   </div>
@@ -379,10 +379,12 @@ for (const e of EVENTS) {
     if (typeof e.data.cost_usd === 'number') s.cost += e.data.cost_usd;
     if (typeof e.data.session_cost_usd === 'number') s.cost = e.data.session_cost_usd;
     if (e.data.max_severity) s.findings[e.data.max_severity]++;
-    // Session outcome comes from session_end.error_message — the schema's own
-    // "did the session fail" field — NOT from any individual event failing.
-    // A retried-and-recovered 429 mid-session doesn't make the session a failure.
-    if (e.event_type === 'session_end') s.outcome = e.data.error_message ? 'failure' : 'success';
+    // Session outcome: an agent that ends with result "failure" fails the session.
+    // (agent_end's data.result is a CIM enum that survives hot-path stripping;
+    // session_end.error_message does NOT — it's nulled in real telemetry. A
+    // retried-and-recovered 429 mid-session doesn't fail anything: model_error
+    // is event-level, not agent-level.)
+    if (e.event_type === 'agent_end' && e.data.result === 'failure') s.outcome = 'failure';
   }
 }
 // Plain-English story + model annotation per session, in session order.
@@ -412,6 +414,9 @@ function fmtTime(ts) {
   return hms + '.' + String(d.getMilliseconds()).padStart(3, '0');
 }
 function fmtMoney(n) { return '$' + n.toFixed(4); }
+function esc(v) {
+  return String(v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
 
 function summaryFor(e) {
   const d = e.data || {};
@@ -421,6 +426,8 @@ function summaryFor(e) {
   if (d.tool_result) return String(d.tool_result);
   if (d.source_agent && d.target_agent) return d.source_agent + ' → ' + d.target_agent;
   if (typeof d.total_tokens === 'number') return `${d.total_tokens.toLocaleString()} tokens · ${fmtMoney(d.cost_usd || 0)}`;
+  if (e.event_type === 'cost_threshold_exceeded' && typeof d.threshold_usd === 'number')
+    return `session ${fmtMoney(d.session_cost_usd)} exceeded budget ${fmtMoney(d.threshold_usd)}`;
   if (typeof d.session_cost_usd === 'number') return `session total ${fmtMoney(d.session_cost_usd)}`;
   if (e.event_type === 'tool_start' && d.tool_args) return 'args: ' + JSON.stringify(d.tool_args);
   if (e.event_type === 'session_start' || e.event_type === 'session_end')
@@ -454,7 +461,6 @@ function populateSelects() {
 }
 
 function renderStats() {
-  const totalCost = EVENTS.reduce((sum, e) => sum + ((e.data && e.data.session_cost_usd) || 0), 0);
   const alerts = EVENTS.filter(e => e.data && (e.data.max_severity === 'high' || e.data.max_severity === 'medium')).length;
   const tools = EVENTS.filter(e => e.event_type === 'tool_start').length;
   const models = new Set(EVENTS.map(e => e.model_name).filter(Boolean)).size;
@@ -480,7 +486,7 @@ function renderDist() {
   const bar = document.getElementById('distBar');
   const legend = document.getElementById('distLegend');
   bar.innerHTML = ''; legend.innerHTML = '';
-  const seen = new Set();
+  const byLabel = new Map();
   for (const action of order) {
     const n = counts[action] || 0;
     if (!n) continue;
@@ -488,10 +494,12 @@ function renderDist() {
     const color = CAT_COLOR[action] || 'var(--muted-2)';
     bar.insertAdjacentHTML('beforeend', `<i style="width:${pct}%;background:${color}"></i>`);
     const label = CAT_LABEL[action] || action;
-    if (seen.has(label)) continue;
-    seen.add(label);
-    legend.insertAdjacentHTML('beforeend', `<span><i style="background:${color}"></i>${label} · ${n}</span>`);
+    const cur = byLabel.get(label) || { color, n: 0 };
+    cur.n += n;
+    byLabel.set(label, cur);
   }
+  for (const [label, { color, n }] of byLabel)
+    legend.insertAdjacentHTML('beforeend', `<span><i style="background:${color}"></i>${label} · ${n}</span>`);
 }
 
 const FRAMEWORK_LABEL = { claude: 'Claude Agent SDK', adk: 'Google ADK', openai: 'OpenAI Agents SDK' };
@@ -561,10 +569,10 @@ function renderRows() {
     <div class="row ${failed ? 'failure' : ''}" data-id="${e.event_id}">
       <span class="t">${fmtTime(e.timestamp)}</span>
       <span><span class="pill" style="background:${catColor}">${e.event_type.replace(/_/g, ' ')}</span></span>
-      <span class="sev ${sev || ''}">${sev ? sev : ''}</span>
-      <span class="who col-agent">${actor.main}<div class="sub">${actor.sub}</div></span>
-      <span class="summary" title="${(summaryFor(e) + '').replace(/"/g, '&quot;')}">${summaryFor(e)}</span>
-      <span class="col-severity" style="color:${failed ? 'var(--fail)' : 'var(--muted-2)'}">${e.data && e.data.result || ''}</span>
+      <span class="sev col-sev ${sev || ''}">${sev ? sev : ''}</span>
+      <span class="who col-agent">${esc(actor.main)}<div class="sub">${esc(actor.sub)}</div></span>
+      <span class="summary" title="${esc(summaryFor(e))}">${esc(summaryFor(e))}</span>
+      <span class="col-result" style="color:${failed ? 'var(--fail)' : 'var(--muted-2)'}">${e.data && e.data.result || ''}</span>
     </div>`;
   }).join('');
 
@@ -611,11 +619,12 @@ document.getElementById('reset').addEventListener('click', () => {
 document.getElementById('drawerClose').addEventListener('click', closeDrawer);
 document.getElementById('overlay').addEventListener('click', closeDrawer);
 document.getElementById('drawerCopy').addEventListener('click', () => {
-  navigator.clipboard.writeText(document.getElementById('drawerJson').textContent);
   const btn = document.getElementById('drawerCopy');
   const orig = btn.textContent;
-  btn.textContent = 'Copied!';
-  setTimeout(() => { btn.textContent = orig; }, 1200);
+  navigator.clipboard.writeText(document.getElementById('drawerJson').textContent)
+    .then(() => { btn.textContent = 'Copied!'; })
+    .catch(() => { btn.textContent = 'Copy failed — select the text instead'; })
+    .finally(() => setTimeout(() => { btn.textContent = orig; }, 1600));
 });
 document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape') closeDrawer(); });
 
