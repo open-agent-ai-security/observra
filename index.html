@@ -373,11 +373,13 @@ nav {
 .hero-question span { color: var(--blue-lt); }
 .hero-ctas {
   display: flex;
+  flex-wrap: wrap;
   gap: 14px;
   margin-bottom: 0;
   opacity: 0;
   animation: fade-up 0.55s 1.0s ease forwards;
 }
+.hero-ctas a { white-space: nowrap; }
 .cta-primary {
   display: inline-flex; align-items: center; gap: 8px;
   background: var(--btn-grad);
@@ -402,7 +404,7 @@ nav {
   color: var(--text-sub);
   font-weight: 600;
   font-size: 14px;
-  padding: 13px 26px;
+  padding: 13px 19px;
   border-radius: 9px;
   border: 1px solid var(--border-lt);
   transition: color 0.18s, border-color 0.18s, background 0.18s;
@@ -1101,7 +1103,8 @@ footer {
 
       <div class="hero-ctas">
         <a class="cta-primary" href="#install">Get started →</a>
-        <a class="cta-secondary" href="#frameworks">See supported frameworks</a>
+        <a class="cta-secondary" href="demo/">Sample telemetry</a>
+        <a class="cta-secondary" href="#frameworks">Supported frameworks</a>
       </div>
     </div>
 
@@ -1414,6 +1417,8 @@ footer {
       <span class="platform-pill">GCP Cloud Logging</span>
       <span class="platform-pill">Any OTLP-compatible platform</span>
     </div>
+
+    <p style="margin-top:34px;font-size:15px;color:var(--muted);">Want to see what the events themselves look like? <a class="press-all" href="demo/">Browse a sample session →</a></p>
   </div>
 </section>
 
