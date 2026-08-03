@@ -63,10 +63,10 @@ observra.initialize(backend="jsonl", path="telemetry.jsonl")  # pip install obse
 plugin = observra.create_plugin("adk")
 
 runner = Runner(
-    agent=root_agent,                 # your existing ADK agent, unchanged
+    agent=root_agent,  # your existing ADK agent, unchanged
     app_name="my-agent",
     session_service=InMemorySessionService(),
-    plugins=[plugin],                 # the only change — telemetry is now automatic
+    plugins=[plugin],  # the only change — telemetry is now automatic
 )
 ```
 

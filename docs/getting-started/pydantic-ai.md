@@ -42,11 +42,11 @@ adapter = create_plugin("pydantic-ai")
 
 # 3. Wire into OpenTelemetry (order matters!).
 provider = TracerProvider()
-provider.add_span_processor(adapter)   # must happen BEFORE set_tracer_provider
+provider.add_span_processor(adapter)  # must happen BEFORE set_tracer_provider
 set_tracer_provider(provider)
 
 # 4. Enable Pydantic AI span generation.
-Agent.instrument_all()                 # must call BEFORE any agent runs
+Agent.instrument_all()  # must call BEFORE any agent runs
 
 # 5. Run your agent normally — telemetry is captured automatically.
 agent = Agent("openai:gpt-4o")
@@ -120,13 +120,13 @@ crosses the configured limit.
 initialize(
     backend="jsonl",
     path="telemetry.jsonl",
-    queue_size=1000,                  # bounded, drop-oldest queue
+    queue_size=1000,  # bounded, drop-oldest queue
 )
 adapter = create_plugin(
     "pydantic-ai",
-    capture_tool_data=False,          # opt in to record tool args
-    cost_threshold_usd=None,          # cost alerting threshold
-    payload_max_bytes=4096,           # max serialized tool data size
+    capture_tool_data=False,  # opt in to record tool args
+    cost_threshold_usd=None,  # cost alerting threshold
+    payload_max_bytes=4096,  # max serialized tool data size
 )
 ```
 

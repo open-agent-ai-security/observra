@@ -299,11 +299,13 @@ For frameworks with lifecycle hooks (FastAPI, Flask):
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     yield
     if observra._worker is not None:
         observra._worker.shutdown()
+
 
 app = FastAPI(lifespan=lifespan)
 ```

@@ -42,10 +42,10 @@ plugin = create_plugin()  # framework="adk" is the default
 
 # 3. Register the plugin with your Runner.
 runner = Runner(
-    agent=root_agent,                 # your existing ADK agent, unchanged
+    agent=root_agent,  # your existing ADK agent, unchanged
     app_name="my_app",
     session_service=InMemorySessionService(),
-    plugins=[plugin],                 # <-- the only change to your Runner
+    plugins=[plugin],  # <-- the only change to your Runner
 )
 
 # Run the agent normally — every lifecycle event is now captured.
@@ -115,11 +115,11 @@ encryption-at-rest), so set them explicitly:
 initialize(
     backend="jsonl",
     path="telemetry.jsonl",
-    queue_size=1000,                  # bounded, drop-oldest queue
+    queue_size=1000,  # bounded, drop-oldest queue
 )
 plugin = create_plugin(
-    capture_tool_data=False,          # opt in to record tool args/results
-    cost_threshold_usd=None,          # alert when session cost crosses this
+    capture_tool_data=False,  # opt in to record tool args/results
+    cost_threshold_usd=None,  # alert when session cost crosses this
 )
 ```
 
