@@ -64,6 +64,9 @@ exabeam = [
 safe-regex = [
     "google-re2>=1.1",
 ]
+tui = [
+    "textual>=0.70.0",
+]
 encryption = [
     "cryptography>=41.0",
 ]
