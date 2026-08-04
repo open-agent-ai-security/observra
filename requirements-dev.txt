@@ -11,7 +11,7 @@
 # between releases (whitespace, attribute quoting, entity choices). An exact pin
 # keeps the committed artifacts and regeneration in lockstep. Bump this and
 # regenerate guide/ together.
-markdown==3.10.2
+markdown==3.10.3
 
 # API reference generator, used by scripts/build_api_docs.sh (make api-docs).
 # That script installs it into its own throwaway venv alongside the framework
