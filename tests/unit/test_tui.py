@@ -8,6 +8,8 @@ import sqlite3
 
 import pytest
 
+pytest.importorskip("textual")
+
 from observra.tui.app import ObservraWatch, _format_detail, _format_ts
 
 
