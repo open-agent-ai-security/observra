@@ -168,6 +168,11 @@ def _create_backend(backend_type: str, **kwargs):
         from observra.backends.multi import MultiBackend
 
         return MultiBackend(**kwargs)
+    elif backend_type == "sqlite":
+        from observra.backends.sqlite import SQLiteBackend
+
+        kwargs.setdefault("path", "telemetry.db")
+        return SQLiteBackend(**kwargs)
     elif backend_type == "exabeam":
         from observra.senders.exabeam import ExabeamSenderBackend
 
