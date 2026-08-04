@@ -235,8 +235,18 @@ def create_plugin(framework: str = "adk", **kwargs):
         from observra.adapters.pydantic_ai import PydanticAIAdapter
 
         return PydanticAIAdapter(queue=queue, **kwargs)
+    elif framework == "litellm":
+        from observra.adapters.litellm import LiteLLMAdapter
+
+        import litellm
+
+        adapter = LiteLLMAdapter(queue=queue, **kwargs)
+        litellm.callbacks.append(adapter)
+        return adapter
     else:
-        raise ValueError(f"Unknown framework: {framework!r}. Supported: adk, claude, openai, langchain, pydantic-ai")
+        raise ValueError(
+            f"Unknown framework: {framework!r}. Supported: adk, claude, openai, langchain, pydantic-ai, litellm"
+        )
 
 
 def create_logging_handler(level: int = logging.NOTSET):
