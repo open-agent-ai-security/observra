@@ -112,7 +112,7 @@ observra.emit(
 stats = observra.get_stats()
 print("Session complete!")
 print(f"  Events processed: {stats.get('events_processed', 0)}")
-print(f"  File: custom_agent_telemetry.jsonl")
+print("  File: custom_agent_telemetry.jsonl")
 print()
 print("View events:")
 print("  cat custom_agent_telemetry.jsonl | python -m json.tool")
