@@ -64,6 +64,7 @@ def test_adapter_stats(adapter):
 
 def test_create_plugin_registers_callback():
     import litellm
+
     import observra
 
     initial_count = len(litellm.callbacks)

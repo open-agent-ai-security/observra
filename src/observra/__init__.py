@@ -236,9 +236,9 @@ def create_plugin(framework: str = "adk", **kwargs):
 
         return PydanticAIAdapter(queue=queue, **kwargs)
     elif framework == "litellm":
-        from observra.adapters.litellm import LiteLLMAdapter
-
         import litellm
+
+        from observra.adapters.litellm import LiteLLMAdapter
 
         adapter = LiteLLMAdapter(queue=queue, **kwargs)
         litellm.callbacks.append(adapter)
