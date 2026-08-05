@@ -13,7 +13,6 @@ This stores events in a local SQLite database that you can query
 with SQL, the Python API, or the TUI dashboard.
 """
 
-
 import observra
 from observra.core.context import initialize_session, initialize_trace
 from observra.core.events import create_event
