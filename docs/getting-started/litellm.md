@@ -109,10 +109,12 @@ import asyncio
 import litellm
 
 # Async
-response = asyncio.run(litellm.acompletion(
-    model="gpt-4o",
-    messages=[{"role": "user", "content": "hello"}],
-))
+response = asyncio.run(
+    litellm.acompletion(
+        model="gpt-4o",
+        messages=[{"role": "user", "content": "hello"}],
+    )
+)
 
 # Streaming — events are captured after stream completes
 response = litellm.completion(
@@ -134,8 +136,8 @@ initialize(
 )
 plugin = create_plugin(
     "litellm",
-    agent_name="my-agent",       # attribution in events
-    capture_content=False,       # opt in to injection detection
+    agent_name="my-agent",  # attribution in events
+    capture_content=False,  # opt in to injection detection
 )
 ```
 
