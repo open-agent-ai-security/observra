@@ -63,14 +63,14 @@ HOSTS = {
         "user": "svc-vpn-support",
         "os": "Linux 6.8.0-1021-aws",
         "arch": "x86_64",
-        "library_version": "1.1.0",
+        "library_version": "1.0.7",
     },
     "kb": {
         "host": "atlas-kb-01",
         "user": "svc-kb-research",
         "os": "Linux 6.8.0-1021-aws",
         "arch": "arm64",
-        "library_version": "1.1.0",
+        "library_version": "1.0.7",
     },
     "billing": {
         "host": "atlas-billing-02",

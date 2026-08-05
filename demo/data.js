@@ -21,7 +21,7 @@ const OBSERVRA_DEMO_EVENTS = [
     "user": "svc-vpn-support",
     "os": "Linux 6.8.0-1021-aws",
     "arch": "x86_64",
-    "library_version": "1.1.0"
+    "library_version": "1.0.7"
   },
   {
     "event_id": "01KZ20DJDCTYFN1PMZT9CN0E53",
@@ -44,7 +44,7 @@ const OBSERVRA_DEMO_EVENTS = [
     "user": "svc-vpn-support",
     "os": "Linux 6.8.0-1021-aws",
     "arch": "x86_64",
-    "library_version": "1.1.0"
+    "library_version": "1.0.7"
   },
   {
     "event_id": "01KZ20DR284577FJ80DBJYPGKN",
@@ -68,7 +68,7 @@ const OBSERVRA_DEMO_EVENTS = [
     "user": "svc-vpn-support",
     "os": "Linux 6.8.0-1021-aws",
     "arch": "x86_64",
-    "library_version": "1.1.0"
+    "library_version": "1.0.7"
   },
   {
     "event_id": "01KZ20DSS53B0VK48BB3VZEF23",
@@ -91,7 +91,7 @@ const OBSERVRA_DEMO_EVENTS = [
     "user": "svc-vpn-support",
     "os": "Linux 6.8.0-1021-aws",
     "arch": "x86_64",
-    "library_version": "1.1.0"
+    "library_version": "1.0.7"
   },
   {
     "event_id": "01KZ20DWDY8T50YG4H0GZVP8B5",
@@ -122,7 +122,7 @@ const OBSERVRA_DEMO_EVENTS = [
     "user": "svc-vpn-support",
     "os": "Linux 6.8.0-1021-aws",
     "arch": "x86_64",
-    "library_version": "1.1.0"
+    "library_version": "1.0.7"
   },
   {
     "event_id": "01KZ20DYRV8PYEXZYB7766KWTF",
@@ -149,7 +149,7 @@ const OBSERVRA_DEMO_EVENTS = [
     "user": "svc-vpn-support",
     "os": "Linux 6.8.0-1021-aws",
     "arch": "x86_64",
-    "library_version": "1.1.0"
+    "library_version": "1.0.7"
   },
   {
     "event_id": "01KZ20DYZBS2NXSRF5SASZCCYQ",
@@ -179,7 +179,7 @@ const OBSERVRA_DEMO_EVENTS = [
     "user": "svc-vpn-support",
     "os": "Linux 6.8.0-1021-aws",
     "arch": "x86_64",
-    "library_version": "1.1.0"
+    "library_version": "1.0.7"
   },
   {
     "event_id": "01KZ20E4GFDVT6897J8D4XBEJW",
@@ -202,7 +202,7 @@ const OBSERVRA_DEMO_EVENTS = [
     "user": "svc-vpn-support",
     "os": "Linux 6.8.0-1021-aws",
     "arch": "x86_64",
-    "library_version": "1.1.0"
+    "library_version": "1.0.7"
   },
   {
     "event_id": "01KZ20E7HEXGHG0E50S5FQHAGH",
@@ -233,7 +233,7 @@ const OBSERVRA_DEMO_EVENTS = [
     "user": "svc-vpn-support",
     "os": "Linux 6.8.0-1021-aws",
     "arch": "x86_64",
-    "library_version": "1.1.0"
+    "library_version": "1.0.7"
   },
   {
     "event_id": "01KZ20EB41FYPWY8HYT43E272N",
@@ -259,7 +259,7 @@ const OBSERVRA_DEMO_EVENTS = [
     "user": "svc-vpn-support",
     "os": "Linux 6.8.0-1021-aws",
     "arch": "x86_64",
-    "library_version": "1.1.0"
+    "library_version": "1.0.7"
   },
   {
     "event_id": "01KZ20ECF5W4PN4WY7YCFZT5DG",
@@ -288,7 +288,7 @@ const OBSERVRA_DEMO_EVENTS = [
     "user": "svc-vpn-support",
     "os": "Linux 6.8.0-1021-aws",
     "arch": "x86_64",
-    "library_version": "1.1.0"
+    "library_version": "1.0.7"
   },
   {
     "event_id": "01KZ20EEQX1R84DXT84XJP21PD",
@@ -315,7 +315,7 @@ const OBSERVRA_DEMO_EVENTS = [
     "user": "svc-vpn-support",
     "os": "Linux 6.8.0-1021-aws",
     "arch": "x86_64",
-    "library_version": "1.1.0"
+    "library_version": "1.0.7"
   },
   {
     "event_id": "01KZ20EEZMYMS2V2VEAHX84G73",
@@ -345,7 +345,7 @@ const OBSERVRA_DEMO_EVENTS = [
     "user": "svc-vpn-support",
     "os": "Linux 6.8.0-1021-aws",
     "arch": "x86_64",
-    "library_version": "1.1.0"
+    "library_version": "1.0.7"
   },
   {
     "event_id": "01KZ20EJ92X3TDFTCGPZATPMCB",
@@ -371,7 +371,7 @@ const OBSERVRA_DEMO_EVENTS = [
     "user": "svc-vpn-support",
     "os": "Linux 6.8.0-1021-aws",
     "arch": "x86_64",
-    "library_version": "1.1.0"
+    "library_version": "1.0.7"
   },
   {
     "event_id": "01KZ20EJY342Q852TVN979E5E8",
@@ -400,7 +400,7 @@ const OBSERVRA_DEMO_EVENTS = [
     "user": "svc-vpn-support",
     "os": "Linux 6.8.0-1021-aws",
     "arch": "x86_64",
-    "library_version": "1.1.0"
+    "library_version": "1.0.7"
   },
   {
     "event_id": "01KZ20ENVS1097JGRNPWCAZ4QM",
@@ -427,7 +427,7 @@ const OBSERVRA_DEMO_EVENTS = [
     "user": "svc-vpn-support",
     "os": "Linux 6.8.0-1021-aws",
     "arch": "x86_64",
-    "library_version": "1.1.0"
+    "library_version": "1.0.7"
   },
   {
     "event_id": "01KZ20EP68TWMQS4GGTSTJWNP7",
@@ -457,7 +457,7 @@ const OBSERVRA_DEMO_EVENTS = [
     "user": "svc-vpn-support",
     "os": "Linux 6.8.0-1021-aws",
     "arch": "x86_64",
-    "library_version": "1.1.0"
+    "library_version": "1.0.7"
   },
   {
     "event_id": "01KZ20EQFTQ828Q6QZFCFNRKM2",
@@ -480,7 +480,7 @@ const OBSERVRA_DEMO_EVENTS = [
     "user": "svc-vpn-support",
     "os": "Linux 6.8.0-1021-aws",
     "arch": "x86_64",
-    "library_version": "1.1.0"
+    "library_version": "1.0.7"
   },
   {
     "event_id": "01KZ20ES638Q9J018NPN9GEE3W",
@@ -511,7 +511,7 @@ const OBSERVRA_DEMO_EVENTS = [
     "user": "svc-vpn-support",
     "os": "Linux 6.8.0-1021-aws",
     "arch": "x86_64",
-    "library_version": "1.1.0"
+    "library_version": "1.0.7"
   },
   {
     "event_id": "01KZ20EV4GZX0ETYE86Y6J4GY4",
@@ -535,7 +535,7 @@ const OBSERVRA_DEMO_EVENTS = [
     "user": "svc-vpn-support",
     "os": "Linux 6.8.0-1021-aws",
     "arch": "x86_64",
-    "library_version": "1.1.0"
+    "library_version": "1.0.7"
   },
   {
     "event_id": "01KZ20EW40RT3XPW9BCZJBD813",
@@ -560,7 +560,7 @@ const OBSERVRA_DEMO_EVENTS = [
     "user": "svc-vpn-support",
     "os": "Linux 6.8.0-1021-aws",
     "arch": "x86_64",
-    "library_version": "1.1.0"
+    "library_version": "1.0.7"
   },
   {
     "event_id": "01KZ21ZVWPC556WF7XZE462A27",
@@ -583,7 +583,7 @@ const OBSERVRA_DEMO_EVENTS = [
     "user": "svc-kb-research",
     "os": "Linux 6.8.0-1021-aws",
     "arch": "arm64",
-    "library_version": "1.1.0"
+    "library_version": "1.0.7"
   },
   {
     "event_id": "01KZ21ZXXP87CEYVV01PWFJ0CX",
@@ -606,7 +606,7 @@ const OBSERVRA_DEMO_EVENTS = [
     "user": "svc-kb-research",
     "os": "Linux 6.8.0-1021-aws",
     "arch": "arm64",
-    "library_version": "1.1.0"
+    "library_version": "1.0.7"
   },
   {
     "event_id": "01KZ220019XM948MP32GJC7K09",
@@ -630,7 +630,7 @@ const OBSERVRA_DEMO_EVENTS = [
     "user": "svc-kb-research",
     "os": "Linux 6.8.0-1021-aws",
     "arch": "arm64",
-    "library_version": "1.1.0"
+    "library_version": "1.0.7"
   },
   {
     "event_id": "01KZ2205H371ADN6SQG6Z9T77R",
@@ -653,7 +653,7 @@ const OBSERVRA_DEMO_EVENTS = [
     "user": "svc-kb-research",
     "os": "Linux 6.8.0-1021-aws",
     "arch": "arm64",
-    "library_version": "1.1.0"
+    "library_version": "1.0.7"
   },
   {
     "event_id": "01KZ2207YDYF57DNY4C6Z411CW",
@@ -684,7 +684,7 @@ const OBSERVRA_DEMO_EVENTS = [
     "user": "svc-kb-research",
     "os": "Linux 6.8.0-1021-aws",
     "arch": "arm64",
-    "library_version": "1.1.0"
+    "library_version": "1.0.7"
   },
   {
     "event_id": "01KZ220AMKY3Y6BTTD1FBX6BW0",
@@ -711,7 +711,7 @@ const OBSERVRA_DEMO_EVENTS = [
     "user": "svc-kb-research",
     "os": "Linux 6.8.0-1021-aws",
     "arch": "arm64",
-    "library_version": "1.1.0"
+    "library_version": "1.0.7"
   },
   {
     "event_id": "01KZ220B09SR112X8QWA8YK8PA",
@@ -749,7 +749,7 @@ const OBSERVRA_DEMO_EVENTS = [
     "user": "svc-kb-research",
     "os": "Linux 6.8.0-1021-aws",
     "arch": "arm64",
-    "library_version": "1.1.0"
+    "library_version": "1.0.7"
   },
   {
     "event_id": "01KZ220CW4SQTRKAABS26R721H",
@@ -772,7 +772,7 @@ const OBSERVRA_DEMO_EVENTS = [
     "user": "svc-kb-research",
     "os": "Linux 6.8.0-1021-aws",
     "arch": "arm64",
-    "library_version": "1.1.0"
+    "library_version": "1.0.7"
   },
   {
     "event_id": "01KZ220FE8ZWZ823FPE7DKNQVN",
@@ -804,7 +804,7 @@ const OBSERVRA_DEMO_EVENTS = [
     "user": "svc-kb-research",
     "os": "Linux 6.8.0-1021-aws",
     "arch": "arm64",
-    "library_version": "1.1.0"
+    "library_version": "1.0.7"
   },
   {
     "event_id": "01KZ220HHNSMZ3FTTX1936ZJXB",
@@ -827,7 +827,7 @@ const OBSERVRA_DEMO_EVENTS = [
     "user": "svc-kb-research",
     "os": "Linux 6.8.0-1021-aws",
     "arch": "arm64",
-    "library_version": "1.1.0"
+    "library_version": "1.0.7"
   },
   {
     "event_id": "01KZ221M3XVE8RY3KK6B468KM6",
@@ -863,7 +863,7 @@ const OBSERVRA_DEMO_EVENTS = [
     "user": "svc-kb-research",
     "os": "Linux 6.8.0-1021-aws",
     "arch": "arm64",
-    "library_version": "1.1.0"
+    "library_version": "1.0.7"
   },
   {
     "event_id": "01KZ221Q3699Y9JBDVZB6Q60WD",
@@ -894,7 +894,7 @@ const OBSERVRA_DEMO_EVENTS = [
     "user": "svc-kb-research",
     "os": "Linux 6.8.0-1021-aws",
     "arch": "arm64",
-    "library_version": "1.1.0"
+    "library_version": "1.0.7"
   },
   {
     "event_id": "01KZ221WK13FSY64YZF1XCWKT5",
@@ -920,7 +920,7 @@ const OBSERVRA_DEMO_EVENTS = [
     "user": "svc-kb-research",
     "os": "Linux 6.8.0-1021-aws",
     "arch": "arm64",
-    "library_version": "1.1.0"
+    "library_version": "1.0.7"
   },
   {
     "event_id": "01KZ221WT07CVT56CGC37QW1HR",
@@ -949,7 +949,7 @@ const OBSERVRA_DEMO_EVENTS = [
     "user": "svc-kb-research",
     "os": "Linux 6.8.0-1021-aws",
     "arch": "arm64",
-    "library_version": "1.1.0"
+    "library_version": "1.0.7"
   },
   {
     "event_id": "01KZ221YY0RRE5F34D2EG1M2QR",
@@ -976,7 +976,7 @@ const OBSERVRA_DEMO_EVENTS = [
     "user": "svc-kb-research",
     "os": "Linux 6.8.0-1021-aws",
     "arch": "arm64",
-    "library_version": "1.1.0"
+    "library_version": "1.0.7"
   },
   {
     "event_id": "01KZ221ZBC1GCY4VZQT6ZFYX5S",
@@ -1006,7 +1006,7 @@ const OBSERVRA_DEMO_EVENTS = [
     "user": "svc-kb-research",
     "os": "Linux 6.8.0-1021-aws",
     "arch": "arm64",
-    "library_version": "1.1.0"
+    "library_version": "1.0.7"
   },
   {
     "event_id": "01KZ2221725XNW5S3GMBVHJW3Z",
@@ -1029,7 +1029,7 @@ const OBSERVRA_DEMO_EVENTS = [
     "user": "svc-kb-research",
     "os": "Linux 6.8.0-1021-aws",
     "arch": "arm64",
-    "library_version": "1.1.0"
+    "library_version": "1.0.7"
   },
   {
     "event_id": "01KZ22258QCS8ZJBRE5Q1T8MZJ",
@@ -1060,7 +1060,7 @@ const OBSERVRA_DEMO_EVENTS = [
     "user": "svc-kb-research",
     "os": "Linux 6.8.0-1021-aws",
     "arch": "arm64",
-    "library_version": "1.1.0"
+    "library_version": "1.0.7"
   },
   {
     "event_id": "01KZ2229FPA014KDGW47M00B3B",
@@ -1084,7 +1084,7 @@ const OBSERVRA_DEMO_EVENTS = [
     "user": "svc-kb-research",
     "os": "Linux 6.8.0-1021-aws",
     "arch": "arm64",
-    "library_version": "1.1.0"
+    "library_version": "1.0.7"
   },
   {
     "event_id": "01KZ222AGQMHBMEXQ7W1HC71R0",
@@ -1109,7 +1109,7 @@ const OBSERVRA_DEMO_EVENTS = [
     "user": "svc-kb-research",
     "os": "Linux 6.8.0-1021-aws",
     "arch": "arm64",
-    "library_version": "1.1.0"
+    "library_version": "1.0.7"
   },
   {
     "event_id": "01KZ238YWSG8MY6W087QYQAWA7",
