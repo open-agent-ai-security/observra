@@ -50,7 +50,7 @@ langchain = [
     "langgraph>=0.2.0",
 ]
 pydantic-ai = [
-    "pydantic-ai<2.0.0",
+    "pydantic-ai<3.0.0",
     "opentelemetry-sdk>=1.0.0",
 ]
 
