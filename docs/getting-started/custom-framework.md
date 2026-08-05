@@ -61,8 +61,9 @@ LiteLLM — use the native adapter instead (it captures events automatically).
 ## Session identity
 
 `initialize_session()` sets a stable session ID that threads through all
-events in the current execution context. Without it, each event gets a
-random fallback ID — usable but not groupable.
+events in the current execution context. Without it, Observra generates a
+random ULID once per context and reuses it — events are still grouped within
+that run, but you can't correlate the session to your own run IDs.
 
 ```python
 import observra

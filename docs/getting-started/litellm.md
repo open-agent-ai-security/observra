@@ -25,7 +25,7 @@ export OPENAI_API_KEY=...
 ## Usage
 
 LiteLLM provides a unified `completion()` interface to 100+ providers.
-Observra hooks into it via LiteLLM's official callback system — two lines
+Observra hooks into it via LiteLLM's official callback system — three lines
 added to your existing code:
 
 ```python
@@ -84,7 +84,7 @@ Observra uses LiteLLM's built-in `completion_cost()` for pricing, which
 covers all supported providers. Cost is included in every `model_response`
 event as `cost_usd`.
 
-```python
+```bash
 # View costs in your telemetry
 cat telemetry.jsonl | jq 'select(.event_type == "model_response") | {model: .model_name, cost: .data.cost_usd}'
 ```

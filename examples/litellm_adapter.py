@@ -10,7 +10,7 @@ BEFORE (your existing code):
     import litellm
     response = litellm.completion(model="gpt-4o", messages=[...])
 
-AFTER (2 lines added):
+AFTER (3 lines added):
     from observra import create_plugin, initialize        # 1. import
     initialize(backend="jsonl", path="telemetry.jsonl")   # 2. init pipeline
     plugin = create_plugin("litellm")                     # 3. create adapter
