@@ -181,6 +181,72 @@ from native adapters:
 `emit()` never raises. If something goes wrong internally, the error is
 logged and your agent continues unaffected.
 
+## Real-world examples
+
+### OpenClaw (TypeScript)
+
+[OpenClaw](https://github.com/open-agent-ai-security/openclaw) is a
+multi-channel personal AI assistant built in TypeScript. Since it's not
+Python, use the webhook backend — OpenClaw's plugin SDK can forward events
+over HTTP:
+
+```python
+# Python receiver side
+observra.initialize(backend="webhook", url="http://localhost:8080/telemetry")
+```
+
+```typescript
+// OpenClaw plugin — forward agent events to Observra's webhook
+api.registerAgentEventSubscription({
+    onTurnComplete: (event) => {
+        fetch("http://localhost:8080/telemetry", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                event_type: "model_response",
+                model_name: event.model,
+                framework: "openclaw",
+                input_tokens: event.usage.input,
+                output_tokens: event.usage.output,
+            }),
+        });
+    },
+});
+```
+
+Alternatively, OpenClaw has built-in OpenTelemetry support
+(`diagnostics.otel.enabled = true`) — configure it to emit to any OTLP
+collector that Observra's OTel backend can consume from.
+
+### Hermes (Python, custom orchestration)
+
+Hermes is a custom Python agent with its own observer-hook contract. It
+uses `emit()` directly with host-set session identity for usage accounting:
+
+```python
+import observra
+
+observra.initialize(backend="jsonl", path="hermes_telemetry.jsonl")
+observra.initialize_session("20260707_091500_ab12cd")  # deterministic, host-controlled
+
+# After each LLM call in the agent loop:
+observra.emit(
+    "model_response",
+    agent_name="hermes",
+    model_name="deepseek-v4-pro",
+    framework="custom",
+    input_tokens=12400,
+    output_tokens=310,
+    cached_tokens=8100,
+    cost_usd=0.0228,
+    duration_ms=2100,
+)
+```
+
+The stable session ID threads through all events, enabling downstream
+rollups (total cost, token budget, multi-turn correlation) without relying
+on Observra's random fallback.
+
 ## Full example
 
 See [`examples/custom_emit.py`](../../examples/custom_emit.py) for a
