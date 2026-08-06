@@ -142,8 +142,9 @@ observra.emit("model_response", model_name="gpt-4o", ...)
 **"Waiting for database..."** — the TUI can't find the DB file. Check the
 `--db` path matches what your agent passes to `initialize(backend="sqlite", path=...)`.
 
-**Events not appearing** — ensure your agent calls `flush()` or let the
-background worker process events (it flushes periodically). Events appear
-within one poll interval of being written.
+**Events not appearing** — the background worker processes and flushes
+events automatically. If using `observra.emit()` or a framework adapter,
+events appear within one poll interval of being processed. If writing
+directly via `SQLiteBackend`, call `backend.flush()` explicitly.
 
 **"ERROR: Textual is required"** — install with `pip install observra[tui]`.

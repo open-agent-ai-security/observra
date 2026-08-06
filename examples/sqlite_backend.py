@@ -13,9 +13,9 @@ This stores events in a local SQLite database that you can query
 with SQL, the Python API, or the TUI dashboard.
 """
 
+import time
+
 import observra
-from observra.core.context import initialize_session, initialize_trace
-from observra.core.events import create_event
 
 # ── Step 1: Initialize with SQLite backend ────────────────────────
 
@@ -25,42 +25,38 @@ observra.initialize(
     max_rows=10_000,  # auto-prune oldest events beyond this cap
 )
 
-# ── Step 2: Generate some sample events ───────────────────────────
+# ── Step 2: Generate some sample events via the public API ────────
 
-initialize_trace()
-initialize_session()
+observra.initialize_session("sqlite-demo-session")
 
-events_data = [
-    {"event_type": "session_start", "agent_name": "demo-agent"},
-    {
-        "event_type": "model_response",
-        "agent_name": "demo-agent",
-        "model_name": "gpt-4o",
-        "input_tokens": 1200,
-        "output_tokens": 310,
-        "cost_usd": 0.015,
-        "duration_ms": 2100,
-    },
-    {"event_type": "tool_start", "agent_name": "demo-agent", "tool_name": "web_search"},
-    {"event_type": "tool_end", "agent_name": "demo-agent", "tool_name": "web_search", "duration_ms": 450},
-    {
-        "event_type": "model_response",
-        "agent_name": "demo-agent",
-        "model_name": "gpt-4o",
-        "input_tokens": 3200,
-        "output_tokens": 180,
-        "cost_usd": 0.021,
-        "duration_ms": 2800,
-    },
-    {"event_type": "session_end", "agent_name": "demo-agent", "session_cost_usd": 0.036},
-]
+observra.emit("session_start", agent_name="demo-agent", framework="custom")
+observra.emit(
+    "model_response",
+    agent_name="demo-agent",
+    model_name="gpt-4o",
+    framework="custom",
+    input_tokens=1200,
+    output_tokens=310,
+    cost_usd=0.015,
+    duration_ms=2100,
+)
+observra.emit("tool_start", agent_name="demo-agent", tool_name="web_search", framework="custom")
+observra.emit("tool_end", agent_name="demo-agent", tool_name="web_search", framework="custom", duration_ms=450)
+observra.emit(
+    "model_response",
+    agent_name="demo-agent",
+    model_name="gpt-4o",
+    framework="custom",
+    input_tokens=3200,
+    output_tokens=180,
+    cost_usd=0.021,
+    duration_ms=2800,
+)
+observra.emit("session_end", agent_name="demo-agent", framework="custom", session_cost_usd=0.036)
 
-for data in events_data:
-    event = create_event(framework="custom", **data)
-    observra._worker._storage.write(event)
-
-observra._worker._storage.flush()
-print(f"Wrote {len(events_data)} events to example_telemetry.db")
+# Give the background worker time to process events
+time.sleep(1)
+print("Wrote 6 events to example_telemetry.db")
 
 # ── Step 3: Query the database ────────────────────────────────────
 

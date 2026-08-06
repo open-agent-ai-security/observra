@@ -32,7 +32,7 @@ query with any SQLite tool.
 - **Persistent** — survives process restarts, unlike in-memory buffers
 - **Zero infrastructure** — no collector, no cloud account, no docker
 - **Development-friendly** — inspect agent behavior locally
-- **TUI-compatible** — powers the `observra watch` terminal dashboard
+- **TUI-compatible** — powers the `python -m observra.tui` terminal dashboard
 
 ## Querying your telemetry
 
@@ -46,8 +46,9 @@ sqlite3 telemetry.db "SELECT event_type, model_name, json_extract(data, '$.cost_
 python -c "
 import sqlite3, json
 conn = sqlite3.connect('telemetry.db')
-for row in conn.execute('SELECT * FROM events ORDER BY timestamp DESC LIMIT 5'):
-    print(json.dumps(dict(zip([d[0] for d in conn.description], row)), indent=2))
+cursor = conn.execute('SELECT * FROM events ORDER BY timestamp DESC LIMIT 5')
+for row in cursor:
+    print(json.dumps(dict(zip([d[0] for d in cursor.description], row)), indent=2))
 "
 ```
 
