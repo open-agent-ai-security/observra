@@ -12,8 +12,21 @@ for how releases are cut.
 
 ## [Unreleased]
 
+## [1.1.0] — 2026-08-05
+
 ### Added
-- Public `emit()` and `initialize_session()` APIs for custom hosts.
+- Public `emit()` and `initialize_session()` APIs for custom hosts (PR #89).
+- SQLite storage backend with WAL mode, queries, and row pruning (PR #105).
+- Terminal dashboard TUI — `python -m observra.tui --db <path>` (PR #111).
+- LiteLLM adapter — 100+ LLM providers via single integration (PR #112).
+- Getting-started guides for LiteLLM, custom frameworks, SQLite, and TUI.
+
+### Fixed
+- Claude adapter: seed session_id in `get_hook_options()` (PR #99).
+- Claude adapter: add `agent_name` attribution to all events (PR #99).
+- LangChain adapter: handle `serialized=None` from LangGraph (PR #82).
+- JSONL backend: pass all kwargs from `initialize()` (PR #84).
+- `initialize()` warns on misrouted kwargs instead of silently dropping (PR #87).
 
 ## [1.0.6] — 2026-06-29
 
