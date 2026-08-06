@@ -10,6 +10,7 @@ from typing import Iterator
 
 import requests
 
+from observra.core.cim import CIM_VERSION
 from observra.core.events import TelemetryEvent
 from observra.core.types import BackendStats
 
@@ -107,6 +108,8 @@ class ExabeamSenderBackend:
         """Build structured JSON payload for Exabeam webhook collector."""
         data = event.data or {}
         return {
+            "schema": f"observra:{CIM_VERSION}",
+            "type": event.event_type,
             self._f("time"): datetime.fromtimestamp(event.timestamp, tz=timezone.utc).isoformat(),
             self._f("event_id"): event.event_id,
             self._f("event_type"): event.event_type,
@@ -141,6 +144,8 @@ class ExabeamSenderBackend:
         """
         data = event.data or {}
         payload = {
+            "schema": f"observra:{CIM_VERSION}",
+            "type": event.event_type,
             "time": datetime.fromtimestamp(event.timestamp, tz=timezone.utc).isoformat(),
             "event_id": event.event_id,
             "event_type": event.event_type,
