@@ -253,13 +253,13 @@ crosses the configured limit.</p>
 <pre><code class="language-python">initialize(
     backend=&quot;jsonl&quot;,
     path=&quot;telemetry.jsonl&quot;,
-    queue_size=1000,                  # bounded, drop-oldest queue
+    queue_size=1000,  # bounded, drop-oldest queue
 )
 adapter = create_plugin(
     &quot;langchain&quot;,
-    capture_tool_data=False,          # opt in to record tool args/results
-    cost_threshold_usd=None,          # cost alerting threshold
-    payload_max_bytes=4096,           # max serialized tool data size
+    capture_tool_data=False,  # opt in to record tool args/results
+    cost_threshold_usd=None,  # cost alerting threshold
+    payload_max_bytes=4096,  # max serialized tool data size
 )
 </code></pre>
 <p>For OTel/Dynatrace/Datadog export and production tuning, see

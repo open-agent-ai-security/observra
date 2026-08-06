@@ -148,7 +148,7 @@ async for message in adapter.wrap_stream(client.stream(prompt)):
                             <div id="ClaudeAdapter.__init__" class="classattr">
                                 <div class="attr function">
             
-        <span class="name">ClaudeAdapter</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="n">queue</span><span class="o">=</span><span class="kc">None</span>,</span><span class="param">	<span class="n">cost_calculator</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">observra</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">cost</span><span class="o">.</span><span class="n">CostCalculator</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">cost_threshold_usd</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">decimal</span><span class="o">.</span><span class="n">Decimal</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">capture_tool_data</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>,</span><span class="param">	<span class="n">payload_max_bytes</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4096</span></span>)</span>
+        <span class="name">ClaudeAdapter</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="n">queue</span><span class="o">=</span><span class="kc">None</span>,</span><span class="param">	<span class="n">cost_calculator</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">observra</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">cost</span><span class="o">.</span><span class="n">CostCalculator</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">cost_threshold_usd</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">decimal</span><span class="o">.</span><span class="n">Decimal</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">capture_tool_data</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>,</span><span class="param">	<span class="n">payload_max_bytes</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4096</span>,</span><span class="param">	<span class="n">agent_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span></span>)</span>
 
         
     </div>
@@ -169,6 +169,9 @@ emits cost_threshold_exceeded event (once).</li>
 <li><strong>capture_tool_data:</strong>  If True, serialize tool_input and tool_response
 into events. Default False for privacy.</li>
 <li><strong>payload_max_bytes:</strong>  Max bytes for tool data serialization (default 4096).</li>
+<li><strong>agent_name:</strong>  Optional agent name for attribution in events. If None,
+events will have agent_name=None unless enriched from
+SDK context (e.g. agent_type on subagent hooks).</li>
 </ul>
 </div>
 

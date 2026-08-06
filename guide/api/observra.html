@@ -46,6 +46,12 @@
                     <a class="function" href="#create_logging_handler">create_logging_handler</a>
             </li>
             <li>
+                    <a class="function" href="#emit">emit</a>
+            </li>
+            <li>
+                    <a class="function" href="#initialize_session">initialize_session</a>
+            </li>
+            <li>
                     <a class="function" href="#get_stats">get_stats</a>
             </li>
             <li>
@@ -166,6 +172,8 @@ through a non-blocking background pipeline.</p>
 <li><code><a href="#initialize">initialize</a></code> — start the global pipeline and choose a backend.</li>
 <li><code><a href="#create_plugin">create_plugin</a></code> — wire a framework adapter (ADK, Claude, OpenAI, LangChain,
 Pydantic AI) into that pipeline.</li>
+<li><code><a href="#emit">emit</a></code> — send events from hosts without a shipped adapter.</li>
+<li><code><a href="#initialize_session">initialize_session</a></code> — set host-provided session identity.</li>
 <li><code><a href="#create_logging_handler">create_logging_handler</a></code> — capture standard-library logs as telemetry.</li>
 <li><code><a href="#get_stats">get_stats</a></code> / <code><a href="#get_metrics">get_metrics</a></code> — inspect pipeline health.</li>
 </ul>
@@ -201,7 +209,7 @@ Pydantic AI) into that pipeline.</li>
                 <section id="__version__">
                     <div class="attr variable">
             <span class="name">__version__</span>        =
-<span class="default_value">&#39;1.0.4&#39;</span>
+<span class="default_value">&#39;1.1.0&#39;</span>
 
         
     </div>
@@ -370,6 +378,42 @@ handler inherits the logger's effective level).</li>
 
 
                 </section>
+                <section id="emit">
+                    <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">emit</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="n">event_type</span><span class="p">:</span> <span class="nb">str</span>,</span><span class="param">	<span class="o">*</span>,</span><span class="param">	<span class="n">agent_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">tool_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">model_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">framework</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="o">**</span><span class="n">data</span></span><span class="return-annotation">) -> <span class="kc">None</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#emit"></a>
+    
+            <div class="docstring"><p>Emit an event from a host without a shipped adapter.</p>
+</div>
+
+
+                </section>
+                <section id="initialize_session">
+                    <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">initialize_session</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">session_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span></span><span class="return-annotation">) -> <span class="kc">None</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#initialize_session"></a>
+    
+            <div class="docstring"><p>Initialize or update session context.</p>
+
+<h6 id="arguments">Arguments:</h6>
+
+<ul>
+<li><strong>session_id:</strong>  Optional session identifier. If None, generates new ULID.</li>
+</ul>
+</div>
+
+
+                </section>
                 <section id="get_stats">
                     <div class="attr function">
             
@@ -386,7 +430,7 @@ handler inherits the logger's effective level).</li>
 
 <blockquote>
   <p>A dict of queue and worker counters — <code>enqueued</code>, <code>dropped</code>,
-  <code>depth</code> (current queue size), <code>events_processed</code> and <code>errors</code>.
+  <code>current_size</code> (current queue depth), <code>events_processed</code> and <code>errors</code>.
   Returns an empty dict if <code><a href="#initialize">initialize</a></code> has not been called yet.</p>
 </blockquote>
 

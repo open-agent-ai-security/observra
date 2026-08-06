@@ -212,10 +212,10 @@ plugin = create_plugin()  # framework=&quot;adk&quot; is the default
 
 # 3. Register the plugin with your Runner.
 runner = Runner(
-    agent=root_agent,                 # your existing ADK agent, unchanged
+    agent=root_agent,  # your existing ADK agent, unchanged
     app_name=&quot;my_app&quot;,
     session_service=InMemorySessionService(),
-    plugins=[plugin],                 # &lt;-- the only change to your Runner
+    plugins=[plugin],  # &lt;-- the only change to your Runner
 )
 
 # Run the agent normally — every lifecycle event is now captured.
@@ -261,11 +261,11 @@ encryption-at-rest), so set them explicitly:</p>
 <pre><code class="language-python">initialize(
     backend=&quot;jsonl&quot;,
     path=&quot;telemetry.jsonl&quot;,
-    queue_size=1000,                  # bounded, drop-oldest queue
+    queue_size=1000,  # bounded, drop-oldest queue
 )
 plugin = create_plugin(
-    capture_tool_data=False,          # opt in to record tool args/results
-    cost_threshold_usd=None,          # alert when session cost crosses this
+    capture_tool_data=False,  # opt in to record tool args/results
+    cost_threshold_usd=None,  # alert when session cost crosses this
 )
 </code></pre>
 <p>For OTel/Dynatrace/Datadog export and production tuning, see

@@ -261,7 +261,7 @@ accidentally loading millions of rows.</li>
 <h6 id="arguments">Arguments:</h6>
 
 <ul>
-<li><strong>backend_type:</strong>  Type of backend ('jsonl', 'otel', 'otel_log', 'webhook', or 'multi')</li>
+<li><strong>backend_type:</strong>  Type of backend ('jsonl', 'sqlite', 'otel', 'otel_log', 'webhook', or 'multi')</li>
 <li>**<strong>kwargs:</strong>  Backend-specific configuration passed to constructor.
 For 'otel': endpoint, service_name, headers, timeout
 For 'multi': backends (list of StorageBackend instances)</li>
@@ -285,6 +285,7 @@ For 'multi': backends (list of StorageBackend instances)</li>
 <blockquote>
   <div class="pdoc-code codehilite">
 <pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">backend</span> <span class="o">=</span> <span class="n">create_backend</span><span class="p">(</span><span class="s1">&#39;jsonl&#39;</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s1">&#39;telemetry.jsonl&#39;</span><span class="p">,</span> <span class="n">max_bytes</span><span class="o">=</span><span class="mi">10_485_760</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">backend</span> <span class="o">=</span> <span class="n">create_backend</span><span class="p">(</span><span class="s1">&#39;sqlite&#39;</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s1">&#39;telemetry.db&#39;</span><span class="p">,</span> <span class="n">max_rows</span><span class="o">=</span><span class="mi">100_000</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">backend</span> <span class="o">=</span> <span class="n">create_backend</span><span class="p">(</span><span class="s1">&#39;otel&#39;</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="s1">&#39;http://localhost:4318/v1/traces&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">backend</span> <span class="o">=</span> <span class="n">create_backend</span><span class="p">(</span><span class="s1">&#39;webhook&#39;</span><span class="p">,</span> <span class="n">url</span><span class="o">=</span><span class="s1">&#39;http://localhost:8080/events&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">otel</span> <span class="o">=</span> <span class="n">create_backend</span><span class="p">(</span><span class="s1">&#39;otel&#39;</span><span class="p">)</span>
