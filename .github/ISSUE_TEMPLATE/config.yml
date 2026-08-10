@@ -1,0 +1,10 @@
+# Copyright 2026 Exabeam, Inc.
+# SPDX-License-Identifier: Apache-2.0
+blank_issues_enabled: true
+contact_links:
+  - name: Report a security vulnerability
+    url: https://github.com/open-agent-ai-security/observra/security/advisories/new
+    about: >-
+      Please do NOT open a public issue for security problems (redaction bypass,
+      credential leakage into telemetry, injection-detection evasion). Use a
+      private security advisory — see SECURITY.md for scope and process.

@@ -1,0 +1,59 @@
+# Copyright 2026 Exabeam, Inc.
+# SPDX-License-Identifier: Apache-2.0
+name: Bug report
+description: Something in observra didn't work — an adapter, a backend, the schema, or docs.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: >-
+        Thanks for using observra. Two things before you file: **security problems**
+        (redaction bypass, credential leakage into telemetry, injection-detection evasion)
+        go through a
+        [private security advisory](https://github.com/open-agent-ai-security/observra/security/advisories/new),
+        not a public issue — see SECURITY.md. And since observra captures agent telemetry:
+        **redact real prompts, hostnames, usernames, tokens, and costs from any events you
+        paste** — sample data or substituted values work fine.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you do, what did you expect, and what happened instead?
+      placeholder: |
+        1. Initialized with backend="jsonl" and the LangChain adapter
+        2. Expected model_response events with token counts
+        3. Instead ...
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: observra version
+      description: "`python -c \"import observra; print(observra.__version__)\"`"
+      placeholder: "1.1.0"
+    validations:
+      required: true
+  - type: input
+    id: setup
+    attributes:
+      label: Framework and backend
+      description: Which adapter (adk / claude / openai / langchain / pydantic-ai / litellm / emit()) and backend (jsonl / webhook / otel / sqlite / …)?
+      placeholder: "langchain adapter, jsonl backend"
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Python and OS
+      placeholder: "Python 3.12.4, macOS 15.5"
+    validations:
+      required: true
+  - type: textarea
+    id: output
+    attributes:
+      label: Relevant output
+      description: >-
+        Error text, traceback, or the relevant (redacted) telemetry events.
+      render: text
+    validations:
+      required: false

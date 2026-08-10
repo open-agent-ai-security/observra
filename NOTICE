@@ -1,0 +1,22 @@
+Observra
+Copyright 2026 Exabeam, Inc.
+
+This product is sponsored by Exabeam (https://www.exabeam.com/).
+
+The documentation website (index.html, news.html, and guide/) loads
+GoatCounter's count.js (https://www.goatcounter.com/, ISC License) for
+cookieless, privacy-friendly visitor analytics. count.js is vendored into this
+repository at assets/count.js (its ISC license header retained) and served
+same-origin from the docs site. The website also loads the Cloudflare Web
+Analytics beacon from static.cloudflareinsights.com. These counters are docs
+site assets only — they are not part of the distributed Python package, and
+the observra library itself phones home to nothing.
+
+The documentation website loads Mermaid (https://mermaid.js.org/, MIT License)
+from the jsDelivr CDN at runtime to render diagrams. Mermaid is not vendored or
+redistributed in this repository or in the distributed package; only the public
+docs site references it (pinned to an exact version with a Subresource
+Integrity hash).
+
+Except for the third-party material identified above, Observra source code and
+original documentation are licensed under the Apache License, Version 2.0.
