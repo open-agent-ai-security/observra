@@ -106,9 +106,11 @@ Git adds it for you with the `-s` flag:
 git commit -s -m "Your commit message"
 ```
 
-The name and email must match a real identity. Every non-merge commit in a pull
-request is expected to carry a `Signed-off-by` line; PRs without one will be
-asked to amend before merge.
+The name and email must be a known identity — your real name, or an established
+identity you're known by in the community (a long-standing handle counts),
+reachable at the address you sign with. Anonymous or throwaway identities aren't
+accepted. Every non-merge commit in a pull request is expected to carry a
+`Signed-off-by` line; PRs without one will be asked to amend before merge.
 
 The full text of the DCO:
 
