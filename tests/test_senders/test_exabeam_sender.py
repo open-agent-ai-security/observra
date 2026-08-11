@@ -826,3 +826,64 @@ class TestStorageBackendProtocol:
         assert len(lines) == 1, "Should have exactly 1 event written"
         written = json.loads(lines[0])
         assert written["event_id"] == event.event_id
+
+
+# ---------------------------------------------------------------------------
+# Parser match condition conformance tests
+# ---------------------------------------------------------------------------
+
+
+class TestParserMatchConditions:
+    """Verify payloads satisfy all three Exabeam parser match conditions."""
+
+    def _get_backend(self):
+        with patch.dict(os.environ, _make_env()):
+            from observra.senders.exabeam import ExabeamSenderBackend
+
+            return ExabeamSenderBackend()
+
+    def test_build_payload_has_schema(self):
+        backend = self._get_backend()
+        payload = backend.build_payload(make_test_event())
+        assert payload["schema"] == "observra:1.0"
+
+    def test_build_payload_has_type(self):
+        backend = self._get_backend()
+        payload = backend.build_payload(make_test_event())
+        assert payload["type"] == "skill_invocation"
+
+    def test_build_payload_has_framework(self):
+        backend = self._get_backend()
+        payload = backend.build_payload(make_test_event())
+        assert payload["framework"] == "mcp"
+
+    def test_build_payload_all_three_conditions(self):
+        """All three parser match conditions present in a single payload."""
+        backend = self._get_backend()
+        payload = backend.build_payload(make_test_event())
+        assert '"schema"' not in str(payload) or payload.get("schema", "").startswith("observra")
+        assert "type" in payload
+        assert "framework" in payload
+        assert "schema" in payload
+
+    def test_build_raw_payload_has_schema(self):
+        backend = self._get_backend()
+        payload = backend.build_raw_payload(make_test_event())
+        assert payload["schema"] == "observra:1.0"
+
+    def test_build_raw_payload_has_type(self):
+        backend = self._get_backend()
+        payload = backend.build_raw_payload(make_test_event())
+        assert payload["type"] == "skill_invocation"
+
+    def test_build_raw_payload_has_framework(self):
+        backend = self._get_backend()
+        payload = backend.build_raw_payload(make_test_event())
+        assert payload["framework"] == "mcp"
+
+    def test_event_type_still_present_for_backward_compat(self):
+        """event_type kept alongside type for consumers using the old key."""
+        backend = self._get_backend()
+        payload = backend.build_payload(make_test_event())
+        assert payload["event_type"] == "skill_invocation"
+        assert payload["type"] == "skill_invocation"
