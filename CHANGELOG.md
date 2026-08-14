@@ -12,6 +12,11 @@ for how releases are cut.
 
 ## [Unreleased]
 
+## [1.1.1] — 2026-08-14
+
+### Fixed
+- ExabeamSender now emits `schema` and `type` fields required by the Exabeam parser (PR #115).
+
 ## [1.1.0] — 2026-08-05
 
 ### Added
