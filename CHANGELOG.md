@@ -12,6 +12,11 @@ for how releases are cut.
 
 ## [Unreleased]
 
+## [1.1.2] — 2026-09-11
+
+### Added
+- Public `observra.shutdown(timeout=None)` to drain the background worker at process exit without reaching into private internals (PR #118, closes #117).
+
 ## [1.1.1] — 2026-08-14
 
 ### Fixed
