@@ -40,6 +40,9 @@
                     <a class="function" href="#initialize">initialize</a>
             </li>
             <li>
+                    <a class="function" href="#shutdown">shutdown</a>
+            </li>
+            <li>
                     <a class="function" href="#create_plugin">create_plugin</a>
             </li>
             <li>
@@ -170,6 +173,7 @@ through a non-blocking background pipeline.</p>
 
 <ul>
 <li><code><a href="#initialize">initialize</a></code> — start the global pipeline and choose a backend.</li>
+<li><code><a href="#shutdown">shutdown</a></code> — drain the queue and stop the background worker.</li>
 <li><code><a href="#create_plugin">create_plugin</a></code> — wire a framework adapter (ADK, Claude, OpenAI, LangChain,
 Pydantic AI) into that pipeline.</li>
 <li><code><a href="#emit">emit</a></code> — send events from hosts without a shipped adapter.</li>
@@ -185,10 +189,10 @@ Pydantic AI) into that pipeline.</li>
 <pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">observra</span>
 
 <span class="c1"># 1. Start the pipeline (newline-delimited JSON by default)</span>
-<span class="n"><a href="#initialize">observra.initialize</a></span><span class="p">(</span><span class="n">backend</span><span class="o">=</span><span class="s2">&quot;jsonl&quot;</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s2">&quot;telemetry.jsonl&quot;</span><span class="p">)</span>
+<span class="n"><a href="#initialize">observra.initialize</a></span><span class="p">(</span><span class="n">backend</span><span class="o">=</span><span class="s2">"jsonl"</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s2">"telemetry.jsonl"</span><span class="p">)</span>
 
 <span class="c1"># 2. Attach the adapter for your agent framework</span>
-<span class="n">plugin</span> <span class="o">=</span> <span class="n"><a href="#create_plugin">observra.create_plugin</a></span><span class="p">(</span><span class="s2">&quot;adk&quot;</span><span class="p">)</span>
+<span class="n">plugin</span> <span class="o">=</span> <span class="n"><a href="#create_plugin">observra.create_plugin</a></span><span class="p">(</span><span class="s2">"adk"</span><span class="p">)</span>
 
 <span class="c1"># ...run your agent as usual; events stream in the background...</span>
 
@@ -209,7 +213,7 @@ Pydantic AI) into that pipeline.</li>
                 <section id="__version__">
                     <div class="attr variable">
             <span class="name">__version__</span>        =
-<span class="default_value">&#39;1.1.1&#39;</span>
+<span class="default_value">&#39;1.1.2&#39;</span>
 
         
     </div>
@@ -222,7 +226,7 @@ Pydantic AI) into that pipeline.</li>
                     <div class="attr function">
             
         <span class="def">def</span>
-        <span class="name">initialize</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">backend</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;jsonl&#39;</span>, </span><span class="param"><span class="o">**</span><span class="n">kwargs</span></span><span class="return-annotation">) -> <span class="kc">None</span>:</span></span>
+        <span class="name">initialize</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">backend</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">'jsonl'</span>, </span><span class="param"><span class="o">**</span><span class="n">kwargs</span></span><span class="return-annotation">) -> <span class="kc">None</span>:</span></span>
 
         
     </div>
@@ -259,7 +263,7 @@ event buffer.</li>
 <pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">observra</span>
 
 <span class="c1"># Local file (default backend)</span>
-<span class="n"><a href="#initialize">observra.initialize</a></span><span class="p">(</span><span class="n">backend</span><span class="o">=</span><span class="s2">&quot;jsonl&quot;</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s2">&quot;telemetry.jsonl&quot;</span><span class="p">)</span>
+<span class="n"><a href="#initialize">observra.initialize</a></span><span class="p">(</span><span class="n">backend</span><span class="o">=</span><span class="s2">"jsonl"</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s2">"telemetry.jsonl"</span><span class="p">)</span>
 </code></pre>
   </div>
 </blockquote>
@@ -275,11 +279,35 @@ event buffer.</li>
 
 
                 </section>
+                <section id="shutdown">
+                    <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">shutdown</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span></span><span class="return-annotation">) -> <span class="kc">None</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#shutdown"></a>
+    
+            <div class="docstring"><p>Drain pending events to the backend and stop the worker.</p>
+
+<p>Idempotent; no-op if <code><a href="#initialize">initialize()</a></code> was never called; never raises.</p>
+
+<h6 id="arguments">Arguments:</h6>
+
+<ul>
+<li><strong>timeout:</strong>  Maximum seconds to wait for the worker thread to finish
+draining the queue. Defaults to <code>5.0</code>.</li>
+</ul>
+</div>
+
+
+                </section>
                 <section id="create_plugin">
                     <div class="attr function">
             
         <span class="def">def</span>
-        <span class="name">create_plugin</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">framework</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;adk&#39;</span>, </span><span class="param"><span class="o">**</span><span class="n">kwargs</span></span><span class="return-annotation">):</span></span>
+        <span class="name">create_plugin</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">framework</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">'adk'</span>, </span><span class="param"><span class="o">**</span><span class="n">kwargs</span></span><span class="return-annotation">):</span></span>
 
         
     </div>
@@ -316,10 +344,10 @@ expects — e.g. as an ADK plugin, or registered as a callback handler.</p>
 <blockquote>
   <div class="pdoc-code codehilite">
 <pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">observra</span>
-<span class="n"><a href="#initialize">observra.initialize</a></span><span class="p">(</span><span class="n">backend</span><span class="o">=</span><span class="s2">&quot;jsonl&quot;</span><span class="p">)</span>
+<span class="n"><a href="#initialize">observra.initialize</a></span><span class="p">(</span><span class="n">backend</span><span class="o">=</span><span class="s2">"jsonl"</span><span class="p">)</span>
 
 <span class="c1"># Google ADK: pass the plugin when constructing your agent</span>
-<span class="n">plugin</span> <span class="o">=</span> <span class="n"><a href="#create_plugin">observra.create_plugin</a></span><span class="p">(</span><span class="s2">&quot;adk&quot;</span><span class="p">)</span>
+<span class="n">plugin</span> <span class="o">=</span> <span class="n"><a href="#create_plugin">observra.create_plugin</a></span><span class="p">(</span><span class="s2">"adk"</span><span class="p">)</span>
 <span class="c1"># agent = Agent(..., plugins=[plugin])</span>
 </code></pre>
   </div>
@@ -369,7 +397,7 @@ handler inherits the logger's effective level).</li>
 <blockquote>
   <div class="pdoc-code codehilite">
 <pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">logging</span><span class="o">,</span><span class="w"> </span><span class="nn">observra</span>
-<span class="n"><a href="#initialize">observra.initialize</a></span><span class="p">(</span><span class="n">backend</span><span class="o">=</span><span class="s2">&quot;jsonl&quot;</span><span class="p">)</span>
+<span class="n"><a href="#initialize">observra.initialize</a></span><span class="p">(</span><span class="n">backend</span><span class="o">=</span><span class="s2">"jsonl"</span><span class="p">)</span>
 <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n"><a href="#create_logging_handler">observra.create_logging_handler</a></span><span class="p">())</span>
 </code></pre>
   </div>
@@ -439,7 +467,7 @@ handler inherits the logger's effective level).</li>
 <blockquote>
   <div class="pdoc-code codehilite">
 <pre><span></span><code><span class="n">stats</span> <span class="o">=</span> <span class="n"><a href="#get_stats">observra.get_stats</a></span><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">stats</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;dropped&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="s2">&quot;events dropped&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">stats</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"dropped"</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="s2">"events dropped"</span><span class="p">)</span>
 </code></pre>
   </div>
 </blockquote>
@@ -518,7 +546,7 @@ This is safe to call at any time -- returns zeros rather than raising.</p>
                             <div id="TelemetryEvent.__init__" class="classattr">
                                 <div class="attr function">
             
-        <span class="name">TelemetryEvent</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="n">event_id</span><span class="p">:</span> <span class="nb">str</span>,</span><span class="param">	<span class="n">timestamp</span><span class="p">:</span> <span class="nb">float</span>,</span><span class="param">	<span class="n">trace_id</span><span class="p">:</span> <span class="nb">str</span>,</span><span class="param">	<span class="n">session_id</span><span class="p">:</span> <span class="nb">str</span>,</span><span class="param">	<span class="n">span_id</span><span class="p">:</span> <span class="nb">str</span>,</span><span class="param">	<span class="n">event_type</span><span class="p">:</span> <span class="nb">str</span>,</span><span class="param">	<span class="n">agent_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">tool_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">model_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">data</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">framework</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;adk&#39;</span><span class="p">,</span> <span class="s1">&#39;claude&#39;</span><span class="p">,</span> <span class="s1">&#39;claude_code&#39;</span><span class="p">,</span> <span class="s1">&#39;codex_cli&#39;</span><span class="p">,</span> <span class="s1">&#39;codex_app&#39;</span><span class="p">,</span> <span class="s1">&#39;gemini_cli&#39;</span><span class="p">,</span> <span class="s1">&#39;openai&#39;</span><span class="p">,</span> <span class="s1">&#39;langgraph&#39;</span><span class="p">,</span> <span class="s1">&#39;pydantic-ai&#39;</span><span class="p">,</span> <span class="s1">&#39;copilot&#39;</span><span class="p">,</span> <span class="s1">&#39;mcp&#39;</span><span class="p">,</span> <span class="s1">&#39;openclaw&#39;</span><span class="p">,</span> <span class="s1">&#39;unknown&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;unknown&#39;</span>,</span><span class="param">	<span class="n">skill_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">host</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">user</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">os</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">arch</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">library_version</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span></span>)</span>
+        <span class="name">TelemetryEvent</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="n">event_id</span><span class="p">:</span> <span class="nb">str</span>,</span><span class="param">	<span class="n">timestamp</span><span class="p">:</span> <span class="nb">float</span>,</span><span class="param">	<span class="n">trace_id</span><span class="p">:</span> <span class="nb">str</span>,</span><span class="param">	<span class="n">session_id</span><span class="p">:</span> <span class="nb">str</span>,</span><span class="param">	<span class="n">span_id</span><span class="p">:</span> <span class="nb">str</span>,</span><span class="param">	<span class="n">event_type</span><span class="p">:</span> <span class="nb">str</span>,</span><span class="param">	<span class="n">agent_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">tool_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">model_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">data</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">framework</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">'adk'</span><span class="p">,</span> <span class="s1">'claude'</span><span class="p">,</span> <span class="s1">'claude_code'</span><span class="p">,</span> <span class="s1">'codex_cli'</span><span class="p">,</span> <span class="s1">'codex_app'</span><span class="p">,</span> <span class="s1">'gemini_cli'</span><span class="p">,</span> <span class="s1">'openai'</span><span class="p">,</span> <span class="s1">'langgraph'</span><span class="p">,</span> <span class="s1">'pydantic-ai'</span><span class="p">,</span> <span class="s1">'copilot'</span><span class="p">,</span> <span class="s1">'mcp'</span><span class="p">,</span> <span class="s1">'openclaw'</span><span class="p">,</span> <span class="s1">'unknown'</span><span class="p">]</span> <span class="o">=</span> <span class="s1">'unknown'</span>,</span><span class="param">	<span class="n">skill_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">host</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">user</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">os</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">arch</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">library_version</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span></span>)</span>
 
         
     </div>
