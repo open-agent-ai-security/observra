@@ -37,12 +37,8 @@ def test_shutdown_noop_before_initialize():
 
 def test_shutdown_drains_pending_events(tmp_path):
     """shutdown() must drain the queue so tail events reach the backend."""
-    import time
-
     path = tmp_path / "telemetry.jsonl"
     telemetry.initialize(backend="jsonl", path=str(path))
-
-    from observra.core.events import create_event
 
     for i in range(5):
         telemetry.emit("test_event", message=f"event-{i}")
