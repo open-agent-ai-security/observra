@@ -20,6 +20,7 @@ from observra import (
     initialize,
     initialize_session,
     observability,
+    shutdown,
 )
 from observra.core.storage import StorageBackend
 
@@ -60,6 +61,7 @@ except ImportError:
 
 __all__ = [
     "initialize",
+    "shutdown",
     "create_plugin",
     "create_logging_handler",
     "emit",
