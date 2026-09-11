@@ -248,15 +248,15 @@ class BackgroundWorker:
         except Exception as e:
             logger.error("Error during final flush: %s", e, exc_info=True)
 
-    def shutdown(self) -> None:
+    def shutdown(self, timeout: float | None = None) -> None:
         """Public graceful shutdown -- flushes queue and closes storage.
 
         Delegates to _shutdown(); exposed as a public method so external
         callers (e.g., signal handlers) don't reach into private internals.
         """
-        self._shutdown()
+        self._shutdown(timeout=timeout)
 
-    def _shutdown(self) -> None:
+    def _shutdown(self, timeout: float | None = None) -> None:
         """Graceful shutdown handler called by atexit.
 
         Sends shutdown sentinel, waits for worker thread to finish,
@@ -266,6 +266,8 @@ class BackgroundWorker:
             logger.debug("Shutdown already called, skipping")
             return
 
+        join_timeout = timeout if timeout is not None else 5.0
+
         logger.info("BackgroundWorker shutting down")
         self._running = False
 
@@ -273,11 +275,10 @@ class BackgroundWorker:
             # Send shutdown sentinel
             self._queue.put_sentinel(_SHUTDOWN_SENTINEL)
 
-            # Wait for worker thread to finish (max 5 seconds)
-            self._thread.join(timeout=5.0)
+            self._thread.join(timeout=join_timeout)
 
             if self._thread.is_alive():
-                logger.warning("Worker thread did not finish within 5 seconds")
+                logger.warning("Worker thread did not finish within %.1f seconds", join_timeout)
 
             # Final flush and close
             self._storage.flush()

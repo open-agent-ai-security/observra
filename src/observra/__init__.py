@@ -12,6 +12,7 @@ through a non-blocking background pipeline.
 The public API is intentionally small:
 
 - `initialize` — start the global pipeline and choose a backend.
+- `shutdown` — drain the queue and stop the background worker.
 - `create_plugin` — wire a framework adapter (ADK, Claude, OpenAI, LangChain,
   Pydantic AI) into that pipeline.
 - `emit` — send events from hosts without a shipped adapter.
@@ -181,6 +182,23 @@ def _create_backend(backend_type: str, **kwargs):
         raise ValueError(f"Unknown backend type: {backend_type!r}")
 
 
+def shutdown(timeout: float | None = None) -> None:
+    """Drain pending events to the backend and stop the worker.
+
+    Idempotent; no-op if ``initialize()`` was never called; never raises.
+
+    Args:
+        timeout: Maximum seconds to wait for the worker thread to finish
+            draining the queue. Defaults to ``5.0``.
+    """
+    try:
+        if _worker is None:
+            return
+        _worker._shutdown(timeout=timeout)
+    except Exception as exc:
+        logger.warning("observra.shutdown() failed: %s", exc)
+
+
 def create_plugin(framework: str = "adk", **kwargs):
     """Create a framework adapter connected to the global pipeline.
 
@@ -313,6 +331,7 @@ get_metrics = observability.get_metrics
 __all__ = [
     "__version__",
     "initialize",
+    "shutdown",
     "create_plugin",
     "create_logging_handler",
     "emit",

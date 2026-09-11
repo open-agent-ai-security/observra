@@ -29,6 +29,53 @@ def test_import_star_does_not_raise_for_missing_optional_adapters():
     assert set(telemetry.__all__).issubset(set(namespace.keys()))
 
 
+def test_shutdown_noop_before_initialize():
+    """shutdown() must be a silent no-op when initialize() was never called."""
+    telemetry._worker = None
+    telemetry.shutdown()  # must not raise
+
+
+def test_shutdown_drains_pending_events(tmp_path):
+    """shutdown() must drain the queue so tail events reach the backend."""
+    path = tmp_path / "telemetry.jsonl"
+    telemetry.initialize(backend="jsonl", path=str(path))
+
+    for i in range(5):
+        telemetry.emit("test_event", message=f"event-{i}")
+
+    telemetry.shutdown()
+
+    lines = path.read_text().strip().splitlines()
+    assert len(lines) >= 5
+
+
+def test_shutdown_is_idempotent(tmp_path):
+    """Calling shutdown() twice must not raise."""
+    path = tmp_path / "telemetry.jsonl"
+    telemetry.initialize(backend="jsonl", path=str(path))
+
+    telemetry.shutdown()
+    telemetry.shutdown()  # second call — must not raise
+
+
+def test_shutdown_respects_timeout(tmp_path):
+    """shutdown(timeout=...) must propagate to the worker join."""
+    path = tmp_path / "telemetry.jsonl"
+    telemetry.initialize(backend="jsonl", path=str(path))
+
+    telemetry.shutdown(timeout=10.0)
+
+    assert not telemetry._worker._thread.is_alive()
+
+
+def test_shutdown_with_zero_timeout(tmp_path):
+    """shutdown(timeout=0) should not block indefinitely."""
+    path = tmp_path / "telemetry.jsonl"
+    telemetry.initialize(backend="jsonl", path=str(path))
+
+    telemetry.shutdown(timeout=0)
+
+
 def test_initialize_invalid_backend_raises_value_error():
     """initialize() must fail fast for unknown backend types."""
     with pytest.raises(ValueError, match="Unknown backend type"):
@@ -117,6 +164,7 @@ def test_initialize_misrouted_kwargs_warning(tmp_path, caplog):
 _PUBLIC_API_STABLE_SURFACE = frozenset(
     {
         "initialize",
+        "shutdown",
         "create_plugin",
         "create_logging_handler",
         "emit",
