@@ -509,3 +509,109 @@ def test_get_adapter_stats():
     assert stats["error_count"] >= 1, f"Expected at least 1 error; got {stats['error_count']}"
     assert stats["events_captured"] >= 1, f"Expected at least 1 event; got {stats['events_captured']}"
     assert "dropped_events" in stats
+
+
+# ---------------------------------------------------------------------------
+# Sensor-record fields: stop_reason, cache_creation_tokens, tool_use_id
+# ---------------------------------------------------------------------------
+
+
+def test_model_span_stop_reason_from_finish_reasons():
+    """gen_ai.response.finish_reasons (single-element sequence) maps to data.stop_reason."""
+    from observra.adapters.pydantic_ai.adapter import PydanticAIAdapter
+
+    adapter = PydanticAIAdapter()
+    span = _make_model_span()
+    span.attributes["gen_ai.response.finish_reasons"] = ("tool_call",)
+    adapter.on_end(span)
+
+    assert adapter._events[0].data["stop_reason"] == "tool_call"
+
+
+@pytest.mark.parametrize(
+    "attr",
+    ["gen_ai.usage.cache_creation.input_tokens", "gen_ai.usage.details.cache_write_tokens"],
+)
+def test_model_span_cache_creation_tokens(attr):
+    """Both cache-write attributes emitted by pydantic-ai map to data.cache_creation_tokens."""
+    from observra.adapters.pydantic_ai.adapter import PydanticAIAdapter
+
+    adapter = PydanticAIAdapter()
+    span = _make_model_span()
+    span.attributes[attr] = 300
+    adapter.on_end(span)
+
+    assert adapter._events[0].data["cache_creation_tokens"] == 300
+
+
+def test_tool_span_tool_use_id():
+    """gen_ai.tool.call.id maps to data.tool_use_id on the tool_end event."""
+    from observra.adapters.pydantic_ai.adapter import PydanticAIAdapter
+
+    adapter = PydanticAIAdapter()
+    span = _make_tool_span_v3("lookup")
+    span.attributes["gen_ai.tool.call.id"] = "call_abc123"
+    adapter.on_end(span)
+
+    event = adapter._events[0]
+    assert event.event_type == "tool_end"
+    assert event.data["tool_use_id"] == "call_abc123"
+
+
+# ---------------------------------------------------------------------------
+# Session per agent run
+# ---------------------------------------------------------------------------
+
+
+def _with_run(span, conversation_id=None, trace_id=None):
+    """Attach a run's conversation id (as pydantic-ai baggage does) or OTel trace id to a span."""
+    if conversation_id is not None:
+        span.attributes["gen_ai.conversation.id"] = conversation_id
+    if trace_id is not None:
+        span.context = types.SimpleNamespace(trace_id=trace_id)
+    return span
+
+
+def _session_keys(adapter):
+    return [e.session_id for e in adapter.events]
+
+
+def test_conversation_id_groups_events_per_run():
+    """Events within one run share the conversation id; different runs differ."""
+    from observra.adapters.pydantic_ai.adapter import PydanticAIAdapter
+
+    adapter = PydanticAIAdapter()
+    adapter.on_end(_with_run(_make_model_span(), conversation_id="conv-a"))
+    adapter.on_end(_with_run(_make_tool_span(), conversation_id="conv-a"))
+    adapter.on_end(_with_run(_make_model_span(), conversation_id="conv-b"))
+
+    assert _session_keys(adapter) == ["conv-a", "conv-a", "conv-b"]
+
+
+def test_trace_id_fallback_groups_events_per_run():
+    """Without gen_ai.conversation.id, events of one trace share a session; traces differ."""
+    from observra.adapters.pydantic_ai.adapter import PydanticAIAdapter
+
+    adapter = PydanticAIAdapter()
+    adapter.on_end(_with_run(_make_model_span(), trace_id=1))
+    adapter.on_end(_with_run(_make_tool_span_v3(), trace_id=1))
+    adapter.on_end(_with_run(_make_model_span(), trace_id=2))
+
+    first, same, other = _session_keys(adapter)
+    assert first == same
+    assert first != other
+
+
+def test_app_session_id_used_without_framework_id():
+    """set_session_id value applies when spans carry no conversation id."""
+    from observra.adapters.pydantic_ai.adapter import PydanticAIAdapter
+    from observra.core.context import set_session_id
+
+    set_session_id("app-session-1")
+    try:
+        adapter = PydanticAIAdapter()
+        adapter.on_end(_with_run(_make_model_span(), trace_id=1))
+        adapter.on_end(_with_run(_make_tool_span(), trace_id=2))
+        assert _session_keys(adapter) == ["app-session-1", "app-session-1"]
+    finally:
+        set_session_id(None)

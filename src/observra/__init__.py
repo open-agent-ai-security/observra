@@ -112,6 +112,9 @@ def initialize(backend: str = "jsonl", **kwargs) -> None:
         pipeline runs on a background worker, so this never blocks your agent's
         hot path.
     """
+    import time
+
+    from observra.core import lifecycle
     from observra.core.queue import DropOldestQueue
     from observra.core.worker import BackgroundWorker
 
@@ -123,11 +126,39 @@ def initialize(backend: str = "jsonl", **kwargs) -> None:
         _worker._shutdown()
 
     event_queue = DropOldestQueue(maxsize=kwargs.pop("queue_size", 1000) if "queue_size" in kwargs else 1000)
-    worker = BackgroundWorker(event_queue=event_queue, storage_backend=storage)
+    started_at = time.monotonic()
+    worker = BackgroundWorker(
+        event_queue=event_queue,
+        storage_backend=storage,
+        on_shutdown=lambda: lifecycle.stopped_event(time.monotonic() - started_at),
+    )
+    event_queue.put_nowait(lifecycle.started_event(storage))
 
     _queue = event_queue
     _worker = worker
     _queue_proxy.set_target(event_queue)
+
+
+def set_session_id(session_id: Optional[str]) -> None:
+    """Set the conversation id for the current thread or async task.
+
+    Use it with frameworks that have no conversation id of their own. Events
+    carry it as ``session`` (first 8 chars) and ``data.session_key``.
+    """
+    from observra.core.context import set_session_id as _set_session_id
+
+    _set_session_id(session_id)
+
+
+def set_user_id(user_id: Optional[str]) -> None:
+    """Set the end-user id for the current thread or async task.
+
+    Stamped on events as ``data.user_id``. The ``user`` field is the OS account
+    running the process, which on a server is a service account.
+    """
+    from observra.core.context import set_user_id as _set_user_id
+
+    _set_user_id(user_id)
 
 
 def _create_backend(backend_type: str, **kwargs):
@@ -281,6 +312,8 @@ get_metrics = observability.get_metrics
 __all__ = [
     "__version__",
     "initialize",
+    "set_session_id",
+    "set_user_id",
     "create_plugin",
     "create_logging_handler",
     "get_stats",

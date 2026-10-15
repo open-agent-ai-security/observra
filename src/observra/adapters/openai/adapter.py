@@ -14,6 +14,16 @@ to TelemetryEvents:
 
 All 6 TracingProcessor methods are synchronous — no asyncio.run() or await anywhere.
 Token data comes directly from GenerationSpanData.usage (no estimation needed).
+
+Session correlation: the trace's ``group_id`` (``RunConfig(group_id=...)``, the
+SDK's conversation/thread id) becomes the observra session id, so every run in
+one conversation shares ``data.session_key``. The session starts once per trace
+in on_trace_start; nested agent spans and handoffs reuse it. Without a group_id
+each trace gets an app-set id (observra.set_session_id) or a new ULID.
+
+End user: if the app passes ``RunConfig(trace_metadata={"user_id": ...})``, that
+value is stamped as ``data.user_id`` on every event of the trace. Otherwise the
+app-set value (observra.set_user_id) applies.
 reasoning_tokens is tracked separately but NOT double-billed with output_tokens.
 
 Observation-only guarantee: every callback catches all exceptions internally so the
@@ -36,7 +46,7 @@ from agents.tracing.span_data import (
 )
 
 from observra.adapters.utils import normalize_openai_tokens, safe_serialize
-from observra.core.context import initialize_session, initialize_trace
+from observra.core.context import initialize_session, initialize_trace, start_session
 from observra.core.cost import CostCalculator
 from observra.core.dedup import register_emission, reset_dedup
 from observra.core.events import TelemetryEvent, create_event
@@ -103,6 +113,9 @@ class OpenAIAdapter(TracingProcessor):
         # Function span metadata: span_id -> {"name": ..., "input": ...}
         # Used for handoff trigger context (which tool triggered the handoff)
         self._function_spans: dict[str, dict] = {}
+
+        # trace_id -> (session_id, user_id), set in on_trace_start, cleared in on_trace_end
+        self._traces: dict[str, tuple[str, Optional[str]]] = {}
 
         # Initialize cost calculator with OpenAI-specific pricing
         if cost_calculator is not None:
@@ -181,16 +194,25 @@ class OpenAIAdapter(TracingProcessor):
     def on_trace_start(self, trace: Any) -> None:
         """TracingProcessor callback: trace started.
 
-        No-op: Agent span handles session lifecycle via on_span_start.
+        Starts the session once per trace from trace.group_id and records the
+        end-user id from trace.metadata["user_id"], if present.
         """
-        pass
+        try:
+            metadata = getattr(trace, "metadata", None) or {}
+            user_id = metadata.get("user_id")
+            session_id = start_session(getattr(trace, "group_id", None))
+            self._traces[trace.trace_id] = (session_id, str(user_id) if user_id else None)
+        except Exception as e:
+            self._error_count += 1
+            logger.error(f"OpenAIAdapter error in on_trace_start: {e}", exc_info=True)
 
     def on_trace_end(self, trace: Any) -> None:
-        """TracingProcessor callback: trace ended.
-
-        No-op: Agent span handles session lifecycle via on_span_end.
-        """
-        pass
+        """TracingProcessor callback: trace ended. Drops the per-trace session state."""
+        try:
+            self._traces.pop(trace.trace_id, None)
+        except Exception as e:
+            self._error_count += 1
+            logger.error(f"OpenAIAdapter error in on_trace_end: {e}", exc_info=True)
 
     def on_span_start(self, span: Any) -> None:
         """TracingProcessor callback: span started.
@@ -203,15 +225,23 @@ class OpenAIAdapter(TracingProcessor):
         """
         try:
             if isinstance(span.span_data, AgentSpanData):
-                # Initialize context before any nested spans fire
+                # Initialize context before any nested spans fire. Reuse the
+                # trace's session so nested agents/handoffs keep one session.
                 initialize_trace()
-                initialize_session()
+                trace_id = getattr(span, "trace_id", None)
+                entry = self._traces.get(trace_id)
+                if entry is None:
+                    entry = (start_session(), None)
+                    self._traces[trace_id] = entry
+                else:
+                    initialize_session(entry[0])
                 reset_dedup()
                 data = span.span_data
                 event = create_event(
                     event_type="session_start",
                     agent_name=data.name,
                     framework="openai",
+                    user_id=entry[1],
                 )
                 self.emit(event)
         except Exception as e:
@@ -275,6 +305,7 @@ class OpenAIAdapter(TracingProcessor):
         """
         event_kwargs: dict[str, Any] = dict(
             event_type="session_end",
+            user_id=self._trace_user_id(span),
             agent_name=data.name,
             framework="openai",
             tools=data.tools,
@@ -310,6 +341,7 @@ class OpenAIAdapter(TracingProcessor):
 
             event_kwargs: dict[str, Any] = dict(
                 event_type="model_response",
+                user_id=self._trace_user_id(span),
                 model_name=model_name,
                 framework="openai",
                 cost_usd=float(cost),
@@ -321,6 +353,11 @@ class OpenAIAdapter(TracingProcessor):
             if tokens.cached_tokens is not None:
                 event_kwargs["cached_tokens"] = tokens.cached_tokens
 
+            # openai-agents >= 0.18 adds input_tokens_details.cache_write_tokens (0 when none)
+            cache_write = (data.usage.get("input_tokens_details") or {}).get("cache_write_tokens")
+            if cache_write:
+                event_kwargs["cache_creation_tokens"] = int(cache_write)
+
             if tokens.reasoning_tokens is not None:
                 event_kwargs["reasoning_tokens"] = tokens.reasoning_tokens
         else:
@@ -328,6 +365,7 @@ class OpenAIAdapter(TracingProcessor):
             cost = None
             event_kwargs = dict(
                 event_type="model_response",
+                user_id=self._trace_user_id(span),
                 model_name=model_name,
                 framework="openai",
             )
@@ -357,6 +395,7 @@ class OpenAIAdapter(TracingProcessor):
             self._cost_threshold_emitted = True
             threshold_event = create_event(
                 event_type="cost_threshold_exceeded",
+                user_id=self._trace_user_id(span),
                 framework="openai",
                 session_cost_usd=float(cost),
                 threshold_usd=float(self._cost_threshold),
@@ -377,6 +416,7 @@ class OpenAIAdapter(TracingProcessor):
 
         event_kwargs: dict[str, Any] = dict(
             event_type="tool_end",
+            user_id=self._trace_user_id(span),
             tool_name=data.name,
             framework="openai",
         )
@@ -415,6 +455,7 @@ class OpenAIAdapter(TracingProcessor):
         """
         event_kwargs: dict[str, Any] = dict(
             event_type="agent_handoff",
+            user_id=self._trace_user_id(span),
             framework="openai",
             source_agent=data.from_agent,
             target_agent=data.to_agent,
@@ -434,6 +475,7 @@ class OpenAIAdapter(TracingProcessor):
         if span.error is not None:
             error_event = create_event(
                 event_type="agent_handoff_error",
+                user_id=self._trace_user_id(span),
                 framework="openai",
                 source_agent=data.from_agent,
                 target_agent=data.to_agent,
@@ -444,6 +486,11 @@ class OpenAIAdapter(TracingProcessor):
     # ========================================================================
     # Helpers
     # ========================================================================
+
+    def _trace_user_id(self, span: Any) -> Optional[str]:
+        """Return the end-user id from the span's trace metadata, or None."""
+        entry = self._traces.get(getattr(span, "trace_id", None))
+        return entry[1] if entry else None
 
     def _compute_duration(self, span: Any) -> Optional[float]:
         """Compute span duration in milliseconds from ISO timestamps.

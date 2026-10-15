@@ -16,6 +16,9 @@ logger = logging.getLogger(__name__)
 trace_id_var: ContextVar[str] = ContextVar("default.trace_id")
 session_id_var: ContextVar[str] = ContextVar("default.session_id")
 span_id_var: ContextVar[str] = ContextVar("default.span_id")
+# Set by the application (set_session_id / set_user_id), not by adapters.
+app_session_id_var: ContextVar[Optional[str]] = ContextVar("default.app_session_id", default=None)
+user_id_var: ContextVar[Optional[str]] = ContextVar("default.user_id", default=None)
 session_cost_var: ContextVar[Decimal] = ContextVar("default.session_cost", default=Decimal("0"))
 
 
@@ -64,6 +67,43 @@ def initialize_session(session_id: Optional[str] = None) -> None:
         session_id = generate_ulid()
     session_id_var.set(session_id)
     logger.debug(f"Initialized session: session_id={session_id}")
+
+
+def start_session(session_id: Optional[str] = None) -> str:
+    """Begin a session for a new conversation and return its id.
+
+    Adapters call this where a conversation starts. Precedence: the framework's
+    own conversation id (``session_id``), then an id the application set with
+    ``set_session_id``, then a new ULID.
+    """
+    sid = session_id or app_session_id_var.get() or generate_ulid()
+    session_id_var.set(sid)
+    return sid
+
+
+def set_session_id(session_id: Optional[str]) -> None:
+    """Set the conversation id for the current context (thread or async task).
+
+    For frameworks that have no conversation id of their own. A framework id,
+    when present, still wins at the next session start.
+    """
+    app_session_id_var.set(session_id)
+    if session_id:
+        session_id_var.set(session_id)
+
+
+def set_user_id(user_id: Optional[str]) -> None:
+    """Set the end-user id stamped on events as ``data.user_id`` in this context.
+
+    ``user`` on every record is the OS account running the process; on a
+    server that is a service account, so pass the end user here.
+    """
+    user_id_var.set(user_id)
+
+
+def get_user_id() -> Optional[str]:
+    """Return the end-user id set for the current context, or None."""
+    return user_id_var.get()
 
 
 def new_span() -> str:

@@ -16,7 +16,6 @@ from __future__ import annotations
 
 import json
 import logging
-from datetime import datetime, timezone
 from typing import Iterator, Literal, Optional
 
 from opentelemetry._logs import LogRecord, SeverityNumber
@@ -26,6 +25,7 @@ from opentelemetry.sdk._logs.export import BatchLogRecordProcessor
 from opentelemetry.sdk.resources import SERVICE_NAME, Resource
 
 from observra.core.events import TelemetryEvent
+from observra.core.sensor_record import to_sensor_record
 from observra.core.types import BackendStats
 
 logger = logging.getLogger(__name__)
@@ -144,97 +144,9 @@ def _build_safe_body(event: TelemetryEvent) -> dict:
     return body
 
 
-_EVENT_TYPE_TO_SENSOR: dict[str, str] = {
-    "user_message": "user",
-    "tool_start": "tool_start",
-    "tool_end": "tool_end",
-    "tool_error": "tool_error",
-    "session_start": "session_start",
-    "session_end": "session_end",
-    "agent_start": "agent_start",
-    "agent_end": "agent_end",
-    "agent_handoff": "agent_handoff",
-    "agent_handoff_error": "agent_handoff_error",
-    "model_error": "model_error",
-    "turn_duration": "turn_duration",
-    "cost_threshold_exceeded": "cost_threshold_exceeded",
-    "depth_exceeded": "depth_exceeded",
-    "stream_event": "stream_event",
-    "adapter_close": "adapter_close",
-}
-
-_TOKEN_MAP: dict[str, str] = {
-    "input_tokens": "in",
-    "output_tokens": "out",
-    "cached_tokens": "cache_read",
-    "cache_read_tokens": "cache_read",
-    "cache_creation_tokens": "cache_creation",
-}
-
-
 def _build_sensor_body(event: TelemetryEvent) -> dict:
-    """Build a sensor-compatible body dict (short keys, composite event types).
-
-    Matches the format produced by the CLI JSONL writer / aba-sensor forwarder,
-    enabling existing SIEM parsers to consume OTel log bodies without modification.
-    """
-    data = event.data or {}
-    ts = datetime.fromtimestamp(event.timestamp, tz=timezone.utc).isoformat()
-
-    from observra.core.cim import CIM_VERSION
-
-    rec: dict = {
-        "ts": ts,
-        "session": event.session_id[:8] if event.session_id else None,
-        "type": _EVENT_TYPE_TO_SENSOR.get(event.event_type, event.event_type),
-        "framework": event.framework or "unknown",
-        "schema": f"observra:{CIM_VERSION}",
-    }
-
-    if event.agent_name:
-        rec["agent"] = event.agent_name
-    if event.model_name:
-        rec["model"] = event.model_name
-    if event.tool_name:
-        rec["tool"] = event.tool_name
-
-    for key, short in _TOKEN_MAP.items():
-        val = data.get(key)
-        if val is not None:
-            rec[short] = int(val)
-
-    cost_usd = data.get("cost_usd")
-    if cost_usd is not None:
-        rec["cost_usd"] = float(cost_usd)
-
-    stop_reason = data.get("stop_reason")
-    if stop_reason is not None:
-        rec["stop"] = str(stop_reason)
-
-    duration_ms = data.get("duration_ms")
-    if duration_ms is not None:
-        rec["duration_ms"] = duration_ms
-
-    error_type = data.get("error_type_name")
-    error_message = data.get("error_message")
-    if error_type or error_message:
-        rec["error"] = str(error_message or error_type)
-
-    source_agent = data.get("source_agent")
-    target_agent = data.get("target_agent")
-    if source_agent is not None:
-        rec["source_agent"] = str(source_agent)
-    if target_agent is not None:
-        rec["target_agent"] = str(target_agent)
-
-    has_injection = data.get("has_injection_patterns")
-    injection_patterns = data.get("injection_patterns")
-    if has_injection is not None:
-        rec["injection"] = bool(has_injection)
-    if injection_patterns:
-        rec["injection_patterns"] = list(injection_patterns)
-
-    return rec
+    """Build the agent-sensor record shape, without prompt/response content."""
+    return to_sensor_record(event, include_content=False)
 
 
 BodySchema = Literal["native", "sensor"]

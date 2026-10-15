@@ -15,6 +15,9 @@ from .context import (
     initialize_trace,
     new_span,
     reset_session_cost,
+    set_session_id,
+    set_user_id,
+    start_session,
 )
 from .cost import CostCalculator, ModelPricing
 from .events import FrameworkName, TelemetryEvent, configure_redactor, create_event
@@ -35,6 +38,9 @@ __all__ = [
     "FrameworkAdapter",
     # Context
     "initialize_session",
+    "set_session_id",
+    "set_user_id",
+    "start_session",
     "initialize_trace",
     "get_trace_id",
     "get_session_id",

@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from typing import Any, Literal, Optional
 
 from . import cim as _cim
-from .context import get_session_id, get_span_id, get_trace_id
+from .context import get_session_id, get_span_id, get_trace_id, get_user_id
 from .host_context import get_host_context
 from .hot_cold import HOT_PATH_SAFE_STRING_KEYS, is_hot_path
 from .redaction import Redactor
@@ -160,9 +160,18 @@ FrameworkName = Literal[
     "pydantic-ai",
     "copilot",
     "mcp",
+    "observra",
     "openclaw",
     "unknown",
 ]
+
+# Message author for conversational events, as agent-sensor emits in data.role.
+_ROLE_FOR_EVENT_TYPE: dict[str, str] = {
+    "user": "user",
+    "user_message": "user",
+    "turn": "assistant",
+    "model_response": "assistant",
+}
 
 # Module-level redactor singleton (configured via initialize())
 _redactor: Redactor = Redactor()
@@ -225,6 +234,7 @@ class TelemetryEvent:
     os: Optional[str] = None
     arch: Optional[str] = None
     library_version: Optional[str] = None
+    device_id: Optional[str] = None
 
     def __post_init__(self) -> None:
         """Validate event fields after initialization."""
@@ -291,8 +301,15 @@ def create_event(
         if rev is not None:
             merged["reversible"] = rev
 
+    if "role" not in merged and event_type in _ROLE_FOR_EVENT_TYPE:
+        merged["role"] = _ROLE_FOR_EVENT_TYPE[event_type]
+
     if "log_source_type" not in merged:
         merged["log_source_type"] = _cim.PRODUCT_ID
+
+    # End-user id is attribution like host/user: kept out of hot-path nulling and
+    # redaction (an email-shaped id would otherwise become [REDACTED:EMAIL]).
+    user_id = merged.pop("user_id", None) or get_user_id()
 
     # Evaluate detection rules against the unredacted merged dict so boolean/numeric
     # fields (has_injection_patterns, error_class, total_tokens, etc.) retain real values.
@@ -322,6 +339,8 @@ def create_event(
     # triggered_rules and max_severity are safe metadata, not PII.
     if rule_annotations:
         data = {**(data or {}), **rule_annotations}
+    if user_id:
+        data = {**(data or {}), "user_id": str(user_id)}
 
     ctx = get_host_context()
     event = TelemetryEvent(
@@ -341,6 +360,7 @@ def create_event(
         os=ctx.os,
         arch=ctx.arch,
         library_version=ctx.library_version,
+        device_id=ctx.device_id,
         skill_name=skill_name,
     )
     logger.debug("Created event: type=%s, event_id=%s", event_type, event.event_id)

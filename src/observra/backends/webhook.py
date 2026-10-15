@@ -9,8 +9,10 @@ import threading
 import urllib.error
 import urllib.request
 from dataclasses import asdict
+from typing import Literal
 
 from observra.core.events import TelemetryEvent
+from observra.core.sensor_record import to_sensor_record
 from observra.core.types import BackendStats
 
 logger = logging.getLogger(__name__)
@@ -30,7 +32,11 @@ class WebhookBackend:
         headers: Optional dict of extra headers (e.g. {"Authorization": "Bearer ..."}).
         timeout: HTTP request timeout in seconds (default: 5.0).
         batch_size: Number of events to buffer before sending (default: 1, send immediately).
+        record_format: "sensor" (default) posts the agent-sensor record shape so
+            one SIEM parser reads both; "native" posts the TelemetryEvent fields.
     """
+
+    BACKEND_TYPE = "webhook"
 
     def __init__(
         self,
@@ -38,7 +44,11 @@ class WebhookBackend:
         headers: dict[str, str] | None = None,
         timeout: float = 5.0,
         batch_size: int = 1,
+        record_format: Literal["sensor", "native"] = "sensor",
     ):
+        if record_format not in ("sensor", "native"):
+            raise ValueError(f"Invalid record_format: {record_format}. Expected 'sensor' or 'native'.")
+        self._record_format = record_format
         if not url:
             raise ValueError("WebhookBackend requires a non-empty url")
         if not url.startswith(("http://", "https://")):
@@ -49,7 +59,7 @@ class WebhookBackend:
             raise ValueError("WebhookBackend timeout must be positive")
         self._timeout = timeout
         self._batch_size = max(1, batch_size)
-        self._buffer: list[dict] = []
+        self._buffer: list[tuple[float, dict]] = []
         self._lock = threading.Lock()
         self._stats = {
             "events_sent": 0,
@@ -63,11 +73,11 @@ class WebhookBackend:
 
     def write(self, event: TelemetryEvent) -> None:
         """Buffer an event and flush when batch_size is reached."""
-        data = asdict(event)
-        to_flush: list[dict] | None = None
+        data = to_sensor_record(event) if self._record_format == "sensor" else asdict(event)
+        to_flush: list[tuple[float, dict]] | None = None
 
         with self._lock:
-            self._buffer.append(data)
+            self._buffer.append((event.timestamp, data))
 
             if len(self._buffer) >= self._batch_size:
                 to_flush = list(self._buffer)
@@ -76,10 +86,11 @@ class WebhookBackend:
         if to_flush:
             self._send_batch(to_flush)
 
-    def _send_batch(self, batch: list[dict]) -> None:
-        """POST a batch of events to the webhook URL (no lock held)."""
+    def _send_batch(self, batch: list[tuple[float, dict]]) -> None:
+        """POST a batch of (timestamp, record) pairs to the webhook URL (no lock held)."""
         try:
-            payload = batch if (self._batch_size > 1 or len(batch) > 1) else batch[0]
+            records = [rec for _, rec in batch]
+            payload = records if (self._batch_size > 1 or len(records) > 1) else records[0]
             body = json.dumps(payload, separators=(",", ":"), default=str).encode("utf-8")
 
             req_headers = {"Content-Type": "application/json"}
@@ -98,14 +109,7 @@ class WebhookBackend:
             with urllib.request.urlopen(req, timeout=self._timeout):
                 pass
 
-            timestamps = []
-            for item in batch:
-                ts = item.get("timestamp")
-                if ts is not None:
-                    try:
-                        timestamps.append(float(ts))
-                    except (ValueError, TypeError):
-                        pass
+            timestamps = [ts for ts, _ in batch]
             batch_oldest = min(timestamps) if timestamps else None
             batch_newest = max(timestamps) if timestamps else None
 

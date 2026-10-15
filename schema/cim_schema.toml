@@ -1,5 +1,5 @@
 [meta]
-version = "1.0"
+version = "1.1"
 description = "CIM single source of truth for agent-telemetry v5.0"
 product_id = "observra"
 
@@ -119,6 +119,16 @@ terminal = false
 
 [actions.forwarder_update_failed]
 action = "update_failed"
+terminal = false
+
+# Audit records for the forwarder's own administrative lifecycle. Both map to
+# policy_event: they describe the monitoring system's state, not agent activity.
+[actions.forwarder_started]
+action = "policy_event"
+terminal = false
+
+[actions.forwarder_stopped]
+action = "policy_event"
 terminal = false
 
 # finish_reason mapping: raw → canonical enum

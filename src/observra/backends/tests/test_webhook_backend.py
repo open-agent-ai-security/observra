@@ -72,8 +72,8 @@ class TestWebhookBackend:
 
         assert len(_RecordingHandler.received) == 1
         payload = _RecordingHandler.received[0]["body"]
-        assert payload["event_type"] == "model_response"
-        assert payload["agent_name"] == "test-agent"
+        assert payload["type"] == "model_response"
+        assert payload["agent"] == "test-agent"
 
     def test_custom_headers(self, webhook_server):
         backend = WebhookBackend(

@@ -49,13 +49,15 @@ Every event serialized by observra contains:
 
 All backends serialize the same logical `TelemetryEvent` dataclass:
 
-- **JSONL** (`backends/jsonl.py`): `dataclasses.asdict(event)` → one JSON object per line
-- **Webhook** (`backends/webhook.py`): `dataclasses.asdict(event)` → HTTP POST body
+- **JSONL** (`backends/jsonl.py`): one agent-sensor record per line (`record_format="native"` writes `dataclasses.asdict(event)` instead)
+- **Webhook** (`backends/webhook.py`): agent-sensor record as the HTTP POST body (same `record_format` switch)
 - **OTel Spans** (`backends/otel.py`): Maps event fields to OpenTelemetry span attributes
-- **OTel Logs** (`backends/otel_log.py`): Maps event fields to OTel LogRecord body
+- **OTel Logs** (`backends/otel_log.py`): Maps event fields to OTel LogRecord body; `body_schema="sensor"` uses the agent-sensor record without prompt/response text
 - **Exabeam** (`senders/exabeam.py`): Curated field subset via `build_payload()` / `build_raw_payload()`
 
-The schema version is carried as a `schema` anchor (`observra:<major>.<minor>`) by the OTel backends (spans and logs). The native `asdict()` serializations (JSONL, webhook) do not stamp it — those records carry `library_version`, from which the schema version can be inferred. See [STABILITY.md](../STABILITY.md) for the consumer contract.
+The agent-sensor record (`core/sensor_record.py`) has the same field names as agent-sensor's `SimplifiedEvent`, so one SIEM parser reads output from both. Its top level is `ts`, `session`, `type`, `model`, `tool`, `agent`, `in`, `out`, `cache_read`, `cache_creation`, `stop`, `error`, `framework`, `host`, `user`, `os`, `arch`, `forwarder` and `schema`. Fields the sensor has no slot for (`event_id`, `trace_id`, `span_id`, `skill_name`) and the full session id (`session_key`) go under `data`.
+
+The `schema` anchor (`observra:<major>.<minor>`) is on every agent-sensor record and on the OTel backends. Native `asdict()` records do not carry it; infer the schema version from `library_version`. See [STABILITY.md](../STABILITY.md) for the consumer contract.
 
 ## Event Types
 

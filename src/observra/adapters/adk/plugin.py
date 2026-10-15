@@ -21,6 +21,7 @@ from observra.core.context import (
     initialize_trace,
     new_span,
     reset_session_cost,
+    start_session,
 )
 from observra.core.cost import CostCalculator
 from observra.core.dedup import register_emission, reset_dedup
@@ -31,7 +32,8 @@ from observra.core.detection import (
     increment_delegation_depth,
     initialize_delegation_depth,
 )
-from observra.core.events import TelemetryEvent, create_event
+from observra.core.events import TelemetryEvent
+from observra.core.events import create_event as _core_create_event
 from observra.core.injection import detect_injection_patterns
 from observra.core.sequences import get_tool_sequence, initialize_tool_sequence, record_tool_call
 from observra.core.velocity import initialize_velocity_tracker, record_token_usage
@@ -42,6 +44,31 @@ logger = logging.getLogger(__name__)
 _last_model_name_var: ContextVar[str | None] = ContextVar("last_model_name", default=None)
 _threshold_exceeded_var: ContextVar[bool] = ContextVar("threshold_exceeded", default=False)
 _turn_start_var: ContextVar[float | None] = ContextVar("turn_start", default=None)
+# ADK end-user id (Session.user_id) for the current run, stamped on every event
+_user_id_var: ContextVar[str | None] = ContextVar("adk_user_id", default=None)
+# Invocation whose session is already bound, so the second callback of a run doesn't start another
+_session_invocation_var: ContextVar[object] = ContextVar("adk_session_invocation", default=None)
+
+
+def create_event(event_type: str, **kwargs) -> TelemetryEvent:
+    """core create_event with the current run's ADK user_id filled in."""
+    kwargs.setdefault("user_id", _user_id_var.get())
+    return _core_create_event(event_type, **kwargs)
+
+
+def _start_adk_session(invocation_context) -> None:
+    """Bind observra's session to the ADK Session.id and capture Session.user_id.
+
+    ADK fires on_user_message_callback before before_run_callback, so both call this.
+    """
+    invocation = getattr(invocation_context, "invocation_id", None) or id(invocation_context)
+    if _session_invocation_var.get() == invocation:
+        return
+    _session_invocation_var.set(invocation)
+    session = getattr(invocation_context, "session", None)
+    start_session(getattr(session, "id", None))
+    _user_id_var.set(getattr(session, "user_id", None))
+
 
 # Lazy-loaded MCP tool class for isinstance checks
 _McpTool = None
@@ -221,6 +248,7 @@ class TelemetryPlugin(BasePlugin):
             None (observation mode)
         """
         try:
+            _start_adk_session(invocation_context)
             agent_name = getattr(invocation_context, "agent_name", None)
 
             # Extract message text for injection detection
@@ -239,14 +267,10 @@ class TelemetryPlugin(BasePlugin):
             if message_text:
                 injection_patterns = detect_injection_patterns(message_text)
 
-            # Extract user_id from invocation context
-            user_id = getattr(invocation_context, "user_id", None)
-
             event = create_event(
                 event_type="user_message",
                 agent_name=agent_name,
                 framework="adk",
-                user_id=user_id,
                 user_message_text=message_text if message_text else None,
                 has_injection_patterns=len(injection_patterns) > 0,
                 injection_patterns=injection_patterns if injection_patterns else None,
@@ -272,6 +296,7 @@ class TelemetryPlugin(BasePlugin):
         try:
             # Initialize trace context FIRST
             initialize_trace()
+            _start_adk_session(invocation_context)
             reset_dedup()
 
             # Reset session cost accumulator for new run
@@ -462,6 +487,20 @@ class TelemetryPlugin(BasePlugin):
             usage_metadata = getattr(llm_response, "usage_metadata", None) if llm_response else None
             tokens = normalize_adk_tokens(usage_metadata)
 
+            # LlmResponse.finish_reason is a genai FinishReason str-enum; emit its raw value (e.g. "STOP")
+            finish_reason = getattr(llm_response, "finish_reason", None) if llm_response else None
+            response_kwargs = {"stop_reason": getattr(finish_reason, "value", finish_reason)}
+
+            # Opt-in: capture response text from llm_response.content.parts (same gate as tool data)
+            if self._capture_tool_data and llm_response is not None:
+                content = getattr(llm_response, "content", None)
+                parts = getattr(content, "parts", None) or []
+                response_text = "".join(
+                    getattr(part, "text", None) or "" for part in parts if not getattr(part, "thought", None)
+                )
+                if response_text:
+                    response_kwargs["response_text"] = response_text
+
             if tokens is not None:
                 input_tokens = tokens.input_tokens
                 output_tokens = tokens.output_tokens
@@ -508,6 +547,7 @@ class TelemetryPlugin(BasePlugin):
                     cost_usd=float(cost),
                     session_cost_usd=float(session_total),
                     tokens_per_minute=float(tokens_per_minute),
+                    **response_kwargs,
                 )
                 self._emit_event(event)
             else:
@@ -517,6 +557,7 @@ class TelemetryPlugin(BasePlugin):
                     event_type="model_response",
                     model_name=model_name,
                     framework="adk",
+                    **response_kwargs,
                 )
                 self._emit_event(event)
 
@@ -615,6 +656,7 @@ class TelemetryPlugin(BasePlugin):
                 tool_name=tool_name,
                 framework="adk",
                 tool_type=tool_type,
+                tool_use_id=getattr(tool_context, "function_call_id", None),
                 **seq_payload,
             )
 
@@ -656,6 +698,7 @@ class TelemetryPlugin(BasePlugin):
                 tool_name=tool_name,
                 framework="adk",
                 tool_type=tool_type,
+                tool_use_id=getattr(tool_context, "function_call_id", None),
                 **seq_payload,
             )
 
@@ -709,6 +752,7 @@ class TelemetryPlugin(BasePlugin):
                 is_retryable=is_retryable,
                 error_type_name=error_type_name,
                 error_message=error_message,
+                tool_use_id=getattr(tool_context, "function_call_id", None),
                 **seq_payload,
             )
 

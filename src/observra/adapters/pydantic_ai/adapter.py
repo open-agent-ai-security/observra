@@ -41,17 +41,22 @@ Usage::
 from __future__ import annotations
 
 import logging
+from collections import OrderedDict
 from pathlib import Path
 from typing import Any, Optional
 
 from opentelemetry.sdk.trace import SpanProcessor
 
 from observra.adapters.utils import NormalizedTokens, safe_serialize
+from observra.core.context import start_session
 from observra.core.cost import CostCalculator
 from observra.core.dedup import register_emission
 from observra.core.events import TelemetryEvent, create_event
 
 logger = logging.getLogger(__name__)
+
+# Session ids remembered per OTel trace for spans without gen_ai.conversation.id
+_MAX_TRACE_SESSIONS = 1024
 
 
 class PydanticAIAdapter(SpanProcessor):
@@ -127,6 +132,9 @@ class PydanticAIAdapter(SpanProcessor):
 
         # Cost threshold deduplication: emit once per adapter lifetime
         self._cost_threshold_emitted: bool = False
+
+        # OTel trace_id -> session id, used only when spans lack gen_ai.conversation.id
+        self._trace_sessions: OrderedDict[Any, str] = OrderedDict()
 
         # Initialize cost calculator with multi-provider pricing (OpenAI, Anthropic, Gemini)
         if cost_calculator is not None:
@@ -231,8 +239,10 @@ class PydanticAIAdapter(SpanProcessor):
             attrs = dict(span.attributes) if getattr(span, "attributes", None) else {}
 
             if name.startswith("chat "):
+                self._start_session(span, attrs)
                 self._handle_model_span(name, attrs)
             elif name == "running tool" or name.startswith("execute_tool "):
+                self._start_session(span, attrs)
                 self._handle_tool_span(name, attrs)
             # Other spans (agent run, invoke_agent, running tools group, etc.): skip silently
         except Exception as e:
@@ -264,6 +274,30 @@ class PydanticAIAdapter(SpanProcessor):
     # ========================================================================
     # Private span handlers
     # ========================================================================
+
+    def _start_session(self, span: Any, attrs: dict) -> None:
+        """Set the session for the events of this span's agent run.
+
+        pydantic-ai copies the run's ``gen_ai.conversation.id`` (from the
+        ``conversation_id`` argument, message history, or a fresh UUID7) onto
+        every chat and tool span via baggage. Spans without it fall back to one
+        session per OTel trace, so all events of one run still share an id.
+        """
+        conversation_id = attrs.get("gen_ai.conversation.id")
+        if conversation_id:
+            start_session(str(conversation_id))
+            return
+        trace_id = getattr(getattr(span, "context", None), "trace_id", None)
+        if trace_id is None:
+            start_session(None)
+            return
+        sid = self._trace_sessions.get(trace_id)
+        if sid is None:
+            sid = self._trace_sessions[trace_id] = start_session(None)
+            if len(self._trace_sessions) > _MAX_TRACE_SESSIONS:
+                self._trace_sessions.popitem(last=False)
+        else:
+            start_session(sid)
 
     def _handle_model_span(self, name: str, attrs: dict) -> None:
         """Extract token usage and cost from a 'chat {model}' span and emit model_response.
@@ -335,6 +369,18 @@ class PydanticAIAdapter(SpanProcessor):
                     framework="pydantic-ai",
                 )
 
+            # Cache-write tokens: semconv attr, falling back to pydantic-ai's backwards-compat detail
+            cache_write_raw = attrs.get("gen_ai.usage.cache_creation.input_tokens") or attrs.get(
+                "gen_ai.usage.details.cache_write_tokens"
+            )
+            if cache_write_raw:
+                event_kwargs["cache_creation_tokens"] = int(cache_write_raw)
+
+            # Finish reason: pydantic-ai sets a single-element list (its normalized value, not raw provider)
+            finish_reasons = attrs.get("gen_ai.response.finish_reasons")
+            if finish_reasons:
+                event_kwargs["stop_reason"] = finish_reasons[0]
+
             event = create_event(**event_kwargs)
             self.emit(event)
 
@@ -386,6 +432,10 @@ class PydanticAIAdapter(SpanProcessor):
                 tool_name=tool_name,
                 framework="pydantic-ai",
             )
+
+            tool_call_id = attrs.get("gen_ai.tool.call.id")
+            if tool_call_id:
+                event_kwargs["tool_use_id"] = tool_call_id
 
             if self._capture_tool_data:
                 # v3+: gen_ai.tool.call.arguments (preferred, OTel GenAI convention)

@@ -70,6 +70,7 @@ HOT_PATH_SAFE_STRING_KEYS = frozenset(
         "kind",
         "dest_host",
         "session_key",
+        "user_id",  # end-user attribution, like session_key
         "run_id",
         "log_source_type",  # product identifier, always safe (classification metadata)
     ]

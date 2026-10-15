@@ -26,8 +26,8 @@ def test_jsonl_write_and_read(tmp_jsonl_path):
     # Verify JSON line contains event_id
     assert len(lines) == 1
     data = json.loads(lines[0])
-    assert data["event_id"] == event.event_id
-    assert data["event_type"] == "test"
+    assert data["data"]["event_id"] == event.event_id
+    assert data["type"] == "test"
 
     backend.close()
 

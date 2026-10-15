@@ -25,6 +25,14 @@ Token extraction is provider-agnostic via normalize_langchain_tokens():
 priority order: usage_metadata (modern) > llm_output["token_usage"] (OpenAI legacy)
 > llm_output["usage"] (Anthropic).
 
+Session and end user: at the top-level chain start the adapter reads the callback
+``metadata`` LangChain passes to on_chain_start. LangGraph copies
+``configurable["thread_id"]`` into that metadata, so one thread_id is one session
+(``data.session_key``) across invokes; without it, start_session() falls back to an
+id set with observra.set_session_id, else a new id per run. An app-supplied
+``config["metadata"]["user_id"]`` is stamped as ``data.user_id`` on that run's events;
+LangChain does not define this key, the application does.
+
 Usage::
 
     adapter = LangChainAdapter(capture_tool_data=True)
@@ -39,18 +47,54 @@ from __future__ import annotations
 
 import logging
 import time
+from contextvars import ContextVar
 from pathlib import Path
 from typing import Any, Optional
 
 from langchain_core.callbacks.base import BaseCallbackHandler
 
 from observra.adapters.utils import normalize_langchain_tokens, safe_serialize
-from observra.core.context import initialize_session, initialize_trace
+from observra.core.context import initialize_trace, start_session
 from observra.core.cost import CostCalculator
 from observra.core.dedup import register_emission, reset_dedup
 from observra.core.events import TelemetryEvent, create_event
 
 logger = logging.getLogger(__name__)
+
+# End-user id for the current top-level run, read from callback metadata["user_id"].
+# A ContextVar (like core's session_id) so concurrent invokes sharing one adapter stay separate.
+_run_user_id: ContextVar[Optional[str]] = ContextVar("langchain.run_user_id", default=None)
+
+
+def _generation_extras(response: Any) -> dict[str, Any]:
+    """Return stop_reason and cache_creation_tokens from the first generation, when exposed.
+
+    stop_reason: AIMessage.response_metadata["stop_reason"] (Anthropic) or
+    ["finish_reason"] (OpenAI), else Generation.generation_info (legacy LLMs).
+    cache_creation_tokens: usage_metadata["input_token_details"]["cache_creation"].
+    Cache reads already arrive as cached_tokens via normalize_langchain_tokens().
+    """
+    extras: dict[str, Any] = {}
+    try:
+        gen = response.generations[0][0]
+    except (AttributeError, IndexError, TypeError):
+        return extras
+    message = getattr(gen, "message", None)
+    metadata = getattr(message, "response_metadata", None) or {}
+    info = getattr(gen, "generation_info", None) or {}
+    stop_reason = (
+        metadata.get("stop_reason")
+        or metadata.get("finish_reason")
+        or info.get("finish_reason")
+        or info.get("stop_reason")
+    )
+    if stop_reason:
+        extras["stop_reason"] = stop_reason
+    usage = getattr(message, "usage_metadata", None) or {}
+    cache_creation = (usage.get("input_token_details") or {}).get("cache_creation")
+    if cache_creation is not None:
+        extras["cache_creation_tokens"] = int(cache_creation)
+    return extras
 
 
 class LangChainAdapter(BaseCallbackHandler):
@@ -112,8 +156,8 @@ class LangChainAdapter(BaseCallbackHandler):
         # Cost threshold deduplication: emit once per adapter lifetime
         self._cost_threshold_emitted: bool = False
 
-        # Tool duration tracking: str(run_id) -> (tool_name, start_time_monotonic)
-        self._tool_starts: dict[str, tuple[str, float]] = {}
+        # Tool tracking: str(run_id) -> (tool_name, start_time_monotonic, tool_call_id)
+        self._tool_starts: dict[str, tuple[str, float, Optional[str]]] = {}
 
         # Model name capture: str(run_id) -> model_name (from on_chat_model_start/on_llm_start)
         self._model_names: dict[str, str] = {}
@@ -291,7 +335,8 @@ class LangChainAdapter(BaseCallbackHandler):
                     framework="langgraph",
                 )
 
-            event = create_event(**event_kwargs)
+            event_kwargs.update(_generation_extras(response))
+            event = create_event(user_id=_run_user_id.get(), **event_kwargs)
             self.emit(event)
 
             # Emit cost_threshold_exceeded if threshold crossed (once per lifetime)
@@ -303,6 +348,7 @@ class LangChainAdapter(BaseCallbackHandler):
             ):
                 self._cost_threshold_emitted = True
                 threshold_event = create_event(
+                    user_id=_run_user_id.get(),
                     event_type="cost_threshold_exceeded",
                     framework="langgraph",
                     session_cost_usd=float(cost),
@@ -344,7 +390,9 @@ class LangChainAdapter(BaseCallbackHandler):
         try:
             serialized = serialized or {}
             tool_name = serialized.get("name") or "unknown"
-            self._tool_starts[str(run_id)] = (tool_name, time.monotonic())
+            # BaseTool.run passes tool_call_id through when invoked from a ToolCall
+            tool_call_id = kwargs.get("tool_call_id")
+            self._tool_starts[str(run_id)] = (tool_name, time.monotonic(), tool_call_id)
 
             event_kwargs: dict[str, Any] = dict(
                 event_type="tool_start",
@@ -352,10 +400,13 @@ class LangChainAdapter(BaseCallbackHandler):
                 framework="langgraph",
             )
 
+            if tool_call_id:
+                event_kwargs["tool_use_id"] = tool_call_id
+
             if self._capture_tool_data and input_str:
                 event_kwargs["tool_args"] = safe_serialize(input_str, self._payload_max_bytes)
 
-            event = create_event(**event_kwargs)
+            event = create_event(user_id=_run_user_id.get(), **event_kwargs)
             self.emit(event)
         except Exception as e:
             self._error_count += 1
@@ -375,6 +426,8 @@ class LangChainAdapter(BaseCallbackHandler):
             start_info = self._tool_starts.pop(str(run_id), None)
             tool_name = start_info[0] if start_info else "unknown"
             duration_ms = (time.monotonic() - start_info[1]) * 1000.0 if start_info else None
+            # Output is a ToolMessage carrying tool_call_id when the tool was called from a ToolCall
+            tool_call_id = (start_info[2] if start_info else None) or getattr(output, "tool_call_id", None)
 
             event_kwargs: dict[str, Any] = dict(
                 event_type="tool_end",
@@ -382,13 +435,16 @@ class LangChainAdapter(BaseCallbackHandler):
                 framework="langgraph",
             )
 
+            if tool_call_id:
+                event_kwargs["tool_use_id"] = tool_call_id
+
             if duration_ms is not None:
                 event_kwargs["duration_ms"] = duration_ms
 
             if self._capture_tool_data and output is not None:
                 event_kwargs["tool_result"] = safe_serialize(output, self._payload_max_bytes)
 
-            event = create_event(**event_kwargs)
+            event = create_event(user_id=_run_user_id.get(), **event_kwargs)
             self.emit(event)
         except Exception as e:
             self._error_count += 1
@@ -406,14 +462,20 @@ class LangChainAdapter(BaseCallbackHandler):
         try:
             start_info = self._tool_starts.pop(str(run_id), None)
             tool_name = start_info[0] if start_info else "unknown"
+            tool_call_id = kwargs.get("tool_call_id") or (start_info[2] if start_info else None)
 
-            event = create_event(
+            event_kwargs: dict[str, Any] = dict(
                 event_type="tool_error",
                 tool_name=tool_name,
                 error_message=str(error),
                 error_type_name=type(error).__name__,
                 framework="langgraph",
             )
+
+            if tool_call_id:
+                event_kwargs["tool_use_id"] = tool_call_id
+
+            event = create_event(user_id=_run_user_id.get(), **event_kwargs)
             self.emit(event)
         except Exception as e:
             self._error_count += 1
@@ -450,14 +512,18 @@ class LangChainAdapter(BaseCallbackHandler):
 
             # Initialize trace context only for top-level graph invocation
             if parent_run_id is None:
+                metadata = kwargs.get("metadata") or {}
                 initialize_trace()
-                initialize_session()
+                thread_id = metadata.get("thread_id")
+                start_session(str(thread_id) if thread_id else None)
+                _run_user_id.set(metadata.get("user_id"))
                 reset_dedup()
 
             # Top-level chain = session_start, nested = agent_start
             event_type = "session_start" if parent_run_id is None else "agent_start"
 
             event = create_event(
+                user_id=_run_user_id.get(),
                 event_type=event_type,
                 agent_name=chain_name,
                 framework="langgraph",
@@ -485,6 +551,7 @@ class LangChainAdapter(BaseCallbackHandler):
         try:
             event_type = "session_end" if parent_run_id is None else "agent_end"
             event = create_event(
+                user_id=_run_user_id.get(),
                 event_type=event_type,
                 framework="langgraph",
             )
@@ -502,6 +569,7 @@ class LangChainAdapter(BaseCallbackHandler):
         """
         try:
             event = create_event(
+                user_id=_run_user_id.get(),
                 event_type="session_end",
                 error_message=str(error),
                 framework="langgraph",

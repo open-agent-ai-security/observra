@@ -24,6 +24,7 @@ from pathlib import Path
 from typing import Any, Optional
 
 from observra.adapters.utils import estimate_tokens, safe_serialize
+from observra.core.context import initialize_trace, session_id_var, start_session, trace_id_var
 from observra.core.cost import CostCalculator
 from observra.core.dedup import register_emission
 from observra.core.events import TelemetryEvent, create_event
@@ -91,6 +92,10 @@ class ClaudeAdapter:
 
         # Duration tracking: tool_use_id -> start time (monotonic)
         self._tool_start_times: dict[str, float] = {}
+
+        # Claude session_id -> trace_id, so every hook task of one session shares a trace.
+        # ponytail: never evicted; one short string per session, cap it if a process runs millions.
+        self._session_traces: dict[str, str] = {}
 
         # Cost threshold deduplication: emit once per adapter lifetime
         self._cost_threshold_emitted: bool = False
@@ -236,6 +241,42 @@ class ClaudeAdapter:
         count = estimate_tokens(text)
         return (count, True)
 
+    @staticmethod
+    def _usage_kwargs(usage: Any) -> dict[str, int]:
+        """Return native token counts from an SDK usage dict (AssistantMessage/ResultMessage)."""
+        if not isinstance(usage, dict):
+            return {}
+        counts = {
+            name: int(usage[name])
+            for name in ("input_tokens", "output_tokens", "cache_read_input_tokens", "cache_creation_input_tokens")
+            if usage.get(name) is not None
+        }
+        if "input_tokens" in counts and "output_tokens" in counts:
+            counts["total_tokens"] = counts["input_tokens"] + counts["output_tokens"]
+        return counts
+
+    def _bind_session(self, session_id: Any) -> None:
+        """Make the Claude session id the observra session in the current context.
+
+        The SDK runs each hook callback in its own task, so context set by one
+        hook is gone by the next; bind on every call. The first sighting of a
+        session starts a trace, later calls reuse it.
+        """
+        if not session_id:
+            return
+        sid = str(session_id)
+        if session_id_var.get(None) != sid:
+            start_session(sid)
+        trace_id = self._session_traces.get(sid)
+        if trace_id is None:
+            initialize_trace()
+            if len(self._session_traces) >= 1024:
+                # ponytail: FIFO cap; a session idle past 1024 newer ones gets a fresh trace_id
+                del self._session_traces[next(iter(self._session_traces))]
+            self._session_traces[sid] = trace_id_var.get()
+        elif trace_id_var.get(None) != trace_id:
+            trace_id_var.set(trace_id)
+
     # ========================================================================
     # 5 Hook Callbacks (all return {})
     # ========================================================================
@@ -257,6 +298,7 @@ class ClaudeAdapter:
             {} (observation-only)
         """
         try:
+            self._bind_session(input_data.get("session_id"))
             tool_name = input_data.get("tool_name")
 
             # Record start time for duration calculation in PostToolUse
@@ -266,6 +308,7 @@ class ClaudeAdapter:
                 event_type="tool_start",
                 tool_name=tool_name,
                 framework="claude",
+                tool_use_id=tool_use_id,
             )
 
             if self._capture_tool_data:
@@ -296,6 +339,7 @@ class ClaudeAdapter:
             {} (observation-only)
         """
         try:
+            self._bind_session(input_data.get("session_id"))
             tool_name = input_data.get("tool_name")
 
             # Compute duration from pre-tool start time
@@ -319,6 +363,7 @@ class ClaudeAdapter:
                 tool_name=tool_name,
                 framework="claude",
                 estimated=is_estimated,
+                tool_use_id=tool_use_id,
             )
 
             if duration_ms is not None:
@@ -356,6 +401,7 @@ class ClaudeAdapter:
             {} (observation-only)
         """
         try:
+            self._bind_session(input_data.get("session_id"))
             prompt = input_data.get("prompt", "")
             token_count, is_estimated = self._extract_tokens_or_estimate(input_data, prompt)
 
@@ -388,6 +434,7 @@ class ClaudeAdapter:
             {} (observation-only)
         """
         try:
+            self._bind_session(input_data.get("session_id"))
             event = create_event(
                 event_type="agent_end",
                 framework="claude",
@@ -415,6 +462,7 @@ class ClaudeAdapter:
             {} (observation-only)
         """
         try:
+            self._bind_session(input_data.get("session_id"))
             event = create_event(
                 event_type="agent_end",
                 framework="claude",
@@ -445,6 +493,7 @@ class ClaudeAdapter:
             num_turns = getattr(result_message, "num_turns", None)
             is_error = getattr(result_message, "is_error", None)
             session_id = getattr(result_message, "session_id", None)
+            self._bind_session(session_id)
 
             event_kwargs: dict[str, Any] = dict(
                 event_type="session_end",
@@ -464,13 +513,14 @@ class ClaudeAdapter:
             if session_id is not None:
                 event_kwargs["session_id_claude"] = str(session_id)
 
+            stop_reason = getattr(result_message, "stop_reason", None)
+            if stop_reason is not None:
+                # session_end is hot path: only HOT_PATH_SAFE_STRING_KEYS strings survive.
+                # finish_reason is safe-listed and maps to the same sensor `stop` field.
+                event_kwargs["finish_reason"] = stop_reason
+
             # Extract token usage if present on ResultMessage
-            usage = getattr(result_message, "usage", None)
-            if isinstance(usage, dict):
-                for field_name in ("input_tokens", "output_tokens", "cache_read_input_tokens"):
-                    val = usage.get(field_name)
-                    if val is not None:
-                        event_kwargs[field_name] = int(val)
+            event_kwargs.update(self._usage_kwargs(getattr(result_message, "usage", None)))
 
             event = create_event(**event_kwargs)
             self.emit(event)
@@ -526,6 +576,8 @@ class ClaudeAdapter:
         """
         async for message in stream:
             try:
+                # AssistantMessage.session_id is optional; ResultMessage always has one
+                self._bind_session(getattr(message, "session_id", None))
                 # Check for ResultMessage (final item) — duck-type via total_cost_usd attr
                 if hasattr(message, "total_cost_usd"):
                     self.handle_result_message(message)
@@ -535,7 +587,9 @@ class ClaudeAdapter:
                     if content:
                         text_parts = []
                         for block in content:
-                            block_type = getattr(block, "type", None)
+                            # SDK TextBlock has no `type` attr; only AssistantMessage (has `model`)
+                            # defaults it to text, so UserMessage echoes are not reported as responses
+                            block_type = getattr(block, "type", "text" if hasattr(message, "model") else None)
                             if block_type == "text":
                                 block_text = getattr(block, "text", "")
                                 if block_text:
@@ -543,12 +597,19 @@ class ClaudeAdapter:
                         if text_parts:
                             response_text = " ".join(text_parts)
                             truncated_text = safe_serialize(response_text, self._payload_max_bytes)
-                            event = create_event(
+                            usage_kwargs = self._usage_kwargs(getattr(message, "usage", None))
+                            event_kwargs: dict[str, Any] = dict(
                                 event_type="model_response",
                                 framework="claude",
+                                model_name=getattr(message, "model", None),
                                 response_text=truncated_text,
-                                estimated=True,
+                                estimated=not usage_kwargs,
+                                **usage_kwargs,
                             )
+                            stop_reason = getattr(message, "stop_reason", None)
+                            if stop_reason is not None:
+                                event_kwargs["stop_reason"] = stop_reason
+                            event = create_event(**event_kwargs)
                             self.emit(event)
             except Exception as e:
                 # Never interrupt the stream for telemetry errors

@@ -258,6 +258,42 @@ def test_generation_span_reasoning_tokens_tracked_separately():
     assert event.data["reasoning_tokens"] == 200
 
 
+def test_generation_span_cache_write_tokens_become_cache_creation_tokens():
+    """input_tokens_details.cache_write_tokens (openai-agents >= 0.18) maps to cache_creation_tokens."""
+    from observra.adapters.openai.adapter import OpenAIAdapter
+
+    usage = {
+        "input_tokens": 1000,
+        "output_tokens": 500,
+        "total_tokens": 1500,
+        "input_tokens_details": {"cached_tokens": 100, "cache_write_tokens": 300},
+        "output_tokens_details": {"reasoning_tokens": 0},
+    }
+    adapter = OpenAIAdapter()
+    adapter.on_span_end(_make_generation_span(model="gpt-4o", usage=usage))
+
+    data = adapter._events[0].data
+    assert data["cached_tokens"] == 100
+    assert data["cache_creation_tokens"] == 300
+
+
+def test_generation_span_zero_cache_write_tokens_omitted():
+    """cache_write_tokens == 0 (SDK default) must not emit cache_creation_tokens."""
+    from observra.adapters.openai.adapter import OpenAIAdapter
+
+    usage = {
+        "input_tokens": 10,
+        "output_tokens": 5,
+        "total_tokens": 15,
+        "input_tokens_details": {"cached_tokens": 0, "cache_write_tokens": 0},
+        "output_tokens_details": {"reasoning_tokens": 0},
+    }
+    adapter = OpenAIAdapter()
+    adapter.on_span_end(_make_generation_span(model="gpt-4o", usage=usage))
+
+    assert "cache_creation_tokens" not in adapter._events[0].data
+
+
 # ---------------------------------------------------------------------------
 # 6. FunctionSpanData -> tool_call with duration
 # ---------------------------------------------------------------------------
@@ -590,3 +626,96 @@ def test_normalize_openai_tokens():
 
     # Empty dict -> None
     assert normalize_openai_tokens({}) is None
+
+
+# ---------------------------------------------------------------------------
+# 19. Session correlation via trace group_id + end user via trace metadata
+# ---------------------------------------------------------------------------
+
+
+def _make_trace(trace_id, group_id=None, metadata=None):
+    return types.SimpleNamespace(trace_id=trace_id, group_id=group_id, metadata=metadata)
+
+
+def _run_trace(adapter, trace, agents=("triage",), handoff=False):
+    """Drive one trace through the adapter: agent spans (nested), optional handoff."""
+    adapter.on_trace_start(trace)
+    spans = []
+    for name in agents:
+        span = _make_agent_span(name=name)
+        span.trace_id = trace.trace_id
+        adapter.on_span_start(span)
+        spans.append(span)
+    if handoff:
+        h = _make_handoff_span(parent_id=None)
+        h.trace_id = trace.trace_id
+        adapter.on_span_end(h)
+    for span in reversed(spans):
+        adapter.on_span_end(span)
+    adapter.on_trace_end(trace)
+
+
+def _session_keys(adapter):
+    from observra.core.sensor_record import to_sensor_record
+
+    return [to_sensor_record(e)["data"]["session_key"] for e in adapter.events]
+
+
+def test_same_group_id_shares_session_across_traces():
+    from observra.adapters.openai.adapter import OpenAIAdapter
+
+    adapter = OpenAIAdapter()
+    _run_trace(adapter, _make_trace("trace-a", group_id="conv-123"))
+    _run_trace(adapter, _make_trace("trace-b", group_id="conv-123"))
+
+    keys = _session_keys(adapter)
+    assert len(keys) == 4
+    assert set(keys) == {"conv-123"}
+
+
+def test_nested_agents_and_handoff_keep_one_session():
+    from observra.adapters.openai.adapter import OpenAIAdapter
+
+    adapter = OpenAIAdapter()
+    _run_trace(adapter, _make_trace("trace-a", group_id="conv-xyz"), agents=("triage", "specialist"), handoff=True)
+
+    events = adapter.events
+    assert "agent_handoff" in [e.event_type for e in events]
+    assert set(_session_keys(adapter)) == {"conv-xyz"}
+
+
+def test_different_group_ids_get_different_sessions():
+    from observra.adapters.openai.adapter import OpenAIAdapter
+
+    adapter = OpenAIAdapter()
+    _run_trace(adapter, _make_trace("trace-a", group_id="conv-1"))
+    _run_trace(adapter, _make_trace("trace-b", group_id="conv-2"))
+
+    keys = _session_keys(adapter)
+    assert keys[:2] == ["conv-1", "conv-1"]
+    assert keys[2:] == ["conv-2", "conv-2"]
+
+
+def test_no_group_id_generates_session_per_trace():
+    from observra.adapters.openai.adapter import OpenAIAdapter
+
+    adapter = OpenAIAdapter()
+    _run_trace(adapter, _make_trace("trace-a"), agents=("triage", "specialist"))
+    _run_trace(adapter, _make_trace("trace-b"))
+
+    keys = _session_keys(adapter)
+    assert len(set(keys[:4])) == 1  # one generated id for the whole first trace
+    assert len(set(keys[4:])) == 1
+    assert keys[0] != keys[4]
+
+
+def test_trace_metadata_user_id_stamped_on_events():
+    from observra.adapters.openai.adapter import OpenAIAdapter
+
+    adapter = OpenAIAdapter()
+    _run_trace(adapter, _make_trace("trace-a", group_id="c", metadata={"user_id": "alice"}), handoff=True)
+    _run_trace(adapter, _make_trace("trace-b", group_id="c"))
+
+    events = adapter.events
+    assert [e.data["user_id"] for e in events[:3]] == ["alice"] * 3
+    assert all("user_id" not in (e.data or {}) for e in events[3:])

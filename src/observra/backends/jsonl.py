@@ -7,9 +7,10 @@ import json
 import logging
 from dataclasses import asdict
 from pathlib import Path
-from typing import Iterator, Optional, TextIO
+from typing import Iterator, Literal, Optional, TextIO
 
 from observra.core.events import TelemetryEvent
+from observra.core.sensor_record import to_sensor_record
 from observra.core.types import BackendStats
 
 logger = logging.getLogger(__name__)
@@ -38,7 +39,11 @@ class JSONLBackend:
         path: Base file path for JSONL output (default: "telemetry.jsonl")
         max_bytes: Maximum file size before rotation (default: 10MB)
         backup_count: Number of rotated backups to keep (default: 5)
+        record_format: "sensor" (default) writes the agent-sensor record shape so
+            one SIEM parser reads both; "native" writes the TelemetryEvent fields.
     """
+
+    BACKEND_TYPE = "jsonl"
 
     def __init__(
         self,
@@ -46,7 +51,11 @@ class JSONLBackend:
         max_bytes: int = 10_485_760,
         backup_count: int = 5,
         encryption_key: Optional[bytes] = None,
+        record_format: Literal["sensor", "native"] = "sensor",
     ):
+        if record_format not in ("sensor", "native"):
+            raise ValueError(f"Invalid record_format: {record_format}. Expected 'sensor' or 'native'.")
+        self._record_format = record_format
         self._encryption: Optional[_EncryptionProvider] = None
         if encryption_key is not None:
             if not _ENCRYPTION_AVAILABLE:
@@ -92,8 +101,7 @@ class JSONLBackend:
             return
 
         try:
-            # Convert event to dict
-            data = asdict(event)
+            data = to_sensor_record(event) if self._record_format == "sensor" else asdict(event)
 
             # Serialize to JSON (compact format, handle non-serializable types)
             line = json.dumps(data, separators=(",", ":"), default=str)
@@ -111,11 +119,9 @@ class JSONLBackend:
             self._stats["bytes_written"] += len(line) + 1
 
             # Track timestamp range for get_stats()
-            ts = data.get("timestamp")
-            if ts is not None:
-                if self._oldest_ts is None:
-                    self._oldest_ts = float(ts)
-                self._newest_ts = float(ts)
+            if self._oldest_ts is None:
+                self._oldest_ts = event.timestamp
+            self._newest_ts = event.timestamp
 
             # Check if rotation needed
             if self._should_rollover():

@@ -142,7 +142,7 @@ class TestSensorBodySchema:
         assert body["cost_usd"] == 0.003
         assert body["stop"] == "end_turn"
         assert body["framework"] == "adk"
-        assert body["schema"] == "observra:1.0"
+        assert body["schema"] == "observra:1.1"
         assert "ts" in body
         assert "session" in body
         assert len(body["session"]) == 8
@@ -283,7 +283,7 @@ class TestInjectionDetection:
         backend.write(event)
 
         body = _parse_body(captured_log_records)
-        assert body["injection"] is True
+        assert body["has_injection"] is True
         assert body["injection_patterns"] == ["BASE64_BLOB"]
 
     def test_injection_in_attributes(self, captured_log_records):

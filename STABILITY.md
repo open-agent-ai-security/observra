@@ -17,7 +17,7 @@ These fail differently and evolve independently, so each has its own version lin
 | Surface | Version line | Source of truth | Current value |
 |---|---|---|---|
 | **Library / API** | package `__version__` (semver) | `src/observra/__init__.py` | `1.0.3` |
-| **Event / CIM schema** | `schema` anchor `observra:<MAJOR>.<MINOR>` | `schema/cim_schema.toml` `[meta] version` → `CIM_VERSION` | `observra:1.0` |
+| **Event / CIM schema** | `schema` anchor `observra:<MAJOR>.<MINOR>` | `schema/cim_schema.toml` `[meta] version` → `CIM_VERSION` | `observra:1.1` |
 
 **The key principle: an API major is not a schema major.** A pure library refactor
 bumps the package, not the schema. A new optional log field bumps the schema

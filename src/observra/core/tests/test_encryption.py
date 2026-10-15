@@ -167,8 +167,8 @@ def test_backends_without_encryption_behave_normally(tmp_path):
     lines = [line for line in content.splitlines() if line.strip()]
     assert len(lines) == 1
     parsed = json.loads(lines[0])
-    assert parsed["event_id"] == event.event_id
-    assert parsed["event_type"] == event.event_type
+    assert parsed["data"]["event_id"] == event.event_id
+    assert parsed["type"] == event.event_type
 
 
 # ─── Test: EncryptionProvider round-trip ─────────────────────────────────────

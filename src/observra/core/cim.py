@@ -8,7 +8,7 @@ from __future__ import annotations
 from enum import Enum
 from typing import Any, Optional
 
-CIM_VERSION = "1.0"
+CIM_VERSION = "1.1"
 PRODUCT_ID = "observra"
 
 
@@ -142,6 +142,8 @@ _ACTION_FOR_EVENT_TYPE: dict[str, str] = {
     "compact_boundary": "compact_context",
     "cost_threshold_exceeded": "policy_event",
     "depth_exceeded": "policy_event",
+    "forwarder_started": "policy_event",
+    "forwarder_stopped": "policy_event",
     "forwarder_update_available": "update_available",
     "forwarder_update_failed": "update_failed",
     "forwarder_updated": "update_applied",

@@ -272,3 +272,96 @@ def test_emit_routes_to_queue():
     plugin.emit(event)
 
     mock_queue.put_nowait.assert_called_once_with(event)
+
+
+# ---------------------------------------------------------------------------
+# 9. Sensor-record fields: stop_reason, response_text, tool_use_id
+# ---------------------------------------------------------------------------
+
+
+def _gemini_response(**overrides):
+    from google.genai import types as genai_types
+
+    kwargs = dict(
+        model="gemini-2.5-flash",
+        usage_metadata=types.SimpleNamespace(prompt_token_count=10, candidates_token_count=5, total_token_count=15),
+        finish_reason=genai_types.FinishReason.STOP,
+        content=genai_types.Content(
+            role="model",
+            parts=[genai_types.Part(text="thinking...", thought=True), genai_types.Part(text="Hello")],
+        ),
+    )
+    kwargs.update(overrides)
+    return types.SimpleNamespace(**kwargs)
+
+
+async def _model_response_event(plugin, llm_response):
+    await plugin.after_model_callback(callback_context=types.SimpleNamespace(), llm_response=llm_response)
+    return next(e for e in plugin.events if e.event_type == "model_response")
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("usage_metadata", ["default", None])
+async def test_model_response_stop_reason_raw_value(usage_metadata):
+    plugin = TelemetryPlugin(queue=None)
+    overrides = {} if usage_metadata == "default" else {"usage_metadata": None}
+    event = await _model_response_event(plugin, _gemini_response(**overrides))
+    assert event.data["stop_reason"] == "STOP"
+    assert "response_text" not in event.data or event.data["response_text"] is None
+
+
+@pytest.mark.asyncio
+async def test_model_response_text_gated_by_capture_tool_data():
+    plugin = TelemetryPlugin(queue=None, capture_tool_data=True)
+    event = await _model_response_event(plugin, _gemini_response())
+    assert event.data["response_text"] == "Hello"
+
+
+@pytest.mark.asyncio
+async def test_tool_events_carry_tool_use_id():
+    plugin = TelemetryPlugin(queue=None)
+    tool = types.SimpleNamespace(name="search")
+    ctx = types.SimpleNamespace(function_call_id="adk-call-123")
+
+    await plugin.before_tool_callback(tool=tool, tool_args={}, tool_context=ctx)
+    await plugin.after_tool_callback(tool=tool, tool_args={}, tool_context=ctx, result={})
+    await plugin.on_tool_error_callback(tool=tool, tool_args={}, tool_context=ctx, error=ValueError("x"))
+
+    by_type = {e.event_type: e for e in plugin.events}
+    for event_type in ("tool_start", "tool_end", "tool_error"):
+        assert by_type[event_type].data["tool_use_id"] == "adk-call-123"
+
+
+# ---------------------------------------------------------------------------
+# 10. Session id = ADK Session.id; user_id = ADK Session.user_id
+# ---------------------------------------------------------------------------
+
+
+async def _run(plugin, session_id, user_id):
+    """Drive one ADK run in callback order: user_message, before_run, agent, model, tool, after_run."""
+    ic = types.SimpleNamespace(agent_name="root", session=types.SimpleNamespace(id=session_id, user_id=user_id))
+    ctx = types.SimpleNamespace()
+    tool = types.SimpleNamespace(name="search")
+    agent = types.SimpleNamespace(name="root")
+    await plugin.on_user_message_callback(invocation_context=ic, user_message="hi")
+    await plugin.before_run_callback(invocation_context=ic)
+    await plugin.before_agent_callback(agent=agent, callback_context=ctx)
+    await plugin.before_model_callback(callback_context=ctx, llm_request=types.SimpleNamespace(model="gemini"))
+    await plugin.before_tool_callback(tool=tool, tool_args={}, tool_context=ctx)
+    await plugin.after_agent_callback(agent=agent, callback_context=ctx)
+    await plugin.after_run_callback(invocation_context=ic)
+
+
+@pytest.mark.asyncio
+async def test_session_and_user_id_from_adk_session():
+    plugin = TelemetryPlugin(queue=None)
+    await _run(plugin, "adk-session-1", "alice@example.com")
+    first = list(plugin.events)
+    await _run(plugin, "adk-session-2", "bob")
+    second = plugin.events[len(first) :]
+
+    assert len(first) >= 7
+    assert {e.session_id for e in first} == {"adk-session-1"}
+    assert {e.session_id for e in second} == {"adk-session-2"}
+    assert {e.data["user_id"] for e in first} == {"alice@example.com"}
+    assert {e.data["user_id"] for e in second} == {"bob"}

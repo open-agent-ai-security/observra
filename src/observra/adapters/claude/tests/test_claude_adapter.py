@@ -531,3 +531,112 @@ def test_cost_threshold_exceeded_emitted_when_session_cost_exceeds_threshold():
     assert len(new_threshold_events) == 1, "cost_threshold_exceeded must only fire once (only-once guard)"
     # session_end should fire again on second call
     assert event_types_2.count("session_end") == 2, "session_end must fire for each ResultMessage"
+
+
+# ---------------------------------------------------------------------------
+# Sensor-record fields: tool_use_id, stop_reason, model, usage, cache tokens
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_tool_hooks_emit_tool_use_id():
+    adapter = ClaudeAdapter(queue=None)
+    await adapter._on_pre_tool_use({"tool_name": "Bash", "tool_input": {}}, "toolu_1", None)
+    await adapter._on_post_tool_use({"tool_name": "Bash", "tool_input": {}, "tool_response": "ok"}, "toolu_1", None)
+    assert [e.data["tool_use_id"] for e in adapter._events] == ["toolu_1", "toolu_1"]
+
+
+def test_result_message_emits_stop_reason_and_cache_creation():
+    adapter = ClaudeAdapter(queue=None)
+    result_msg = types.SimpleNamespace(
+        total_cost_usd=0.01,
+        num_turns=2,
+        is_error=False,
+        session_id="s",
+        stop_reason="end_turn",
+        usage={
+            "input_tokens": 10,
+            "output_tokens": 5,
+            "cache_read_input_tokens": 3,
+            "cache_creation_input_tokens": 7,
+        },
+    )
+    adapter.handle_result_message(result_msg)
+    data = adapter._events[0].data
+    assert data["finish_reason"] == "end_turn"
+    assert data["cache_creation_input_tokens"] == 7
+    assert data["cache_read_input_tokens"] == 3
+    assert data["input_tokens"] == 10 and data["output_tokens"] == 5
+
+
+@pytest.mark.asyncio
+async def test_wrap_stream_real_sdk_assistant_message_fields():
+    """Shape mirrors claude_agent_sdk AssistantMessage/TextBlock (TextBlock has no `type`)."""
+    adapter = ClaudeAdapter(queue=None)
+    assistant_msg = types.SimpleNamespace(
+        content=[types.SimpleNamespace(text="hi"), types.SimpleNamespace(thinking="...", signature="x")],
+        model="claude-sonnet-4-5",
+        usage={"input_tokens": 12, "output_tokens": 4, "cache_creation_input_tokens": 2},
+        stop_reason="tool_use",
+    )
+    user_msg = types.SimpleNamespace(content=[types.SimpleNamespace(text="echo")])
+
+    async def mock_stream():
+        yield assistant_msg
+        yield user_msg
+
+    async for _ in adapter.wrap_stream(mock_stream()):
+        pass
+
+    assert len(adapter._events) == 1
+    event = adapter._events[0]
+    assert event.event_type == "model_response"
+    assert event.model_name == "claude-sonnet-4-5"
+    assert event.data["response_text"] == "hi"
+    assert event.data["stop_reason"] == "tool_use"
+    assert event.data["input_tokens"] == 12
+    assert event.data["output_tokens"] == 4
+    assert event.data["cache_creation_input_tokens"] == 2
+    assert event.data["total_tokens"] == 16
+    assert event.data["estimated"] is False
+
+
+# ---------------------------------------------------------------------------
+# Session correlation: hook input session_id becomes the observra session
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_hook_session_id_becomes_session_key_per_claude_session():
+    """Each Claude session_id maps to its own session_key and trace; hooks run in separate tasks like the SDK."""
+    import asyncio
+
+    from observra.core.sensor_record import to_sensor_record
+
+    adapter = ClaudeAdapter(queue=None)
+
+    async def run_session(sid: str) -> None:
+        base = {"session_id": sid, "transcript_path": "/t", "cwd": "/"}
+        # The SDK spawns a task per hook callback (claude_agent_sdk/_internal/query.py spawn_task)
+        await asyncio.create_task(adapter._on_user_prompt_submit({**base, "prompt": "hi"}, None, None))
+        await asyncio.create_task(adapter._on_pre_tool_use({**base, "tool_name": "Read"}, "t1", None))
+        await asyncio.create_task(adapter._on_post_tool_use({**base, "tool_name": "Read"}, "t1", None))
+        await asyncio.create_task(adapter._on_stop({**base, "stop_hook_active": False}, None, None))
+
+    await asyncio.gather(run_session("sess-aaaa-1111"), run_session("sess-bbbb-2222"))
+    adapter.handle_result_message(
+        types.SimpleNamespace(total_cost_usd=0.01, num_turns=1, is_error=False, session_id="sess-cccc-3333")
+    )
+
+    by_session: dict[str, list] = {}
+    for event in adapter._events:
+        by_session.setdefault(to_sensor_record(event)["data"]["session_key"], []).append(event)
+
+    assert set(by_session) == {"sess-aaaa-1111", "sess-bbbb-2222", "sess-cccc-3333"}
+    for sid in ("sess-aaaa-1111", "sess-bbbb-2222"):
+        events = by_session[sid]
+        assert len(events) == 4
+        assert len({e.trace_id for e in events}) == 1
+    assert by_session["sess-aaaa-1111"][0].trace_id != by_session["sess-bbbb-2222"][0].trace_id
+    session_end = by_session["sess-cccc-3333"][0]
+    assert session_end.event_type == "session_end"

@@ -18,6 +18,7 @@ import logging
 import queue
 import threading
 import time
+from typing import Callable, Optional
 
 from .events import TelemetryEvent
 from .metrics import _registry
@@ -59,6 +60,7 @@ class BackgroundWorker:
         circuit_breaker_cooldown: float = 30.0,
         batch_size: int = 100,
         batch_timeout: float = 0.5,
+        on_shutdown: Optional[Callable[[], TelemetryEvent]] = None,
     ):
         """Initialize and start background worker.
 
@@ -75,9 +77,12 @@ class BackgroundWorker:
             batch_timeout: Maximum seconds to accumulate events before submitting
                 a partial batch. Only used with PooledWriter. Defaults to 0.5
                 (500ms per CONTEXT.md decision).
+            on_shutdown: Builds a final event (e.g. forwarder_stopped) that is
+                written before the backend closes.
         """
         self._queue = event_queue
         self._storage = storage_backend
+        self._on_shutdown = on_shutdown
         self._running = True
         self._events_processed = 0
         self._errors = 0
@@ -270,6 +275,10 @@ class BackgroundWorker:
         self._running = False
 
         try:
+            # Queued ahead of the sentinel so the worker writes it like any event.
+            if self._on_shutdown is not None:
+                self._queue.put_nowait(self._on_shutdown())
+
             # Send shutdown sentinel
             self._queue.put_sentinel(_SHUTDOWN_SENTINEL)
 

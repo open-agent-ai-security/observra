@@ -1,12 +1,15 @@
 # Copyright 2026 Exabeam, Inc.
 # SPDX-License-Identifier: Apache-2.0
 
-"""Host identity (hostname + login user + os + arch + lib version).
+"""Host identity (hostname + login user + os + arch + device id + lib version).
 
-Read once at first access via stdlib calls (no subprocesses), then reused
+Read once at first access via stdlib calls, then reused
 for every event by ``create_event``. Mirrors ``rust/src/host_context.rs``
 so events emitted by the Python SDK and the Rust forwarder carry the same
 host attribution shape.
+
+The one subprocess is ``/usr/sbin/ioreg`` on macOS, which has no stdlib way to
+read the hardware UUID; it runs once per process.
 
 Failures are tolerated — fields stay ``None`` rather than crashing the
 agent, since a missing host attribution is preferable to a dead instrumented
@@ -16,9 +19,11 @@ process.
 from __future__ import annotations
 
 import getpass
+import hashlib
 import os
 import platform
 import socket
+import subprocess
 from dataclasses import dataclass
 from functools import lru_cache
 from typing import Optional
@@ -31,6 +36,7 @@ class HostContext:
     os: Optional[str]
     arch: Optional[str]
     library_version: str
+    device_id: Optional[str] = None
 
 
 def _read_hostname() -> Optional[str]:
@@ -104,6 +110,58 @@ def _read_arch() -> Optional[str]:
         return None
 
 
+def _read_machine_id() -> Optional[str]:
+    """Return the OS-assigned machine identifier, or None."""
+    system = platform.system()
+    if system == "Linux":
+        for path in ("/etc/machine-id", "/var/lib/dbus/machine-id"):
+            try:
+                with open(path, encoding="utf-8") as fh:
+                    value = fh.read().strip()
+                if value:
+                    return value
+            except OSError:
+                continue
+        return None
+    if system == "Darwin":
+        out = subprocess.run(
+            ["/usr/sbin/ioreg", "-rd1", "-c", "IOPlatformExpertDevice"],
+            capture_output=True,
+            text=True,
+            timeout=2,
+            check=False,
+        ).stdout
+        for line in out.splitlines():
+            if '"IOPlatformUUID"' in line:
+                return line.split("=", 1)[1].strip().strip('"') or None
+        return None
+    if system == "Windows":
+        import winreg
+
+        with winreg.OpenKey(
+            winreg.HKEY_LOCAL_MACHINE,
+            r"SOFTWARE\Microsoft\Cryptography",
+            0,
+            winreg.KEY_READ | winreg.KEY_WOW64_64KEY,
+        ) as key:
+            return str(winreg.QueryValueEx(key, "MachineGuid")[0]) or None
+    return None
+
+
+def _read_device_id() -> Optional[str]:
+    """Return SHA-256 (hex) of the machine id.
+
+    Stable across hostname changes, unlike ``host``. Hashed because the raw
+    machine id is meant to stay on the machine (machine-id(5)); a plain,
+    unkeyed hash lets agent-sensor compute the same value for correlation.
+    """
+    try:
+        raw = _read_machine_id()
+    except Exception:
+        return None
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest() if raw else None
+
+
 def _read_library_version() -> str:
     # Avoid importing the parent package at module-import time to prevent
     # circular imports. Use ``importlib.metadata`` when the package is
@@ -130,4 +188,5 @@ def get_host_context() -> HostContext:
         os=_read_os(),
         arch=_read_arch(),
         library_version=_read_library_version(),
+        device_id=_read_device_id(),
     )

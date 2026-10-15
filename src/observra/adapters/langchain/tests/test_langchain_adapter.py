@@ -564,3 +564,118 @@ def test_normalize_langchain_tokens_all_paths():
     empty_response = types.SimpleNamespace(generations=[[]], llm_output={})
     result_e = normalize_langchain_tokens(empty_response)
     assert result_e is None
+
+
+# ---------------------------------------------------------------------------
+# Sensor-record fields: stop_reason, cache tokens, tool_use_id
+# ---------------------------------------------------------------------------
+
+
+def test_on_llm_end_captures_stop_reason_and_cache_tokens():
+    """stop_reason from response_metadata; cache_creation/cache_read from input_token_details."""
+    from observra.adapters.langchain.adapter import LangChainAdapter
+
+    adapter = LangChainAdapter()
+    result = _make_llm_result_with_usage_metadata(model="claude-sonnet-4-5")
+    msg = result.generations[0][0].message
+    msg.response_metadata["stop_reason"] = "end_turn"
+    msg.usage_metadata["input_token_details"] = {"cache_creation": 200, "cache_read": 100}
+
+    adapter.on_llm_end(result, run_id=_make_run_id())
+
+    data = adapter._events[0].data
+    assert data["stop_reason"] == "end_turn"
+    assert data["cache_creation_tokens"] == 200
+    assert data["cached_tokens"] == 100
+
+
+def test_on_llm_end_stop_reason_from_finish_reason_and_generation_info():
+    """OpenAI finish_reason in response_metadata, legacy finish_reason in generation_info."""
+    from observra.adapters.langchain.adapter import LangChainAdapter
+
+    adapter = LangChainAdapter()
+    chat = _make_llm_result_with_usage_metadata()
+    chat.generations[0][0].message.response_metadata["finish_reason"] = "tool_calls"
+    legacy = _make_llm_result_openai_legacy()
+    legacy.generations[0][0].generation_info = {"finish_reason": "length"}
+
+    adapter.on_llm_end(chat, run_id=_make_run_id())
+    adapter.on_llm_end(legacy, run_id=_make_run_id())
+
+    assert [e.data["stop_reason"] for e in adapter._events] == ["tool_calls", "length"]
+    assert "cache_creation_tokens" not in adapter._events[0].data
+
+
+def test_tool_events_carry_tool_use_id():
+    """tool_call_id kwarg (BaseTool.run) lands as tool_use_id on tool_start/tool_end/tool_error."""
+    from observra.adapters.langchain.adapter import LangChainAdapter
+
+    adapter = LangChainAdapter()
+    ok_run, bad_run = _make_run_id(), _make_run_id()
+
+    adapter.on_tool_start({"name": "calc"}, "{}", run_id=ok_run, tool_call_id="call_ok")
+    adapter.on_tool_end("5", run_id=ok_run)
+    adapter.on_tool_start({"name": "calc"}, "{}", run_id=bad_run, tool_call_id="call_bad")
+    adapter.on_tool_error(ValueError("x"), run_id=bad_run, tool_call_id="call_bad")
+
+    ids = [(e.event_type, e.data.get("tool_use_id")) for e in adapter._events]
+    assert ids == [
+        ("tool_start", "call_ok"),
+        ("tool_end", "call_ok"),
+        ("tool_start", "call_bad"),
+        ("tool_error", "call_bad"),
+    ]
+
+
+def test_tool_end_tool_use_id_from_tool_message_and_absent_without_id():
+    """tool_end falls back to ToolMessage.tool_call_id; no id means no tool_use_id (run_id is not used)."""
+    from observra.adapters.langchain.adapter import LangChainAdapter
+
+    adapter = LangChainAdapter()
+    adapter.on_tool_end(types.SimpleNamespace(tool_call_id="call_msg"), run_id=_make_run_id())
+    run_id = _make_run_id()
+    adapter.on_tool_start({"name": "calc"}, "{}", run_id=run_id)
+    adapter.on_tool_end("5", run_id=run_id)
+
+    assert adapter._events[0].data["tool_use_id"] == "call_msg"
+    assert all("tool_use_id" not in e.data for e in adapter._events[1:])
+
+
+# ---------------------------------------------------------------------------
+# Session = LangGraph thread_id; end user = metadata["user_id"]
+# ---------------------------------------------------------------------------
+
+
+def _invoke(adapter, metadata):
+    """One top-level run plus a nested node, with callback metadata as LangGraph passes it."""
+    root = _make_run_id()
+    adapter.on_chain_start({"name": "graph"}, {}, run_id=root, parent_run_id=None, metadata=metadata)
+    adapter.on_chain_start({"name": "node"}, {}, run_id=_make_run_id(), parent_run_id=root, metadata=metadata)
+    adapter.on_chain_end({}, run_id=root, parent_run_id=None)
+
+
+def test_same_thread_id_shares_session_across_invokes():
+    """Two invokes on one thread_id share session_id (emitted as data.session_key)."""
+    from observra.adapters.langchain.adapter import LangChainAdapter
+
+    adapter = LangChainAdapter()
+    _invoke(adapter, {"thread_id": "conv-1"})
+    _invoke(adapter, {"thread_id": "conv-1"})
+    _invoke(adapter, {"thread_id": "conv-2"})
+
+    sessions = [e.session_id for e in adapter._events]
+    assert sessions[:6] == ["conv-1"] * 6
+    assert sessions[6:] == ["conv-2"] * 3
+
+
+def test_metadata_user_id_stamped_on_run_events():
+    """App-supplied metadata["user_id"] lands in data.user_id on that run's events only."""
+    from observra.adapters.langchain.adapter import LangChainAdapter
+
+    adapter = LangChainAdapter()
+    _invoke(adapter, {"thread_id": "t", "user_id": "alice@example.com"})
+    _invoke(adapter, {"thread_id": "t"})
+
+    first, second = adapter._events[:3], adapter._events[3:]
+    assert all(e.data["user_id"] == "alice@example.com" for e in first)
+    assert all("user_id" not in (e.data or {}) for e in second)

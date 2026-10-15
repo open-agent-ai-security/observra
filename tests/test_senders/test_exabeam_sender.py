@@ -825,4 +825,4 @@ class TestStorageBackendProtocol:
         lines = jsonl_path.read_text().strip().splitlines()
         assert len(lines) == 1, "Should have exactly 1 event written"
         written = json.loads(lines[0])
-        assert written["event_id"] == event.event_id
+        assert written["data"]["event_id"] == event.event_id
