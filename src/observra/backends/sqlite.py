@@ -38,6 +38,9 @@ class SQLiteBackend:
         table_name: str = "events",
         max_rows: Optional[int] = None,
     ):
+        # SQLi mitigation: table_name is interpolated into SQL strings (lines 73, 112, 130, 135-136, 188)
+        # because SQLite parameterization (?) only works for values, not identifiers.
+        # This regex restricts table_name to safe SQL identifiers — no spaces, quotes, or semicolons.
         if not re.match(r"^[a-zA-Z_][a-zA-Z0-9_]*$", table_name):
             raise ValueError(f"Invalid table_name: {table_name!r} — must be a valid SQL identifier")
 
